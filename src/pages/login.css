@@ -1,0 +1,119 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  .login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+  
+  .login-left, .login-right {
+    width: 50%;
+    padding: 20px;
+  }
+  
+  .login-left {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    height: 100%;
+  }
+  
+  .login-form {
+    text-align: center;
+    width: 300px;
+  }
+  
+
+  /* Email textbox */
+  .email-input {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  .email-input input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+
+  /* Password textbox */
+  .password-input {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  .password-input input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .forgot-password {
+    display: block;
+    text-align: right;
+    margin-bottom: 20px;
+  }
+  
+  .login-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .signup {
+    margin-top: 10px;
+  }
+  
+  .signup a {
+    color: #007bff;
+  }
+  
+  .login-right {
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+
+  .vault-master-right-side {
+    font-size: 50px;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .protection-section img {
+    width: 100px;
+    margin-bottom: 20px;
+  }
+  
+  .protection-section p {
+    font-size: 2.2em;
+    font-weight: bold;
+    text-align: center;
+    margin: 0;
+  }
+  
