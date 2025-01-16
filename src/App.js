@@ -4,11 +4,12 @@ import Login from './Pages/login';
 import Signup from './Pages/signup';
 import { Outlet } from 'react-router-dom';
 import ForgotPassword from './Pages/forgotPassword';
+import PersonalPWManager from './Pages/personal_pw_manager';
 
 function App() {
   return (
     <div>
-      <Signup />
+      <PersonalPWManager />
     </div>
   );
 }
