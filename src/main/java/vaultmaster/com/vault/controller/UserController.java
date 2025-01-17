@@ -1,9 +1,9 @@
 package vaultmaster.com.vault.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vaultmaster.com.vault.model.User;
-import vaultmaster.com.vault.service.EmailService;
 import vaultmaster.com.vault.service.UserService;
 
 @RestController
@@ -11,47 +11,48 @@ import vaultmaster.com.vault.service.UserService;
 public class UserController {
 
     private final UserService userService;
-    private final EmailService emailService;
 
-    // Constructor injection
-    public UserController(UserService userService, EmailService emailService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.emailService = emailService;
     }
 
+    /**
+     * Register a new user with verification.
+     */
     @PostMapping("/register")
-    public ResponseEntity<?> register(
-            @RequestParam String email,
-            @RequestParam String password,
-            @RequestParam String fullName,
-            @RequestParam String phoneNumber
-    ) {
+    public ResponseEntity<?> register(@RequestBody User user) {
         try {
-            User newUser = userService.registerUser(email, password, fullName, phoneNumber);
-            return ResponseEntity.ok("User registered successfully: " + newUser.getEmail());
+            // Call the service method to register the user and generate a verification token
+            String verificationToken = userService.registerUserWithVerification(
+                    user.getEmail(),
+                    user.getPasswordHash(),
+                    user.getFullName(),
+                    user.getPhoneNumber(),
+                    "System" // Created by system for self-registration
+            );
+
+            return ResponseEntity.ok("User registered successfully. Please check your email for the verification link.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during registration.");
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @RequestParam String email,
-            @RequestParam String password
-    ) {
+    /**
+     * Verify user registration.
+     */
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyUser(@RequestParam String token) {
         try {
-            User user = userService.login(email, password);
-
-            if (user != null) {
-                String verificationCode = userService.generateVerificationCode();
-                emailService.sendEmail(user.getEmail(), "Verification Code", "Your code: " + verificationCode);
-
-                return ResponseEntity.ok("Login successful. Verification email sent to " + email);
+            boolean isVerified = userService.verifyUser(token);
+            if (isVerified) {
+                return ResponseEntity.ok("User verified successfully.");
             } else {
-                return ResponseEntity.status(401).body("Invalid email or password.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired verification token.");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("An error occurred during login: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during verification.");
         }
     }
 }

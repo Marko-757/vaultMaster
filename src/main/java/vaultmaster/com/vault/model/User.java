@@ -2,6 +2,7 @@ package vaultmaster.com.vault.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.relational.core.mapping.Column;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -16,16 +17,21 @@ public class User {
     private String email;  // Should be unique
     private String passwordHash;
     private String phoneNumber;
-    private LocalDateTime createdDate;
-    private String createdBy;
-    private LocalDateTime modifiedDate;
-    private String modifiedBy;
 
-    // Check if required fields are present
-    public boolean isPresent() {
-        return this.email != null && !this.email.isEmpty() &&
-                this.passwordHash != null && !this.passwordHash.isEmpty();
-    }
+    @Column("verified")  // Map to 'verified' column in the database
+    private boolean verified; // New field for verification status
+
+    @Column("created_date")
+    private LocalDateTime createdDate;
+
+    @Column("created_by")
+    private String createdBy;
+
+    @Column("modified_date")
+    private LocalDateTime modifiedDate;
+
+    @Column("modified_by")
+    private String modifiedBy;
 
     // Getters and Setters
     public UUID getUserId() {
@@ -66,6 +72,14 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public boolean isVerified() {
+        return verified;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 
     public LocalDateTime getCreatedDate() {
