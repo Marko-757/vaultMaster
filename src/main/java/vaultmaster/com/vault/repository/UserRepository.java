@@ -3,9 +3,10 @@ package vaultmaster.com.vault.repository;
 import org.springframework.data.repository.CrudRepository;
 import vaultmaster.com.vault.model.User;
 
-import java.util.Optional;
-
 public interface UserRepository extends CrudRepository<User, Long> {
-    // Spring Data JDBC will provide basic CRUD operations automatically.
+    // Find a user by email
     User findByEmail(String email);
+
+    // Check if a user exists by email
+    boolean existsByEmail(String email);
 }

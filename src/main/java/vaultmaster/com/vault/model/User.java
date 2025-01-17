@@ -4,27 +4,37 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Table("users")  // Specify the name of the table in the database
+@Table("users")  // Database table name
 public class User {
 
-    public boolean isPresent() {
-        return this.email != null && !this.email.isEmpty();
-    }
-
     @Id
-    private Long userId;
+    private UUID userId;
 
     private String fullName;
-    private String email;
+    private String email;  // Should be unique
     private String passwordHash;
-    private String salt;
     private String phoneNumber;
     private LocalDateTime createdDate;
     private String createdBy;
     private LocalDateTime modifiedDate;
     private String modifiedBy;
 
+    // Check if required fields are present
+    public boolean isPresent() {
+        return this.email != null && !this.email.isEmpty() &&
+                this.passwordHash != null && !this.passwordHash.isEmpty();
+    }
+
+    // Getters and Setters
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
 
     public String getFullName() {
         return fullName;
@@ -42,42 +52,20 @@ public class User {
         this.email = email;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    // Getter for userID
-    public Long getUserId() {
-        return userId;
-    }
-
-    // Setter for userID
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    // Getter for passwordHash
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    // Setter for passwordHash
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    // Getter for salt
-    public String getSalt() {
-        return salt;
-    }
-
-    // Setter for salt
-    public void setSalt(String salt) {
-        this.salt = salt;
     }
 
     public LocalDateTime getCreatedDate() {

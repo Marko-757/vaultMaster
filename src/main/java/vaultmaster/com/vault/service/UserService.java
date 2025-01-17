@@ -1,100 +1,127 @@
 package vaultmaster.com.vault.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import vaultmaster.com.vault.model.User;
 import vaultmaster.com.vault.repository.UserRepository;
+
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserService {
 
-    private static final int SALT_LENGTH = 16;
+    private final UserRepository userRepository;
+    private static final int VERIFICATION_CODE_LENGTH = 6;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    // Constructor injection
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public void saveUser(User user) {
-        userRepository.save(user);  // Save user to the database
-    }
-
-    public User login(String email, String password) {
-        // Retrieve the user by email
-        User user = userRepository.findByEmail(email);
-
-        // If user exists, check password
-        if (user != null) {
-            // Get the salt and stored password hash
-            String salt = user.getSalt();
-            String storedPasswordHash = user.getPasswordHash();
-
-            // Hash the entered password with the salt
-            String passwordHash = hashPassword(password, salt);
-
-            // Compare the hashes
-            if (storedPasswordHash.equals(passwordHash)) {
-                return user; // Return the user if login is successful
-            }
-        }
-        return null; // Return null if login fails (user not found or password doesn't match)
-    }
-
-
+    /**
+     * Register a new user with secure password hashing.
+     *
+     * @param email       the user's email
+     * @param password    the user's password
+     * @param fullName    the user's full name
+     * @param phoneNumber the user's phone number
+     * @return the registered user
+     */
     public User registerUser(String email, String password, String fullName, String phoneNumber) {
-        // Generate salt
-        String salt = generateSalt();
+        // Check if email is already registered
+        if (existsByEmail(email)) {
+            throw new IllegalArgumentException("Email is already registered.");
+        }
 
-        // Combine password and salt and hash them (PBKDF2, BCrypt, or similar hashing algorithm)
-        String passwordHash = hashPassword(password, salt);
+        // Hash the password with BCrypt
+        String hashedPassword = hashPassword(password);
 
         // Create and save the new user
         User newUser = new User();
         newUser.setEmail(email);
-        newUser.setPasswordHash(passwordHash);
-        newUser.setSalt(salt);
+        newUser.setPasswordHash(hashedPassword);
         newUser.setFullName(fullName);
         newUser.setPhoneNumber(phoneNumber);
 
         return userRepository.save(newUser);
     }
 
-    // Generate a random salt
-    private String generateSalt() {
-        SecureRandom random = new SecureRandom();
-        byte[] saltBytes = new byte[SALT_LENGTH];
-        random.nextBytes(saltBytes);
-        return Base64.getEncoder().encodeToString(saltBytes);  // Store the salt as a Base64-encoded string
-    }
+    /**
+     * Log in a user by verifying their credentials.
+     *
+     * @param email    the user's email
+     * @param password the user's password
+     * @return the authenticated user
+     */
+    public User login(String email, String password) {
+        // Retrieve user by email
+        User user = userRepository.findByEmail(email);
 
-    // Hash the password combined with the salt (for simplicity, using SHA-256 as an example)
-    private String hashPassword(String password, String salt) {
-        try {
-            // Combine password and salt
-            String saltedPassword = password + salt;
-
-            // Use a hashing algorithm (e.g., SHA-256, PBKDF2, BCrypt)
-            // Example using SHA-256 (though in practice, you should use a more secure hashing algorithm like PBKDF2 or BCrypt)
-            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(saltedPassword.getBytes());
-
-            return Base64.getEncoder().encodeToString(hashBytes); // Return the hashed password as a Base64-encoded string
-        } catch (Exception e) {
-            throw new RuntimeException("Error hashing password", e);
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid email or user does not exist.");
         }
+
+        // Validate the password using BCrypt
+        if (!validatePassword(password, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid password.");
+        }
+
+        return user; // Login successful
     }
 
-    // Other service methods...
-    public String getUserFullName(Long userId) {
-        // Fetch user by userId
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        // Return the fullName using the getter method
-        return user.getFullName();
+    /**
+     * Generate a secure verification code.
+     *
+     * @return a random 6-digit verification code
+     */
+    public String generateVerificationCode() {
+        Random random = new SecureRandom();
+        StringBuilder code = new StringBuilder(VERIFICATION_CODE_LENGTH);
+        for (int i = 0; i < VERIFICATION_CODE_LENGTH; i++) {
+            code.append(random.nextInt(10)); // Append random digit (0-9)
+        }
+        return code.toString();
     }
 
+    /**
+     * Check if an email is already registered.
+     *
+     * @param email the email to check
+     * @return true if the email is registered, false otherwise
+     */
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * Get user by email.
+     *
+     * @param email the email to search for
+     * @return the user associated with the email
+     */
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    /**
+     * Hash a password using BCrypt.
+     *
+     * @param password the plain-text password
+     * @return the hashed password
+     */
+    public String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+    /**
+     * Validate a password against a hashed password.
+     *
+     * @param password       the plain-text password
+     * @param hashedPassword the hashed password
+     * @return true if the passwords match, false otherwise
+     */
+    public boolean validatePassword(String password, String hashedPassword) {
+        return BCrypt.checkpw(password, hashedPassword);
+    }
 }
