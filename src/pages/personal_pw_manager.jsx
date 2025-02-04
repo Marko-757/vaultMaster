@@ -5,8 +5,13 @@ import PasswordInformation from "../components/passwordInformation";
 import AddPasswordForm from "../components/addPasswordForm";
 import AddFolderForm from "../components/addFolderForm";
 import "./personal_pw_manager.css";
+import { useNavigate } from "react-router";
 
-function PersonalPwManager() {
+
+export function PersonalPwManager() {
+  const navigate = useNavigate;
+
+
   const [passwords, setPasswords] = useState([]);
   const [passwordFolders, setPasswordFolders] = useState([]);
   const [fileFolders, setFileFolders] = useState([]);

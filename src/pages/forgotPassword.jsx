@@ -1,7 +1,10 @@
 import React from "react";
 import "./forgotPassword.css";
+import { useNavigate } from "react-router";
 
-const ForgotPassword = () => {
+
+export const ForgotPassword = () => {
+  const navigate = useNavigate;
   return (
     <div className="forgot-password-container">
       <div className="forgot-password-form">

@@ -29,6 +29,18 @@ body {
     width: 300px;
   }
   
+  /* Full Name textbox */
+  .fullname-input {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  .fullname-input input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
 
   /* Email textbox */
   .email-input {
@@ -42,6 +54,29 @@ body {
     border: 1px solid #ccc;
   }
 
+  /* Email Verification textbox */
+  .emailVerify-input {
+    margin-bottom: 15px;
+    text-align: left;
+    }
+  .emailVerify-input input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  /* Phone Number textbox */
+  .phone-input {
+    margin-bottom: 15px;
+    text-align: left;
+    }
+    .phone-input input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+  }
 
   /* Password textbox */
   .password-input {
@@ -55,7 +90,17 @@ body {
     border: 1px solid #ccc;
   }
 
-
+  /* Password Verification textbox */
+  .passwordVerify-input {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  .passwordVerify-input input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
   
   .form-group input {
     width: 100%;
