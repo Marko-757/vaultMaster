@@ -1,0 +1,180 @@
+/* Scoped styles for the verification form */
+.verification-form *,
+.verification-form ::before,
+.verification-form ::after {
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.verification-form {
+  --spacing: 8px;
+  --background1: #f0f0f0; /* Light gray */
+  --background2: white; /* White */
+  --background3: #e0e0e0; /* Slightly darker gray */
+  --brand1: #007bff; /* Blue */
+  --text1: #333; /* Dark gray */
+  --text2: #666; /* Medium gray */
+}
+
+.verification-form body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--background1);
+  gap: var(--spacing);
+  color: var(--text1);
+  padding: calc(var(--spacing) * 2);
+  font-size: 1.5rem;
+}
+
+@media only screen and (max-width: 600px) {
+  .verification-form body {
+    font-size: 1rem;
+  }
+}
+
+.verification-form a {
+  color: var(--brand1);
+  text-decoration: none;
+}
+
+.verification-form code {
+  background: var(--background3);
+}
+
+.verification-form .cp-pen-embed .codepen-link {
+  display: none;
+}
+
+/* General container for 2FA form */
+.verification-form .twofa-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--background1);
+  padding: 20px;
+}
+
+/* 2FA form styling */
+.verification-form .twofa-form {
+  background-color: var(--background2);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  color: var(--text1);
+}
+
+.verification-form .twofa-form h1 {
+  margin-bottom: 20px;
+}
+
+.verification-form .twofa-form p {
+  font-size: 1em;
+  margin-bottom: 30px;
+  color: var(--text2);
+}
+
+/* Code input styling */
+.verification-form .code-input {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.verification-form .twofa-input label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.verification-form .code-input input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc; /* Default border */
+  background: var(--background2);
+  color: var(--text1);
+  outline: 2px solid transparent; /* Transparent outline by default */
+  transition: outline 0.2s ease, border 0.2s ease; /* Smooth transition */
+}
+
+.verification-form .code-input input:focus {
+  outline: 2px solid var(--brand1); /* Highlight on focus */
+  border: 1px solid var(--brand1); /* Optional: Change border color on focus */
+}
+
+/* Number code styling */
+.verification-form .number-code > div {
+  display: flex;
+  gap: calc(var(--spacing) * 2);
+}
+
+.verification-form .number-code input {
+  font-size: 1.5em;
+  width: 1em;
+  text-align: center;
+  flex: 1 0 1em;
+  padding: var(--spacing);
+  border-radius: calc(var(--spacing) / 2);
+  background: var(--background2);
+  color: var(--text1);
+  border: 1px solid #ccc; /* Default border */
+  outline: 2px solid transparent; /* Transparent outline by default */
+  transition: outline 0.2s ease, border 0.2s ease; /* Smooth transition */
+}
+
+.verification-form .number-code input:focus {
+  outline: 2px solid var(--brand1); /* Highlight on focus */
+  border: 1px solid var(--brand1); /* Optional: Change border color on focus */
+}
+
+/* Submit button styling */
+.verification-form .submit-button {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--brand1);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: all cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
+}
+
+.verification-form .submit-button:hover {
+  background-color: #0056b3; /* Darker blue */
+}
+
+/* Back to login link */
+.verification-form .back-to-login {
+  display: block;
+  margin-top: 20px;
+  color: var(--brand1);
+  text-decoration: none;
+}
+
+.verification-form .back-to-login:hover {
+  text-decoration: underline;
+}
+
+/* Content area styling */
+.verification-form .content-area {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 2);
+  background: var(--background2);
+  padding: var(--spacing);
+  border-radius: var(--spacing);
+  max-width: min(100%, 50rem);
+}
+
+.verification-form .content-area p {
+  color: var(--text2);
+  font-size: 0.8em;
+}

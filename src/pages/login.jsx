@@ -14,7 +14,7 @@ export const Login = () => {
     console.log("Logging in...");
 
     // Redirect to the Personal Password Manager page
-    navigate("/personal-pw-manager");
+    navigate("/2fa");
   };
 
   return (

@@ -12,6 +12,7 @@ import {
 import Login from './pages/login';
 import Signup from './pages/signup';
 import forgotPassword from './pages/forgotPassword';
+import TwoFA from './pages/2fa';
 
 
 const router = createBrowserRouter(
@@ -20,6 +21,7 @@ const router = createBrowserRouter(
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<Signup />} />
       <Route path='forgotPassword' element={forgotPassword}></Route>
+      <Route path='2fa' element={TwoFA}></Route>
       {/* <Route path="/" index element={<Home />} />
       <Route path="/forgot-password" Component={ForgotPassword} /> */}
     </Route>
