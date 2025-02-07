@@ -1,42 +1,51 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import {
   createBrowserRouter,
-  createRoutesFromElements,
   RouterProvider,
   Route,
 } from 'react-router-dom';
 import Login from './pages/login';
 import Signup from './pages/signup';
-import forgotPassword from './pages/forgotPassword';
+import ForgotPassword from './pages/forgotPassword';
 import TwoFA from './pages/2fa';
+import PersonalPwManager from './pages/personal_pw_manager';
+import App from './App';
 
-
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<App />}>
-      <Route path="login" element={<Login />} />
-      <Route path="signup" element={<Signup />} />
-      <Route path='forgotPassword' element={forgotPassword}></Route>
-      <Route path='2fa' element={TwoFA}></Route>
-      {/* <Route path="/" index element={<Home />} />
-      <Route path="/forgot-password" Component={ForgotPassword} /> */}
-    </Route>
-  )
-);
-
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+  },
+  {
+    path: 'login',
+    element: <Login />,
+  },
+  {
+    path: 'signup',
+    element: <Signup />,
+  },
+  {
+    path: 'forgotPassword',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '2fa',
+    element: <TwoFA />,
+  },
+  {
+    path: 'personal-pw-manager',
+    element: <PersonalPwManager />,
+  },
+]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

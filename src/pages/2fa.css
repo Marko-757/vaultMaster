@@ -17,36 +17,15 @@
   --text2: #666; /* Medium gray */
 }
 
+/* Ensure the body takes up the full height and centers its content */
 .verification-form body {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   min-height: 100vh;
   background: var(--background1);
-  gap: var(--spacing);
-  color: var(--text1);
-  padding: calc(var(--spacing) * 2);
-  font-size: 1.5rem;
-}
-
-@media only screen and (max-width: 600px) {
-  .verification-form body {
-    font-size: 1rem;
-  }
-}
-
-.verification-form a {
-  color: var(--brand1);
-  text-decoration: none;
-}
-
-.verification-form code {
-  background: var(--background3);
-}
-
-.verification-form .cp-pen-embed .codepen-link {
-  display: none;
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
 }
 
 /* General container for 2FA form */
@@ -54,9 +33,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  width: 100%; /* Ensure it takes up the full width */
+  min-height: 100vh; /* Ensure it takes up the full viewport height */
   background-color: var(--background1);
-  padding: 20px;
+  padding: 20px; /* Add some padding for smaller screens */
 }
 
 /* 2FA form styling */
@@ -64,7 +44,7 @@
   background-color: var(--background2);
   padding: 40px;
   width: 100%;
-  max-width: 400px;
+  max-width: 400px; /* Limit the width for larger screens */
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -117,9 +97,9 @@
 
 .verification-form .number-code input {
   font-size: 1.5em;
-  width: 1em;
+  width: 1.5em; /* Slightly wider for better visibility */
   text-align: center;
-  flex: 1 0 1em;
+  flex: 1 0 1.5em;
   padding: var(--spacing);
   border-radius: calc(var(--spacing) / 2);
   background: var(--background2);

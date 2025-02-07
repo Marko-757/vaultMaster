@@ -11,12 +11,10 @@ body {
     background-color: #f0f0f0;
   }
   
-  .signup-left, .signup-right {
+
+  .signup-left {
     width: 50%;
     padding: 20px;
-  }
-  
-  .signup-left {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -132,17 +130,17 @@ body {
   .login a {
     color: #007bff;
   }
-  
+
   .signup-right {
+    width: 50%;
     background: linear-gradient(to right, #6a11cb, #2575fc);
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    height: 100%;
+
   }
-  
 
   .vault-master-right-side {
     font-size: 50px;

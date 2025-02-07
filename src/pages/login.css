@@ -1,119 +1,111 @@
 /* General styles */
-body {
-    font-family: Arial, sans-serif;
-  }
-  
-  .login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f0f0;
-  }
-  
-  .login-left, .login-right {
-    width: 50%;
-    padding: 20px;
-  }
-  
-  .login-left {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
-    height: 100%;
-  }
-  
-  .login-form {
-    text-align: center;
-    width: 300px;
-  }
-  
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* Prevents scrolling */
+  font-family: Arial, sans-serif;
+}
 
-  /* Email textbox */
-  .email-input {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  .email-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f0f0f0;
+}
 
+/* Left Side */
+.login-left {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
 
-  /* Password textbox */
-  .password-input {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  .password-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+.login-form {
+  text-align: center;
+  width: 300px;
+}
 
+/* Input Fields */
+.email-input, .password-input {
+  margin-bottom: 15px;
+  text-align: left;
+}
 
-  
-  .form-group input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  
-  .forgot-password {
-    display: block;
-    text-align: right;
-    margin-bottom: 20px;
-  }
-  
-  .login-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .signup {
-    margin-top: 10px;
-  }
-  
-  .signup a {
-    color: #007bff;
-  }
-  
-  .login-right {
-    background: linear-gradient(to right, #6a11cb, #2575fc);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: 100%;
-  }
-  
+.email-input input, .password-input input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
 
-  .vault-master-right-side {
-    font-size: 50px;
-    font-weight: bold;
-    text-align: center;
-  }
+/* Forgot Password */
+.forgot-password {
+  display: block;
+  text-align: right;
+  margin-bottom: 20px;
+}
 
-  .protection-section img {
-    width: 100px;
-    margin-bottom: 20px;
-  }
-  
-  .protection-section p {
-    font-size: 2.2em;
-    font-weight: bold;
-    text-align: center;
-    margin: 0;
-  }
-  
+/* Login Button */
+.login-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.signup {
+  margin-top: 10px;
+}
+
+.signup a {
+  color: #007bff;
+}
+
+/* Right Side */
+.login-right {
+  width: 50%;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.right-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Centering the Logo */
+.loginLogo {
+  width: 300px; /* Adjust size as needed */
+  margin-bottom: 20px;
+}
+
+/* VaultMaster Text */
+.vault-master-right-side {
+  font-size: 250px;
+  font-weight: bold;
+  text-align: center;
+  margin: 10px 0;
+}
+
+/* Protection Section */
+.protection-section {
+  font-size: 1.5em;
+  font-style: italic;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 0;
+  max-width: 80%;
+}

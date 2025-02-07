@@ -35,44 +35,59 @@ export const TwoFA = () => {
     }
   };
 
+  const handlePaste = (event) => {
+    event.preventDefault();
+    const pasteData = event.clipboardData.getData("text").trim(); // Get pasted data
+    if (/^\d{6}$/.test(pasteData)) {
+      // Check if pasted data is a 6-digit number
+      const newCodes = pasteData.split(""); // Split into individual digits
+      setCodes(newCodes); // Update state with the new codes
+
+      // Focus on the last input box after pasting
+      inputRefs.current[5].focus();
+    }
+  };
+
   return (
-    <div className="verification-form twofa-container">
-      <div className="twofa-form">
-        <h1>2-Factor Authentication</h1>
+    <div className="verification-form">
+      <div className="twofa-container">
+        <div className="twofa-form">
+          <h1>2-Factor Authentication</h1>
 
-        <form onSubmit={handleSubmit} className="content-area">
-        <h3>Welcome Back!</h3>
-          <h4>Verify Login Code</h4>
-          
+          <form onSubmit={handleSubmit} className="content-area">
+            <h3>Welcome Back!</h3>
+            <h4>Enter Verification Code</h4>
 
-          <fieldset className="number-code">
-            <legend>Security Code</legend>
-            <div>
-              {codes.map((code, index) => (
-                <input
-                  key={index}
-                  name="code"
-                  className="code-input"
-                  type="text"
-                  value={code}
-                  onChange={(e) => handleInputChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  ref={(el) => (inputRefs.current[index] = el)} // Assign ref to each input
-                  maxLength={1} // Limit to one character
-                  required
-                />
-              ))}
-            </div>
-          </fieldset>
-          <p>
-            <a href="#">Resend Code</a>
-          </p>
-          <input type="submit" value="Submit" className="submit-button" />
-        </form>
+            <fieldset className="number-code">
+              <legend>Security Code</legend>
+              <div>
+                {codes.map((code, index) => (
+                  <input
+                    key={index}
+                    name="code"
+                    className="code-input"
+                    type="text"
+                    value={code}
+                    onChange={(e) => handleInputChange(index, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={handlePaste}
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    maxLength={1}
+                    required
+                  />
+                ))}
+              </div>
+            </fieldset>
+            <p>
+              <a href="#">Resend Code</a>
+            </p>
+            <input type="submit" value="Submit" className="submit-button" />
+          </form>
 
-        <a href="/login" className="back-to-login">
-          Back to Login
-        </a>
+          <a href="/login" className="back-to-login">
+            Back to Login
+          </a>
+        </div>
       </div>
     </div>
   );
