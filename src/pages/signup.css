@@ -1,162 +1,182 @@
 /* General styles */
 body {
-    font-family: Arial, sans-serif;
-  }
-  
-  .signup-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f0f0;
-  }
-  
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
 
-  .signup-left {
-    width: 50%;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
-    height: 100%;
-  }
-  
-  .signup-form {
-    text-align: center;
-    width: 300px;
-  }
-  
-  /* Full Name textbox */
-  .fullname-input {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  .fullname-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+/* Signup Page Container */
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f0f0;
+}
+
+/* Left Side of Signup */
+.signup-left {
+  width: 50%;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  height: 100%;
+}
+
+/* Signup Form */
+.signup-form {
+  text-align: center;
+  width: 300px;
+}
+
+/* Error Messages */
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.error-message-inline {
+  color: red;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+/* Input Fields (Consistent Styling) */
+input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; /* Ensures padding does not affect width */
+}
+
+/* Form Field Containers */
+.fullname-input,
+.email-input,
+.emailVerify-input,
+.phone-input,
+.password-input,
+.passwordVerify-input {
+  margin-bottom: 15px;
+  text-align: left;
+  position: relative; /* Needed for error messages to align */
+}
+
+/* Password Strength Criteria */
+.password-criteria {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.password-criteria p {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.valid {
+  color: green;
+}
+
+.invalid {
+  color: red;
+}
+
+/* Ensure all input fields are the same size */
+.password-field {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+/* Toggle Password Visibility Icon */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  color: #555;
+  font-size: 18px;
+}
 
 
-  /* Email textbox */
-  .email-input {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  .email-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+/* Signup Button */
+.signup-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
 
-  /* Email Verification textbox */
-  .emailVerify-input {
-    margin-bottom: 15px;
-    text-align: left;
-    }
-  .emailVerify-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+.signup-button:hover {
+  background-color: #0056b3;
+}
 
-  /* Phone Number textbox */
-  .phone-input {
-    margin-bottom: 15px;
-    text-align: left;
-    }
-    .phone-input input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-  }
+/* Forgot Password & Navigation Links */
+.forgot-password, .nav-link {
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: underline;
+}
 
-  /* Password textbox */
-  .password-input {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  .password-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
+.forgot-password:hover, .nav-link:hover {
+  color: #0056b3;
+}
 
-  /* Password Verification textbox */
-  .passwordVerify-input {
-    margin-bottom: 15px;
-    text-align: left;
-  }
-  .passwordVerify-input input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-  
-  .forgot-password {
-    display: block;
-    text-align: right;
-    margin-bottom: 20px;
-  }
-  
-  .signup-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .login {
-    margin-top: 10px;
-  }
-  
-  .login a {
-    color: #007bff;
-  }
+/* Login Navigation */
+.login {
+  margin-top: 10px;
+}
 
-  .signup-right {
-    width: 50%;
-    background: linear-gradient(to right, #6a11cb, #2575fc);
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+.login a {
+  color: #007bff;
+  text-decoration: none;
+}
 
-  }
+.login a:hover {
+  text-decoration: underline;
+}
 
-  .vault-master-right-side {
-    font-size: 50px;
-    font-weight: bold;
-    text-align: center;
-  }
+/* Right Side of Signup */
+.signup-right {
+  width: 50%;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
 
-  .protection-section img {
-    width: 100px;
-    margin-bottom: 20px;
-  }
-  
-  .protection-section p {
-    font-size: 2.2em;
-    font-weight: bold;
-    text-align: center;
-    margin: 0;
-  }
-  
+/* VaultMaster Branding */
+.vault-master-right-side {
+  font-size: 50px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.protection-section img {
+  width: 100px;
+  margin-bottom: 20px;
+}
+
+.protection-section p {
+  font-size: 2.2em;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}

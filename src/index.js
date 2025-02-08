@@ -6,7 +6,9 @@ import {
   createBrowserRouter,
   RouterProvider,
   Route,
+  Navigate,
 } from 'react-router-dom';
+import AuthLayout from './pages/authLayout'; // Shared layout for Login/Signup
 import Login from './pages/login';
 import Signup from './pages/signup';
 import ForgotPassword from './pages/forgotPassword';
@@ -14,30 +16,35 @@ import TwoFA from './pages/2fa';
 import PersonalPwManager from './pages/personal_pw_manager';
 import App from './App';
 
+// Define the router with correct paths
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <App />,
+    path: "/",
+    element: <Navigate to="/auth/login" replace />, // Redirect to login
   },
   {
-    path: 'login',
-    element: <Login />,
+    path: "/auth", // Authentication pages under `/auth`
+    element: <AuthLayout />, // Shared layout for login/signup
+    children: [
+      { path: "login", element: <Login /> },
+      { path: "signup", element: <Signup /> },
+    ],
   },
   {
-    path: 'signup',
-    element: <Signup />,
-  },
-  {
-    path: 'forgotPassword',
+    path: "/forgotPassword",
     element: <ForgotPassword />,
   },
   {
-    path: '2fa',
+    path: "/2fa",
     element: <TwoFA />,
   },
   {
-    path: 'personal-pw-manager',
+    path: "/personal-pw-manager",
     element: <PersonalPwManager />,
+  },
+  {
+    path: "*",
+    element: <h1>404 - Page Not Found</h1>, // Handles unknown routes
   },
 ]);
 

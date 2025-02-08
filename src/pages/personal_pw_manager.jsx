@@ -8,10 +8,7 @@ import "./personal_pw_manager.css";
 import { useNavigate } from "react-router";
 
 
-export function PersonalPwManager() {
-  const navigate = useNavigate;
-
-
+function PersonalPwManager() {
   const [passwords, setPasswords] = useState([]);
   const [passwordFolders, setPasswordFolders] = useState([]);
   const [fileFolders, setFileFolders] = useState([]);
