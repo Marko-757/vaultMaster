@@ -1,0 +1,50 @@
+.home-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    background-color: #f4f4f4;
+  }
+  
+  .logo {
+    width: 150px;
+    margin-bottom: 20px;
+  }
+  
+  h1 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 30px;
+  }
+  
+  button {
+    width: 200px;
+    padding: 10px;
+    margin: 10px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .personal-button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .personal-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .teams-button {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .teams-button:hover {
+    background-color: #0056b3;
+  }
+  
