@@ -84,7 +84,7 @@ export const TwoFA = () => {
             <input type="submit" value="Submit" className="submit-button" />
           </form>
 
-          <a href="/login" className="back-to-login">
+          <a href="/auth/login" className="back-to-login">
             Back to Login
           </a>
         </div>

@@ -23,7 +23,7 @@ export const ForgotPassword = () => {
           </button>
         </form>
         
-        <a href="/login" className="back-to-login">Back to Login</a>
+        <a href="/auth/login" className="back-to-login">Back to Login</a>
       </div>
     </div>
   );
