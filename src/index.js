@@ -41,11 +41,11 @@ const router = createBrowserRouter([
     element: <TwoFA />,
   },
   {
-    path: "/personal-pw-manager",
+    path: "/personal",
     element: <PersonalPwManager />,
   },
   {
-    path: "/teams-pw-manager",
+    path: "/team",
     element: <TeamPwManager />,
   },
   {
