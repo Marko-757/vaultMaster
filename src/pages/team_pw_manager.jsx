@@ -5,6 +5,30 @@ const TeamPwManager = () => {
   const [teams, setTeams] = useState(["My Company 1", "My Company 2"]);
   const [memberships, setMemberships] = useState(["My Membership 1", "My Membership 2"]);
   const [selectedTeam, setSelectedTeam] = useState(teams[0]);
+  // Track which view is active. Null for the default view.
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  // Dummy employee data for "My Members"
+  const [employees] = useState([
+    {
+      id: 1,
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com",
+      phone: "123-456-7890",
+      roles: "Manager",
+      photo: "https://via.placeholder.com/50",
+    },
+    {
+      id: 2,
+      firstName: "Jane",
+      lastName: "Smith",
+      email: "jane.smith@example.com",
+      phone: "987-654-3210",
+      roles: "Developer",
+      photo: "https://via.placeholder.com/50",
+    },
+  ]);
 
   // add a new team
   const addTeam = () => {
@@ -39,6 +63,23 @@ const TeamPwManager = () => {
     }
   };
 
+  // Render a horizontal row for each member
+  const renderMemberRow = (member) => (
+    <div className="member-row" key={member.id}>
+      <img
+        src={member.photo}
+        alt={`${member.firstName} ${member.lastName}`}
+        className="member-photo"
+      />
+      <div className="member-name">
+        {member.firstName} {member.lastName}
+      </div>
+      <div className="member-email">{member.email}</div>
+      <div className="member-phone">{member.phone}</div>
+      <div className="member-roles">{member.roles}</div>
+    </div>
+  );
+
   return (
     <div className="teams-container">
       {/* Sidebar */}
@@ -65,11 +106,12 @@ const TeamPwManager = () => {
             </div>
           ))}
           <div className="add-button-container">
-            <button className="add-button" onClick={addTeam}>+</button>
+            <button className="add-button" onClick={addTeam}>
+              +
+            </button>
           </div>
         </div>
 
-        {/* Divider Line */}
         <hr className="divider" />
 
         <div className="sidebar-section">
@@ -91,19 +133,52 @@ const TeamPwManager = () => {
             </div>
           ))}
           <div className="add-button-container">
-            <button className="add-button" onClick={addMembership}>+</button>
+            <button className="add-button" onClick={addMembership}>
+              +
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="main-content">
-        <h1>{selectedTeam}</h1>
-        <div className="options-container">
-          <button className="option-button">Password and File Management</button>
-          <button className="option-button">My Members</button>
-          <button className="option-button">Manage Roles</button>
-        </div>
+        {selectedOption === "members" ? (
+          // "My Members" view
+          <div className="members-view">
+            <div className="banner-container">
+              <div className="back-button-wrapper">
+                <button
+                  className="back-button"
+                  onClick={() => setSelectedOption(null)}
+                >
+                  Back
+                </button>
+              </div>
+              <h1 className="main-banner">My Members</h1>
+              <div className="spacer"></div>
+            </div>
+            <div className="members-roster">
+              {employees.map((employee) => renderMemberRow(employee))}
+            </div>
+          </div>
+        ) : (
+          // Default view with team header and options
+          <div>
+            <h1>{selectedTeam}</h1>
+            <div className="options-container">
+              <button className="option-button">
+                Password and File Management
+              </button>
+              <button
+                className="option-button"
+                onClick={() => setSelectedOption("members")}
+              >
+                My Members
+              </button>
+              <button className="option-button">Manage Roles</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

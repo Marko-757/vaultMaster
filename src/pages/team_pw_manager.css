@@ -1,10 +1,11 @@
+/* ---------- Existing Styles (for reference) ---------- */
+
 .teams-container {
   display: flex;
   height: 100vh;
   font-family: Arial, sans-serif;
 }
 
-/* Sidebar */
 .sidebar {
   width: 20%;
   background-color: #d1d1d1;
@@ -15,7 +16,6 @@
   gap: 20px;
 }
 
-/* Headers */
 .sidebar-section {
   display: flex;
   flex-direction: column;
@@ -31,14 +31,12 @@
   width: 100%;
 }
 
-/* Divider Line */
 .divider {
   width: 90%;
   border: 1px solid #b0b0b0;
   margin: 10px 0;
 }
 
-/* Team & Membership Buttons */
 .team-button,
 .membership-button {
   background-color: #007bff;
@@ -51,7 +49,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%; 
+  width: 100%;
   max-width: 250px;
   position: relative;
 }
@@ -60,7 +58,6 @@
   background-color: #0056b3;
 }
 
-/* Trash Can Inside Name */
 .delete-icon {
   font-size: 18px;
   cursor: pointer;
@@ -71,7 +68,6 @@
   color: red;
 }
 
-/* Add Button - Centered in Sidebar */
 .add-button-container {
   display: flex;
   justify-content: center;
@@ -79,7 +75,6 @@
   margin-top: 10px;
 }
 
-/* Plus Sign in Circle */
 .add-button {
   background-color: #007bff;
   color: white;
@@ -99,7 +94,6 @@
   background-color: #0056b3;
 }
 
-/* Main Content */
 .main-content {
   flex: 1;
   padding: 20px;
@@ -107,7 +101,7 @@
   background-color: #fff;
 }
 
-/* Centered Black Title */
+/* Default banner styling for non-members view */
 .main-content h1 {
   font-size: 28px;
   font-weight: bold;
@@ -119,7 +113,6 @@
   margin: 0 auto 40px;
 }
 
-/* Buttons Section */
 .options-container {
   display: flex;
   justify-content: center;
@@ -145,4 +138,94 @@
 
 .option-button:hover {
   background-color: #00338d;
+}
+
+/* ---------- New/Updated Styles for "My Members" View ---------- */
+
+/* Grid container matching the default 80% banner layout:
+   left 10% for the back button, center 80% for the banner, right 10% spacer */
+.banner-container {
+  display: grid;
+  grid-template-columns: 10% 80% 10%;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+/* Back button centered in its grid cell */
+.back-button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.back-button {
+  background-color: #004aad;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #00338d;
+}
+
+/* The banner uses the same styling as the default h1 but no auto margins */
+.main-banner {
+  font-size: 28px;
+  font-weight: bold;
+  background-color: black;
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  width: 100%;
+}
+
+/* Spacer is an empty grid cell to balance the layout */
+.spacer {
+  /* empty */
+}
+
+.members-view {
+  padding: 20px;
+}
+
+.members-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Each member row in a single horizontal line */
+.member-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-bottom: 1px solid #d1d1d1;
+  padding: 10px 0;
+}
+
+.member-photo {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin-right: 20px;
+}
+
+.member-name,
+.member-email,
+.member-phone,
+.member-roles {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  margin: 0 10px;
+}
+
+.member-name {
+  font-weight: bold;
+  flex: 1.5;
 }
