@@ -1,0 +1,124 @@
+/* Container */
+.profile-settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+  }
+  
+  /* Back Button */
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Profile Content */
+  .profile-content {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 60%;
+  }
+  
+  /* Profile Picture */
+  .profile-section {
+    text-align: center;
+    flex: 1;
+  }
+  
+  .profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ccc;
+    transition: opacity 0.3s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .profile-picture-label:hover .profile-picture {
+    opacity: 0.7;
+  }
+  
+  /* Profile Picture Upload Text */
+  .profile-section p {
+    margin-top: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #007bff;
+  }
+  
+  /* Settings Form */
+  .settings-form {
+    flex: 2;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .settings-form h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  /* Form Group */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .form-group input {
+    padding: 10px;
+    border: 2px solid black;
+    border-radius: 10px;
+    outline: none;
+    font-size: 16px;
+    background: white;
+    width: 100%;
+  }
+  
+  /* Save Button */
+  .save-button {
+    background: #004aad;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    align-self: flex-start;
+    margin-top: 20px;
+    transition: 0.3s;
+  }
+  
+  .save-button:hover {
+    background: #00338d;
+  }
+  

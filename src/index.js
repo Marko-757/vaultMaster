@@ -17,6 +17,7 @@ import PersonalPwManager from './pages/personal_pw_manager';
 import Home from './pages/home';
 import App from './App';
 import TeamPwManager from './pages/team_pw_manager';
+import ProfileSettings from './pages/profileSettings';
 
 // Define the router with correct paths
 const router = createBrowserRouter([
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
   {
     path: "/home",
     element: <Home />,
+  },
+  {
+    path: "/settings",
+    element: <ProfileSettings />,
   },
   {
     path: "*",
