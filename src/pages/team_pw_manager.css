@@ -1,0 +1,24 @@
+.pw-manager-container {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+  }
+  
+  .sidebar {
+    width: 20%;
+    background-color: #f4f4f4;
+  }
+  
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+  }
+  
+  .placeholder {
+    color: #888;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 50px;
+  }
+  

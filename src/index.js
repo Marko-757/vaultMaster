@@ -14,6 +14,7 @@ import Signup from './pages/signup';
 import ForgotPassword from './pages/forgotPassword';
 import TwoFA from './pages/2fa';
 import PersonalPwManager from './pages/personal_pw_manager';
+import TeamPwManager from './pages/team_pw_manager';
 import App from './App';
 
 // Define the router with correct paths
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
   {
     path: "/personal-pw-manager",
     element: <PersonalPwManager />,
+  },
+  {
+    path: "/team-pw-manager",
+    element: <TeamPwManager />,
   },
   {
     path: "*",

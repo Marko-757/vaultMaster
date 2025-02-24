@@ -1,61 +1,77 @@
-.sidebar-container {
-  padding: 10px;
-  background-color: #e0e0e0;
-  border-radius: 5px;
-}
-
-.sidebar-list {
-  list-style: none;
-  padding: 0;
-}
-
-.all-items,
-.sidebar-item {
+/* Left Sidebar with Off-White Background */
+.sidebar {
+  width: 20%;
+  background-color: #f7f7f7; 
+  padding: 15px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 10px;
-  margin: 5px 0;
-  background-color: #007bff;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
+  gap: 15px;
 }
 
-.all-items:hover,
-.sidebar-item:hover {
-  background-color: #0056b3;
+/* Top Sidebar Heading */
+.sidebar-heading {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.sidebar-heading-top {
+  font-size: 28px;
+  font-weight: bold;
+}
+.sidebar-heading-bottom {
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.folder-name {
+/* Divider between Top Header and Sections */
+.divider {
+  width: 90%;
+  border: 1px solid #ccc;
+  margin: 8px 0;
+}
+
+/* Section Header with Add Button (using Flexbox) */
+.section-header {
+  width: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+.section-header h2 {
+  font-size: 20px;
+  margin: 0;
+  text-align: center;
   flex-grow: 1;
-  cursor: pointer;
 }
-
-.delete-button {
-  background: none;
+.section-add-button {
+  background: transparent;
   border: none;
-  color: white;
+  font-size: 26px;
+  font-weight: bold;
+  color: #007bff;
   cursor: pointer;
   margin-left: 10px;
-}
-
-.delete-button:hover {
-  color: #f44336;
-}
-
-.add-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 50%;
+  padding: 0;
   width: 30px;
   height: 30px;
-  font-size: 20px;
-  cursor: pointer;
-  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+.section-add-button:hover {
+  color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.1);
 }
 
-.add-button:hover {
-  background-color: #0056b3;
+/* Sidebar Section */
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
