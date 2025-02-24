@@ -1,172 +1,181 @@
 import React, { useState } from "react";
+import ManageRoles from "../components/manageRoles";
+import MyMembers from "../components/myMembers";
+import PasswordAndFileManagement from "../components/passwordAndFileManagement";
 import "./team_pw_manager.css";
 
 const TeamPwManager = () => {
-  const [teams, setTeams] = useState(["My Company 1", "My Company 2"]);
-  const [memberships, setMemberships] = useState(["My Membership 1", "My Membership 2"]);
+  const [teams, setTeams] = useState([
+    "My Company 1",
+    "My Company 2",
+    "My Company 3",
+    "My Company 4",
+  ]);
+  const [memberships, setMemberships] = useState([
+    "My Membership 1",
+    "My Membership 2",
+    "My Membership 3",
+    "My Membership 4",
+  ]);
   const [selectedTeam, setSelectedTeam] = useState(teams[0]);
-  // Track which view is active. Null for the default view.
   const [selectedOption, setSelectedOption] = useState(null);
 
-  // Dummy employee data for "My Members"
-  const [employees] = useState([
-    {
-      id: 1,
-      firstName: "John",
-      lastName: "Doe",
-      email: "john.doe@example.com",
-      phone: "123-456-7890",
-      roles: "Manager",
-      photo: "https://via.placeholder.com/50",
-    },
-    {
-      id: 2,
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane.smith@example.com",
-      phone: "987-654-3210",
-      roles: "Developer",
-      photo: "https://via.placeholder.com/50",
-    },
-  ]);
+  const [expandedTeams, setExpandedTeams] = useState(false);
+  const [expandedMemberships, setExpandedMemberships] = useState(false);
 
-  // add a new team
-  const addTeam = () => {
-    const newTeam = window.prompt("Enter new team name:");
-    if (newTeam) {
-      setTeams([...teams, newTeam]);
-    }
-  };
+  const [showTeamInput, setShowTeamInput] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
 
-  // add a new membership
-  const addMembership = () => {
-    const newMembership = window.prompt("Enter new membership name:");
-    if (newMembership) {
-      setMemberships([...memberships, newMembership]);
-    }
-  };
+  const [showMembershipInput, setShowMembershipInput] = useState(false);
+  const [newMembershipName, setNewMembershipName] = useState("");
 
-  // delete a team
-  const deleteTeam = (team) => {
-    if (window.confirm(`Are you sure you want to delete "${team}"?`)) {
-      setTeams(teams.filter((t) => t !== team));
-      if (selectedTeam === team) {
-        setSelectedTeam(teams.length > 1 ? teams[0] : null);
-      }
-    }
-  };
-
-  // delete a membership
-  const deleteMembership = (membership) => {
-    if (window.confirm(`Are you sure you want to delete "${membership}"?`)) {
-      setMemberships(memberships.filter((m) => m !== membership));
-    }
-  };
-
-  // Render a horizontal row for each member
-  const renderMemberRow = (member) => (
-    <div className="member-row" key={member.id}>
-      <img
-        src={member.photo}
-        alt={`${member.firstName} ${member.lastName}`}
-        className="member-photo"
-      />
-      <div className="member-name">
-        {member.firstName} {member.lastName}
-      </div>
-      <div className="member-email">{member.email}</div>
-      <div className="member-phone">{member.phone}</div>
-      <div className="member-roles">{member.roles}</div>
-    </div>
-  );
+  const previewCount = 3;
+  const displayedTeams = expandedTeams ? teams : teams.slice(0, previewCount);
+  const displayedMemberships = expandedMemberships
+    ? memberships
+    : memberships.slice(0, previewCount);
 
   return (
     <div className="teams-container">
-      {/* Sidebar */}
+      {/* Left Sidebar */}
       <div className="sidebar">
+        <div className="sidebar-heading">
+          <div className="sidebar-heading-top">Teams</div>
+          <div className="sidebar-heading-bottom">Passwords & Files</div>
+        </div>
+        <hr className="divider" />
+
+        {/* Teams Section */}
         <div className="sidebar-section">
-          <h2>My Teams</h2>
-          {teams.map((team, index) => (
-            <div key={index} className="team-item">
-              <button
-                className={`team-button ${selectedTeam === team ? "active" : ""}`}
-                onClick={() => setSelectedTeam(team)}
-              >
-                <span className="team-name">{team}</span>
-                <span
-                  className="delete-icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteTeam(team);
-                  }}
-                >
-                  🗑️
-                </span>
-              </button>
-            </div>
-          ))}
-          <div className="add-button-container">
-            <button className="add-button" onClick={addTeam}>
+          <div className="section-header">
+            <h2>My Teams</h2>
+            <button
+              className="section-add-button"
+              onClick={() => setShowTeamInput(true)}
+            >
               +
             </button>
           </div>
+          <div
+            className={`teams-list-container ${expandedTeams ? "scrollable" : ""}`}
+          >
+            {displayedTeams.map((team, index) => (
+              <div key={index} className="team-item">
+                <button
+                  className={`team-button ${
+                    selectedTeam === team ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedTeam(team);
+                    setSelectedOption(null);
+                  }}
+                >
+                  <span className="team-name">{team}</span>
+                </button>
+              </div>
+            ))}
+            {showTeamInput && (
+              <div className="team-item">
+                <input
+                  type="text"
+                  className="team-input"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newTeamName.trim() !== "") {
+                      setTeams([...teams, newTeamName.trim()]);
+                      setNewTeamName("");
+                      setShowTeamInput(false);
+                    }
+                  }}
+                  autoFocus
+                  placeholder="Enter new team name"
+                />
+              </div>
+            )}
+          </div>
+          {teams.length > previewCount && (
+            <button
+              className="see-toggle-button"
+              onClick={() => setExpandedTeams(!expandedTeams)}
+            >
+              {expandedTeams ? "See Less" : "See More"}
+            </button>
+          )}
         </div>
 
         <hr className="divider" />
 
+        {/* Memberships Section */}
         <div className="sidebar-section">
-          <h2>My Memberships</h2>
-          {memberships.map((membership, index) => (
-            <div key={index} className="team-item">
-              <button className="membership-button">
-                <span className="team-name">{membership}</span>
-                <span
-                  className="delete-icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteMembership(membership);
-                  }}
-                >
-                  🗑️
-                </span>
-              </button>
-            </div>
-          ))}
-          <div className="add-button-container">
-            <button className="add-button" onClick={addMembership}>
+          <div className="section-header">
+            <h2>My Memberships</h2>
+            <button
+              className="section-add-button"
+              onClick={() => setShowMembershipInput(true)}
+            >
               +
             </button>
           </div>
+          <div
+            className={`memberships-list-container ${
+              expandedMemberships ? "scrollable" : ""
+            }`}
+          >
+            {displayedMemberships.map((membership, index) => (
+              <div key={index} className="team-item">
+                <button className="membership-button">
+                  <span className="team-name">{membership}</span>
+                </button>
+              </div>
+            ))}
+            {showMembershipInput && (
+              <div className="team-item">
+                <input
+                  type="text"
+                  className="membership-input"
+                  value={newMembershipName}
+                  onChange={(e) => setNewMembershipName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newMembershipName.trim() !== "") {
+                      setMemberships([...memberships, newMembershipName.trim()]);
+                      setNewMembershipName("");
+                      setShowMembershipInput(false);
+                    }
+                  }}
+                  autoFocus
+                  placeholder="Enter new membership name"
+                />
+              </div>
+            )}
+          </div>
+          {memberships.length > previewCount && (
+            <button
+              className="see-toggle-button"
+              onClick={() => setExpandedMemberships(!expandedMemberships)}
+            >
+              {expandedMemberships ? "See Less" : "See More"}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="main-content">
         {selectedOption === "members" ? (
-          // "My Members" view
-          <div className="members-view">
-            <div className="banner-container">
-              <div className="back-button-wrapper">
-                <button
-                  className="back-button"
-                  onClick={() => setSelectedOption(null)}
-                >
-                  Back
-                </button>
-              </div>
-              <h1 className="main-banner">My Members</h1>
-              <div className="spacer"></div>
-            </div>
-            <div className="members-roster">
-              {employees.map((employee) => renderMemberRow(employee))}
-            </div>
-          </div>
+          <MyMembers selectedTeam={selectedTeam} onBack={() => setSelectedOption(null)} />
+        ) : selectedOption === "roles" ? (
+          <ManageRoles selectedTeam={selectedTeam} onBack={() => setSelectedOption(null)} />
+        ) : selectedOption === "password" ? (
+          <PasswordAndFileManagement selectedTeam={selectedTeam} onBack={() => setSelectedOption(null)} />
         ) : (
-          // Default view with team header and options
           <div>
-            <h1>{selectedTeam}</h1>
+            <h1 className="banner">{selectedTeam}</h1>
             <div className="options-container">
-              <button className="option-button">
+              <button
+                className="option-button"
+                onClick={() => setSelectedOption("password")}
+              >
                 Password and File Management
               </button>
               <button
@@ -175,7 +184,12 @@ const TeamPwManager = () => {
               >
                 My Members
               </button>
-              <button className="option-button">Manage Roles</button>
+              <button
+                className="option-button"
+                onClick={() => setSelectedOption("roles")}
+              >
+                Manage Roles
+              </button>
             </div>
           </div>
         )}

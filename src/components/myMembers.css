@@ -1,0 +1,113 @@
+/* Banner Row - Fixed Layout */
+.banner-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Ensures fixed positions */
+    width: 100%; /* Span the entire width of .members-view */
+    padding: 10px 20px; /* Optional: Adjust padding as needed */
+    gap: 20px; /* Adds space between elements */
+    background-color: #f7f7f7; /* Optional: Add a background for debugging */
+    box-sizing: border-box; /* Include padding in the width calculation */
+    border-bottom: 2px solid #ccc;
+}
+
+/* Section Banner - Centered Text */
+.section-banner {
+    flex: 1; /* Takes up remaining space */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Ensures text is centered */
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    background-color: #333; /* Dark gray background */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 5px;
+    min-width: 300px; /* Minimum width to prevent shrinking */
+    max-width: calc(100% - 120px); /* Prevents overlap with buttons */
+    margin: 0 10px; /* Adds space between buttons and banner */
+    min-height: 50px; /* Ensures text stays vertically centered */
+}
+
+/* Back Button - Fixed on Left */
+.back-button {
+    background-color: #004aad;
+    color: white;
+    border: none;
+    padding: 6px 10px; /* Reduced padding */
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    height: 36px;
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Prevents the button from shrinking */
+}
+
+.back-button:hover {
+    background-color: #00338d;
+}
+
+/* Profile Button (Icon) - Fixed on Right, Now 50px */
+.profile-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #004aad;
+    font-size: 50px; /* Increased to 50px */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px; /* Fixed height */
+    width: 50px; /* Fixed width */
+    flex-shrink: 0; /* Prevents the button from shrinking */
+    margin-right: 20px; /* Moves the button farther from the right */
+}
+
+.profile-button:hover {
+    color: #00338d;
+}
+
+/* Members Roster - Styling for the list of members */
+.members-roster {
+    margin-top: 20px;
+}
+
+.member-row {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.member-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.member-name {
+    flex: 1;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.member-email,
+.member-phone,
+.member-roles {
+    flex: 1;
+    font-size: 16px;
+    color: #555;
+}
+
+/* Empty Message Styling */
+.empty-message {
+    text-align: center;
+    font-size: 18px;
+    color: #777;
+    margin-top: 20px;
+}

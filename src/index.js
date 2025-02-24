@@ -18,8 +18,6 @@ import Home from './pages/home';
 import App from './App';
 import TeamPwManager from './pages/team_pw_manager';
 import ProfileSettings from './pages/profileSettings';
-import ManageRoles from './pages/manageRoles';
-import PasswordAndFileManagement from './pages/passwordAndFileManagement';
 
 // Define the router with correct paths
 const router = createBrowserRouter([
@@ -58,14 +56,6 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <ProfileSettings />,
-  },
-  {
-    path: "/manage-roles",
-    element: <ManageRoles />,
-  },
-  {
-    path: "/pw-file-management",
-    element: <PasswordAndFileManagement />,
   },
   {
     path: "*",

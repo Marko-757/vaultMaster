@@ -1,24 +1,27 @@
 import React, { useState } from "react";
+import { FaUserCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; // Needed for account settings navigation
 import "./manageRoles.css";
 
-const ManageRoles = () => {
-  const [roles, setRoles] = useState([]); 
+const ManageRoles = ({ selectedTeam, onBack }) => {
+  const [roles, setRoles] = useState([]);
   const [showAddRoleModal, setShowAddRoleModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState("");
 
+  const navigate = useNavigate(); // Hook for navigation
 
   const toggleRole = (id) => {
-    setRoles(roles.map((role) =>
-      role.id === id ? { ...role, expanded: !role.expanded } : role
-    ));
+    setRoles(
+      roles.map((role) =>
+        role.id === id ? { ...role, expanded: !role.expanded } : role
+      )
+    );
   };
 
-  // Open modal for adding a role
   const openAddRoleModal = () => {
     setNewRoleName("");
     setShowAddRoleModal(true);
   };
-
 
   const addRole = () => {
     if (newRoleName.trim() !== "") {
@@ -34,7 +37,6 @@ const ManageRoles = () => {
     }
   };
 
- 
   const deleteRole = (id) => {
     if (window.confirm("Are you sure you want to delete this role?")) {
       setRoles(roles.filter((role) => role.id !== id));
@@ -43,7 +45,14 @@ const ManageRoles = () => {
 
   return (
     <div className="roles-container">
-      <div className="header">Manage Roles</div>
+      {/* Wrapper for Banner, Back Button & Profile */}
+      <div className="banner-wrapper">
+        <button className="back-button" onClick={onBack}>←</button>
+        <h2 className="section-banner">{selectedTeam} - Password and File Management</h2>
+        <button className="profile-button" onClick={() => navigate("/settings")}>
+          <FaUserCircle />
+        </button>        
+        </div>
 
       <div className="roles-list">
         {roles.map((role) => (
@@ -78,7 +87,6 @@ const ManageRoles = () => {
                   </div>
                 </div>
 
-                
                 <div className="role-actions">
                   <button className="settings-button">⚙️</button>
                   <button className="delete-button" onClick={() => deleteRole(role.id)}>🗑️</button>
@@ -89,7 +97,9 @@ const ManageRoles = () => {
         ))}
       </div>
 
-      <button className="add-role-button" onClick={openAddRoleModal}>Add Role</button>
+      <button className="add-role-button" onClick={openAddRoleModal}>
+        Add Role
+      </button>
 
       {showAddRoleModal && (
         <div className="modal">

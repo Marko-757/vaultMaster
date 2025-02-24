@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaUserCircle } from "react-icons/fa";
 import "./passwordAndFileManagement.css";
 
-const PasswordAndFileManagement = () => {
+const PasswordAndFileManagement = ({ selectedTeam, onBack }) => {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
-
   const [showModal, setShowModal] = useState(false);
   const [newItem, setNewItem] = useState({ type: "password", name: "", value: "" });
 
@@ -14,6 +16,7 @@ const PasswordAndFileManagement = () => {
     ));
   };
 
+  // Delete item with confirmation
   const deleteItem = (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
       setItems(items.filter((item) => item.id !== id));
@@ -41,43 +44,59 @@ const PasswordAndFileManagement = () => {
   };
 
   return (
-    <div className="password-file-container">
-      <div className="header">Password and File Management</div>
+    <div className="pafm-container">
+      {/* Banner Row: Back Button, Banner, and Profile Button */}
+      <div className="banner-wrapper">
+        <button className="back-button" onClick={onBack}>←</button>
+        <h2 className="section-banner">{selectedTeam} - Password and File Management</h2>
+        <button className="profile-button" onClick={() => navigate("/settings")}>
+          <FaUserCircle />
+        </button>
+      </div>
 
-      <div className="items-list">
+      <div className="pafm-items-list">
         {items.length === 0 ? (
-          <p className="empty-message">No passwords or files available. Add one using the button below.</p>
+          <p className="pafm-empty-message">
+            No passwords or files available. Add one using the button below.
+          </p>
         ) : (
           items.map((item) => (
-            <div key={item.id} className="item-card">
-              <span className="item-name">{item.name}</span>
+            <div key={item.id} className="pafm-item-card">
+              <span className="pafm-item-name">{item.name}</span>
 
-              <div className="item-actions">
+              <div className="pafm-item-actions">
                 {item.type === "password" ? (
                   <>
-                    <span className="password">{item.hidden ? "●●●●●●●●" : item.value}</span>
-                    <button className="icon-button" onClick={() => toggleVisibility(item.id)}>👁️</button>
+                    <span className="pafm-password">
+                      {item.hidden ? "●●●●●●●●" : item.value}
+                    </span>
+                    <button className="pafm-icon-button" onClick={() => toggleVisibility(item.id)}>
+                      👁️
+                    </button>
                   </>
                 ) : (
-                  <button className="icon-button">⬇️</button>
+                  <button className="pafm-icon-button">⬇️</button>
                 )}
-
-                <button className="icon-button delete" onClick={() => deleteItem(item.id)}>🗑️</button>
+                <button className="pafm-icon-button pafm-delete" onClick={() => deleteItem(item.id)}>
+                  🗑️
+                </button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      <button className="add-button" onClick={() => setShowModal(true)}>Add</button>
-
+      <button className="pafm-add-button" onClick={() => setShowModal(true)}>Add</button>
 
       {showModal && (
-        <div className="modal">
-          <div className="modal-content">
+        <div className="pafm-modal">
+          <div className="pafm-modal-content">
             <h3>Add</h3>
             <label>Type:</label>
-            <select value={newItem.type} onChange={(e) => setNewItem({ ...newItem, type: e.target.value })}>
+            <select
+              value={newItem.type}
+              onChange={(e) => setNewItem({ ...newItem, type: e.target.value })}
+            >
               <option value="password">Password</option>
               <option value="file">File</option>
             </select>
@@ -102,9 +121,9 @@ const PasswordAndFileManagement = () => {
               </>
             )}
 
-            <div className="modal-buttons">
-              <button className="confirm-button" onClick={addNewItem}>Add</button>
-              <button className="cancel-button" onClick={() => setShowModal(false)}>Cancel</button>
+            <div className="pafm-modal-buttons">
+              <button className="pafm-confirm-button" onClick={addNewItem}>Add</button>
+              <button className="pafm-cancel-button" onClick={() => setShowModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
