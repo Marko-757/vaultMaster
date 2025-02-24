@@ -1,0 +1,277 @@
+.teams-container {
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+/* Left Sidebar with Off-White Background */
+.sidebar {
+  width: 20%;
+  background-color: #f7f7f7; 
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Top Sidebar Heading */
+.sidebar-heading {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.sidebar-heading-top {
+  font-size: 28px;
+  font-weight: bold;
+}
+.sidebar-heading-bottom {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+/* Divider between Top Header and Sections */
+.divider {
+  width: 90%;
+  border: 1px solid #ccc;
+  margin: 8px 0;
+}
+
+/* Section Header with Add Button (using Flexbox) */
+.section-header {
+  width: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+.section-header h2 {
+  font-size: 20px;
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+}
+.section-add-button {
+  background: transparent;
+  border: none;
+  font-size: 26px;
+  font-weight: bold;
+  color: #007bff;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+.section-add-button:hover {
+  color: #0056b3;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Sidebar Section */
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Container for Each Entry (Team/ Membership) */
+.team-item {
+  width: 250px;
+  margin: 0 auto;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Containers for Lists with Gap */
+.teams-list-container,
+.memberships-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Scrollable List When Expanded */
+.scrollable {
+  max-height: 200px; /* Adjust as needed */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* Name Boxes (Team and Membership Buttons) */
+.team-button,
+.membership-button {
+  background-color: #336dbf; /* Medium-lighter version of #004aad */
+  color: white;
+  border: none;
+  padding: 12px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 190px; /* Increased width by 10px */
+  height: 45px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  display: block;
+  margin: 0 auto;
+}
+.team-button:hover,
+.membership-button:hover {
+  background-color: #285a9c; /* Slightly darker for hover */
+}
+.team-button:active,
+.membership-button:active {
+  transform: scale(0.98);
+}
+
+/* Team/ Membership Name Styling */
+.team-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Input Fields for Adding/Editing */
+.team-input,
+.membership-input {
+  width: 190px;
+  height: 45px;
+  padding: 12px 8px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fff;
+  color: #000;
+  display: block;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.team-input:focus,
+.membership-input:focus {
+  border-color: #5a9bd4;
+  box-shadow: 0 0 5px rgba(90, 155, 212, 0.5);
+}
+
+/* Add Button Container & Button (if needed) */
+.add-button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+}
+.add-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.add-button:hover {
+  background-color: #0056b3;
+}
+.add-button:active {
+  transform: scale(0.95);
+}
+
+/* See More / See Less Button */
+.see-toggle-button {
+  background: transparent;
+  border: none;
+  color: #004aad;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 5px;
+  transition: color 0.3s ease;
+}
+.see-toggle-button:hover {
+  color: #00338d;
+}
+
+/* Section Banner for Right-Side Menus */
+.section-banner {
+  display: flex;
+  align-items: center;
+  background-color: #333; /* Darker gray */
+  color: #fff;
+  padding: 10px;
+  height: 35px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+.back-button {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+/* Main Content Area */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  background-color: #fff;
+}
+.main-content h1 {
+  font-size: 28px;
+  font-weight: bold;
+  background-color: #333; /* Darker gray instead of black */
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 80%;
+  margin: 0 auto 40px;
+}
+
+/* Options Container for Main Content Buttons */
+.options-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+.option-button {
+  background-color: #004aad;
+  color: white;
+  border: none;
+  padding: 30px;
+  font-size: 16px;
+  border-radius: 20px;
+  width: 220px;
+  height: 100px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+.option-button:hover {
+  background-color: #00338d;
+}
+.option-button:active {
+  transform: scale(0.98);
+}
+
+/* Roles View (unchanged apart from banner) */
+.roles-view {
+  padding: 20px;
+  text-align: center;
+}
