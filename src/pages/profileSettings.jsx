@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import "./profileSettings.css";
 import defaultProfilePic from "../Assets/defaultProfileImage.png";
+import { useNavigate } from "react-router-dom";
 
 const ProfileSettings = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -38,8 +40,7 @@ const ProfileSettings = () => {
 
   return (
     <div className="profile-settings-container">
-      <button className="back-button">⬅</button>
-
+      <button className="back-button" onClick={() => navigate("/team")}></button>
       <div className="profile-content">
         {/* Profile Picture Section */}
         <div className="profile-section">

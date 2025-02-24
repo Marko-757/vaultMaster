@@ -11,7 +11,7 @@
     border-bottom: 2px solid #ccc;
 }
 
-/* Section Banner - Centered Text */
+/* Section Banner */
 .section-banner {
     flex: 1; /* Takes up remaining space */
     display: flex;
@@ -30,21 +30,21 @@
     min-height: 50px; /* Ensures text stays vertically centered */
 }
 
-/* Back Button - Fixed on Left */
+/* Back Button */
 .back-button {
     background-color: #004aad;
     color: white;
     border: none;
-    padding: 6px 10px; /* Reduced padding */
+    padding: 6px 10px; 
     font-size: 16px;
     border-radius: 6px;
     cursor: pointer;
-    height: 36px;
-    width: 36px;
+    height: 45px;
+    width: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0; /* Prevents the button from shrinking */
+    flex-shrink: 0; 
 }
 
 .back-button:hover {

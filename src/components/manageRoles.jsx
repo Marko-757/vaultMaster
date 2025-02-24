@@ -48,7 +48,7 @@ const ManageRoles = ({ selectedTeam, onBack }) => {
       {/* Wrapper for Banner, Back Button & Profile */}
       <div className="banner-wrapper">
         <button className="back-button" onClick={onBack}>←</button>
-        <h2 className="section-banner">{selectedTeam} - Password and File Management</h2>
+        <h2 className="section-banner">{selectedTeam} - Manage Roles</h2>
         <button className="profile-button" onClick={() => navigate("/settings")}>
           <FaUserCircle />
         </button>        
