@@ -20,7 +20,7 @@ function AddPasswordForm({ folders, selectedFolder, onSave, onCancel }) {
     if (formData.name && formData.username && formData.password) {
       onSave(formData);
     } else {
-      alert("Please fill out all fields.");
+      alert("Please fill out all required fields.");
     }
   };
 
@@ -69,7 +69,11 @@ function AddPasswordForm({ folders, selectedFolder, onSave, onCancel }) {
           </option>
         ))}
       </select>
-      <PasswordGenerator onGenerate={(password) => setFormData({ ...formData, password })} />
+      <PasswordGenerator
+        onGenerate={(password) =>
+          setFormData({ ...formData, password })
+        }
+      />
       <div className="form-buttons">
         <button onClick={handleSave}>Save</button>
         <button onClick={onCancel}>Cancel</button>
