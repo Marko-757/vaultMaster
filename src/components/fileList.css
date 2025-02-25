@@ -1,71 +1,150 @@
-.file-list {
-  padding: 10px;
+.password-list {
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .password-item {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.password-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  background-color: #a3c2ff;
   padding: 10px;
-  margin: 5px 0;
-  border: 1px solid #007bff;
-  border-radius: 5px;
-  cursor: pointer;
 }
 
-.password-item:hover {
-  background-color: #f0f0f0;
-}
-
-.delete-button {
-  background: none;
-  border: none;
-  color: red;
-  cursor: pointer;
-}
-
-.add-button-container {
-  position: relative;
-  margin-top: 10px;
-}
-
-.add-button {
-  background-color: #007bff;
+.password-name {
+  font-size: 16px;
+  font-weight: bold;
+  flex-grow: 1;
   color: white;
+}
+
+.expand-button,
+.edit-button,
+.delete-button {
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 20px;
+  font-size: 16px;
   cursor: pointer;
+  margin-left: 8px;
+  color: white;
 }
 
-.add-button:hover {
-  background-color: #0056b3;
+.password-details {
+  background-color: #f9f9f9;
+  padding: 10px;
 }
 
-.add-menu {
-  position: absolute;
-  top: 40px;
-  left: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+.empty-message {
+  text-align: center;
+  font-size: 16px;
+  color: #777;
+  margin-bottom: 20px;
+}
+
+.edit-form {
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 
-.add-menu button {
-  padding: 10px;
-  background: none;
+.edit-form .form-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.edit-form label {
+  font-weight: bold;
+  min-width: 100px;
+}
+
+.edit-form input {
+  padding: 5px;
+  flex: 1;
+}
+
+.save-button,
+.cancel-button {
+  padding: 5px 10px;
   border: none;
-  text-align: left;
+  border-radius: 4px;
   cursor: pointer;
-  width: 100%;
 }
 
-.add-menu button:hover {
-  background-color: #f0f0f0;
+.save-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.add-password-button {
+  background-color: #004aad;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.add-password-button:hover {
+  background-color: #00338d;
+}
+
+/* Delete Confirmation Modal */
+.delete-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.delete-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+}
+
+.delete-modal-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+}
+
+.confirm-delete-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-delete-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
