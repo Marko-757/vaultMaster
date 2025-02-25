@@ -15,7 +15,7 @@ export const Home = () => {
       {/* Personal Button */}
       <button
         className="personal-button"
-        onClick={() => navigate("/personal-pw-manager")}
+        onClick={() => navigate("/personal")}
       >
         Personal
       </button>
@@ -23,7 +23,7 @@ export const Home = () => {
       {/* Teams Button */}
       <button
         className="teams-button"
-        onClick={() => navigate("/teams-pw-manager")}
+        onClick={() => navigate("/team")}
       >
         Teams
       </button>
