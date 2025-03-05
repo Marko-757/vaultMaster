@@ -1,161 +1,110 @@
 package vaultmaster.com.vault.service;
 
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import vaultmaster.com.vault.model.User;
-import vaultmaster.com.vault.model.VerificationToken;
 import vaultmaster.com.vault.repository.UserRepository;
-import vaultmaster.com.vault.repository.VerificationTokenRepository;
+import vaultmaster.com.vault.security.JwtService;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
-    private final VerificationTokenRepository verificationTokenRepository;
-    private static final int VERIFICATION_CODE_LENGTH = 6;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, VerificationTokenRepository verificationTokenRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
-        this.verificationTokenRepository = verificationTokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     /**
-     * Register a new user and generate a verification token.
-     *
-     * @param email       the user's email
-     * @param password    the user's password
-     * @param fullName    the user's full name
-     * @param phoneNumber the user's phone number
-     * @param createdBy   the user who created this record (e.g., "System")
-     * @return the verification token
+     * Authenticate the user by email and password.
+     * @param email the user's email.
+     * @param password the provided password.
+     * @return the User if authentication succeeds.
+     * @throws IllegalArgumentException if credentials are invalid.
      */
-    public String registerUserWithVerification(String email, String password, String fullName, String phoneNumber, String createdBy) {
-        if (existsByEmail(email)) {
-            throw new IllegalArgumentException("Email is already registered.");
+    public User login(String email, String password) {
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("Invalid email or password");
         }
+        User user = userOptional.get();
+        // Compare provided password with stored hashed password.
+        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid email or password");
+        }
+        return user;
+    }
 
-        String hashedPassword = hashPassword(password);
+    /**
+     * Generates a simple 6-digit verification code.
+     * @return a 6-digit code as String.
+     */
+    public String generateVerificationCode() {
+        int code = (int) (Math.random() * 900000) + 100000; // Random 6-digit number
+        return String.valueOf(code);
+    }
+
+    /**
+     * Authenticates the user and returns a JWT token.
+     * (Optional if needed for token-based authentication)
+     */
+    public String authenticateUser(String email, String password) {
+        User user = login(email, password);
+        return jwtService.generateToken(user);
+    }
+
+    /**
+     * Registers a new user with verification.
+     * @param email the user's email.
+     * @param passwordHash the (pre-hashed) password.
+     * @param fullName the user's full name.
+     * @param phoneNumber the user's phone number.
+     * @param createdByStr information about who created the user.
+     * @return a verification token.
+     * @throws IllegalArgumentException if the user already exists.
+     */
+    public String registerUserWithVerification(String email, String passwordHash, String fullName, String phoneNumber, String createdByStr) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("User with this email already exists.");
+        }
         User newUser = new User();
+        newUser.setUserId(UUID.randomUUID());
         newUser.setEmail(email);
-        newUser.setPasswordHash(hashedPassword);
+        newUser.setPasswordHash(passwordHash);
         newUser.setFullName(fullName);
         newUser.setPhoneNumber(phoneNumber);
-        newUser.setCreatedBy(createdBy);
-        newUser.setCreatedDate(LocalDateTime.now());
-        newUser.setVerified(false); // Set unverified initially
+        Date now = new Date();
+        newUser.setCreatedDate(now);
+        newUser.setModifiedDate(now);
+        // Set createdBy and modifiedBy as needed; here we leave them null.
+        newUser.setCreatedBy(null);
+        newUser.setModifiedBy(null);
+        newUser.setVerified(false);
 
-        User savedUser = userRepository.save(newUser);
+        // Save the new user using your JDBC repository.
+        userRepository.save(newUser);
 
-        // Generate a verification token
+        // Generate a verification token (for real applications, persist this token or send via email)
         String verificationToken = UUID.randomUUID().toString();
-        VerificationToken token = new VerificationToken();
-        token.setUserId(savedUser.getUserId());
-        token.setToken(verificationToken);
-        token.setExpiresAt(LocalDateTime.now().plusDays(1));
-        verificationTokenRepository.save(token);
-
         return verificationToken;
     }
 
     /**
-     * Verify a user's email using the provided token.
-     *
-     * @param token the verification token
-     * @return true if verification is successful, false otherwise
+     * Dummy implementation for verifying a user using a token.
+     * @param token the verification token.
+     * @return true if verified; false otherwise.
      */
     public boolean verifyUser(String token) {
-        Optional<VerificationToken> tokenOptional = verificationTokenRepository.findByToken(token);
-
-        if (tokenOptional.isPresent()) {
-            VerificationToken verificationToken = tokenOptional.get();
-            if (verificationToken.getExpiresAt().isAfter(LocalDateTime.now())) {
-                User user = userRepository.findById(verificationToken.getUserId())
-                        .orElseThrow(() -> new IllegalArgumentException("User not found."));
-                user.setVerified(true); // Mark user as verified
-                userRepository.save(user);
-                verificationTokenRepository.delete(verificationToken); // Remove the token after verification
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Check if an email is already registered.
-     *
-     * @param email the email to check
-     * @return true if the email is registered, false otherwise
-     */
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
-    }
-
-    /**
-     * Generate a secure password hash using BCrypt.
-     *
-     * @param password the plain-text password
-     * @return the hashed password
-     */
-    public String hashPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
-    }
-
-    /**
-     * Validate a plain-text password against a hashed password.
-     *
-     * @param password       the plain-text password
-     * @param hashedPassword the hashed password
-     * @return true if the passwords match, false otherwise
-     */
-    public boolean validatePassword(String password, String hashedPassword) {
-        return BCrypt.checkpw(password, hashedPassword);
-    }
-
-    /**
-     * Log in a user by verifying their credentials.
-     *
-     * @param email    the user's email
-     * @param password the user's password
-     * @return the authenticated user
-     */
-    public User login(String email, String password) {
-        // Retrieve user by email
-        User user = userRepository.findByEmail(email);
-
-        if (user == null) {
-            throw new IllegalArgumentException("Invalid email or user does not exist.");
-        }
-
-        // Validate the password using BCrypt
-        if (!validatePassword(password, user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid password.");
-        }
-
-        // Optionally, update last login or other metadata here
-        user.setModifiedDate(LocalDateTime.now());
-        user.setModifiedBy("System");
-        userRepository.save(user);
-
-        return user; // Login successful
-    }
-
-    /**
-     * Generate a secure verification code for 2FA or registration.
-     *
-     * @return a random 6-digit verification code
-     */
-    public String generateVerificationCode() {
-        Random random = new SecureRandom();
-        StringBuilder code = new StringBuilder(VERIFICATION_CODE_LENGTH);
-        for (int i = 0; i < VERIFICATION_CODE_LENGTH; i++) {
-            code.append(random.nextInt(10)); // Append random digit (0-9)
-        }
-        return code.toString();
+        // Implement your verification logic here.
+        // For demonstration, we return true.
+        return true;
     }
 }

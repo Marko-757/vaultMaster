@@ -22,12 +22,7 @@ public class TeamController {
         this.teamService = teamService;
     }
 
-    /**
-     * Create a new team using a JSON request body.
-     *
-     * @param teamRequest The team request object containing team details.
-     * @return ResponseEntity with the created Team.
-     */
+
     @PostMapping
     public ResponseEntity<?> createTeam(@Valid @RequestBody TeamRequest teamRequest) {
         try {
@@ -41,11 +36,7 @@ public class TeamController {
         }
     }
 
-    /**
-     * Get all teams.
-     *
-     * @return ResponseEntity with a list of all teams.
-     */
+    /** Get all teams */
     @GetMapping
     public ResponseEntity<List<Team>> getAllTeams() {
         try {
@@ -56,12 +47,7 @@ public class TeamController {
         }
     }
 
-    /**
-     * Get a team by its ID.
-     *
-     * @param id UUID of the team.
-     * @return ResponseEntity with the requested Team, or 404 if not found.
-     */
+    /** Get a team by its ID.*/
     @GetMapping("/{id}")
     public ResponseEntity<?> getTeamById(@PathVariable UUID id) {
         try {
@@ -76,12 +62,7 @@ public class TeamController {
         }
     }
 
-    /**
-     * Delete a team by its ID.
-     *
-     * @param id UUID of the team.
-     * @return ResponseEntity with a success or error message.
-     */
+    /** Delete a team by its ID. */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTeam(@PathVariable UUID id) {
         try {
