@@ -3,9 +3,12 @@ package vaultmaster.com.vault.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 public class LoginRequest {
+    // Getters and Setters
     private String email;
-    private String password;
+    private String password; // This will be the already-hashed password from frontend
+
 }
+
