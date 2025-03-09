@@ -5,7 +5,7 @@ const BASE_URL = "http://localhost:8080/api/auth";
 
 export const signup = async (userData) => {
     try {
-        // ✅ Hash the password before sending
+        // Hash the password before sending
         const hashedPassword = await bcrypt.hash(userData.password, 10);
         const userDataWithHash = { ...userData, password: hashedPassword };
 
@@ -33,7 +33,7 @@ export const login = async (email, password) => {
         const response = await fetch(`${BASE_URL}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email }),
+            body: JSON.stringify({ email, password }), // ✅ Send plaintext password
         });
 
         if (!response.ok) {
@@ -42,13 +42,7 @@ export const login = async (email, password) => {
 
         const data = await response.json();
 
-        // Compare input password with stored hashed password
-        const isMatch = await bcrypt.compare(password, data.user.passwordHash);
-        if (!isMatch) {
-            throw new Error("Invalid email or password.");
-        }
-
-        // Store token & user data if authentication succeeds
+        // ✅ Store token & user data if authentication succeeds
         localStorage.setItem("jwtToken", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -58,6 +52,7 @@ export const login = async (email, password) => {
         return null;
     }
 };
+
 
 
 //Logout

@@ -35,7 +35,7 @@ export const Signup = () => {
     containsSpecial: false,
   });
 
-  // ✅ Handle input changes & clear errors dynamically
+  // Handle input changes & clear errors dynamically
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -55,10 +55,10 @@ export const Signup = () => {
     }
   };
 
-  // ✅ Auto-format phone number input
+  // Auto-format phone number input
   const handlePhoneChange = (e) => {
-    let value = e.target.value.replace(/\D/g, ""); // Remove all non-numeric characters
-    if (value.length > 10) value = value.slice(0, 10); // Limit to 10 digits
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 10) value = value.slice(0, 10);
 
     let formattedNumber = value;
     if (value.length > 6) {
@@ -110,11 +110,11 @@ export const Signup = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    // ✅ Hash password before sending to backend
+    // Hash password before sending to backend
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(formData.password, saltRounds);
 
-    // ✅ Prepare user data
+    // Prepare user data
     const userData = {
       fullName: formData.fullName,
       email: formData.email,
@@ -134,7 +134,7 @@ export const Signup = () => {
         setSuccessMessage("Sign-up Successful!");
         setGeneralError("");
 
-        // ✅ Clear form & reset validation states
+        // Clear form & reset validation states
         setFormData({
           fullName: "",
           email: "",
@@ -231,7 +231,6 @@ export const Signup = () => {
           <button type="submit" className="signup-button">Sign Up</button>
         </form>
 
-        {/* ✅ Added back login link */}
         <div className="login">
           Already signed up?{" "}
           <span className="nav-link" onClick={() => navigate("/auth/login")}>
