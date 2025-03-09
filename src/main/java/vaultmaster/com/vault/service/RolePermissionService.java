@@ -1,5 +1,7 @@
 package vaultmaster.com.vault.service;
 import org.springframework.stereotype.Service;
+import vaultmaster.com.vault.model.Role;
+import vaultmaster.com.vault.model.Permission;
 import vaultmaster.com.vault.model.RolePermission;
 import lombok.*;
 import vaultmaster.com.vault.repository.PermissionRepository;

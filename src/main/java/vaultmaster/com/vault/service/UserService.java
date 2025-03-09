@@ -1,12 +1,13 @@
 package vaultmaster.com.vault.service;
-
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import vaultmaster.com.vault.model.User;
 import vaultmaster.com.vault.repository.UserRepository;
 import vaultmaster.com.vault.security.JwtService;
+import vaultmaster.com.vault.dto.AuthResponse;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,12 +15,10 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository userRepository, JwtService jwtService) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
@@ -36,12 +35,18 @@ public class UserService {
             throw new IllegalArgumentException("Invalid email or password");
         }
         User user = userOptional.get();
-        // Compare provided password with stored hashed password.
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+
+        // Compare plaintext password with hashed password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (!encoder.matches(password, user.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid email or password");
         }
-        return user;
+
+        return user;  // Return authenticated user
     }
+
+
+
 
     /**
      * Generates a simple 6-digit verification code.
@@ -56,46 +61,60 @@ public class UserService {
      * Authenticates the user and returns a JWT token.
      * (Optional if needed for token-based authentication)
      */
-    public String authenticateUser(String email, String password) {
-        User user = login(email, password);
-        return jwtService.generateToken(user);
+    public AuthResponse authenticateUser(String email, String password) {
+        User user = login(email, password);  // Authenticate user
+
+        if (password == null || !password.equals(user.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid email or password");
+        }
+
+        String token = jwtService.generateToken(user);  // Generate JWT token
+        return new AuthResponse(user, token);
     }
+
+
+
 
     /**
      * Registers a new user with verification.
      * @param email the user's email.
-     * @param passwordHash the (pre-hashed) password.
+     * @param passwordHash
      * @param fullName the user's full name.
      * @param phoneNumber the user's phone number.
      * @param createdByStr information about who created the user.
      * @return a verification token.
      * @throws IllegalArgumentException if the user already exists.
      */
-    public String registerUserWithVerification(String email, String passwordHash, String fullName, String phoneNumber, String createdByStr) {
+    public void registerUser(String email, String passwordHash, String fullName, String phoneNumber, String createdByStr) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("User with this email already exists.");
         }
+
         User newUser = new User();
         newUser.setUserId(UUID.randomUUID());
         newUser.setEmail(email);
-        newUser.setPasswordHash(passwordHash);
+        newUser.setPasswordHash(passwordHash); // Accept hashed password from frontend
         newUser.setFullName(fullName);
         newUser.setPhoneNumber(phoneNumber);
         Date now = new Date();
         newUser.setCreatedDate(now);
         newUser.setModifiedDate(now);
-        // Set createdBy and modifiedBy as needed; here we leave them null.
         newUser.setCreatedBy(null);
         newUser.setModifiedBy(null);
         newUser.setVerified(false);
 
-        // Save the new user using your JDBC repository.
         userRepository.save(newUser);
-
-        // Generate a verification token (for real applications, persist this token or send via email)
-        String verificationToken = UUID.randomUUID().toString();
-        return verificationToken;
     }
+
+
+
+
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+
 
     /**
      * Dummy implementation for verifying a user using a token.
@@ -107,4 +126,23 @@ public class UserService {
         // For demonstration, we return true.
         return true;
     }
+
+    public Optional<User> getUserById(UUID userId) {
+        return userRepository.findById(userId);
+    }
+
+    public void deleteUser(UUID userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("User not found");
+        }
+        userRepository.delete(userId);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+
+
 }

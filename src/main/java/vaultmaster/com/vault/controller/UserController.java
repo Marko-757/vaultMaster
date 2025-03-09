@@ -7,8 +7,13 @@ import vaultmaster.com.vault.dto.LoginRequest;
 import vaultmaster.com.vault.dto.AuthResponse;
 import vaultmaster.com.vault.model.User;
 import vaultmaster.com.vault.service.UserService;
+import vaultmaster.com.vault.dto.AuthResponse;
 
 import jakarta.validation.Valid;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,22 +29,20 @@ public class UserController {
      * Register a new user with verification.
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody User user) {
-        try {
-            String verificationToken = userService.registerUserWithVerification(
-                    user.getEmail(),
-                    user.getPasswordHash(),
-                    user.getFullName(),
-                    user.getPhoneNumber(),
-                    "System"  // For self-registration
-            );
-            return ResponseEntity.ok("User registered successfully. Please check your email for the verification link. Token: " + verificationToken);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during registration.");
+    public ResponseEntity<String> register(@RequestBody User user) {
+        System.out.println("Received Registration Request: " + user.toString()); // 🔍 Log incoming user data
+
+        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+            System.out.println("Error: Password is NULL or empty!"); // 🚨 Check for empty passwords
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Password is NULL or empty!");
         }
+
+        userService.registerUser(user.getEmail(), user.getPasswordHash(), user.getFullName(), user.getPhoneNumber(), null);
+        return ResponseEntity.ok("User registered successfully!");
     }
+
+
+
 
     /**
      * Verify user registration.
@@ -62,14 +65,18 @@ public class UserController {
      * User Login - Authenticate and return JWT Token.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            String token = userService.authenticateUser(loginRequest.getEmail(), loginRequest.getPassword());
-            return ResponseEntity.ok(new AuthResponse(token, "Login successful."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during login.");
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        Optional<User> userOptional = userService.getUserByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
         }
+
+        User user = userOptional.get();
+        return ResponseEntity.ok(new AuthResponse(user, null));  // ✅ Send hashed password but no token yet
     }
+
+
+
 }
