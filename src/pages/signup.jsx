@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import "./signup.css";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheckCircle } from "react-icons/fa";
+import bcrypt from "bcryptjs";
 
 export const Signup = () => {
   const navigate = useNavigate();
 
-  // State for form fields
+  // Form state
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -16,56 +17,59 @@ export const Signup = () => {
     passwordVerify: "",
   });
 
-  // State for errors
+  // Error & success states
+  const [generalError, setGeneralError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [generalError, setGeneralError] = useState("");
 
-  // State for password visibility & focus
+  // Password validation
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordVerify, setShowPasswordVerify] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [passwordCriteria, setPasswordCriteria] = useState({
+    minLength: false,
+    upperLowerCase: false,
+    containsNumber: false,
+    containsSpecial: false,
+  });
 
-  // Password strength indicators
-  const passwordCriteria = {
-    minLength: formData.password.length >= 12,
-    upperLowerCase: /[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password),
-    containsNumber: /\d/.test(formData.password),
-    containsSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password),
-  };
-
-  // Function to handle input changes
+  // ✅ Handle input changes & clear errors dynamically
   const handleChange = (e) => {
     const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setGeneralError("");
+    setSuccessMessage("");
+    setNameError("");
+    setEmailError("");
+    setPasswordError("");
 
-    // Auto-format phone number
-    if (name === "phone") {
-      setFormData({ ...formData, phone: formatPhoneNumber(value) });
-    } else {
-      setFormData({ ...formData, [name]: value });
+    if (name === "password") {
+      setPasswordCriteria({
+        minLength: value.length >= 12,
+        upperLowerCase: /[a-z]/.test(value) && /[A-Z]/.test(value),
+        containsNumber: /\d/.test(value),
+        containsSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(value),
+      });
+    }
+  };
+
+  // ✅ Auto-format phone number input
+  const handlePhoneChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // Remove all non-numeric characters
+    if (value.length > 10) value = value.slice(0, 10); // Limit to 10 digits
+
+    let formattedNumber = value;
+    if (value.length > 6) {
+      formattedNumber = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+    } else if (value.length > 3) {
+      formattedNumber = `(${value.slice(0, 3)}) ${value.slice(3)}`;
     }
 
-    // Clear errors as user types
-    if (name === "fullName") setNameError("");
-    if (name === "email" || name === "emailVerify") setEmailError("");
-    if (name === "password" || name === "passwordVerify") setPasswordError("");
-    setGeneralError("");
+    setFormData({ ...formData, phone: formattedNumber });
   };
 
-  // Format phone number as user types
-  const formatPhoneNumber = (value) => {
-    let cleaned = value.replace(/\D/g, ""); // Remove non-numeric characters
-    let formatted = "";
-
-    if (cleaned.length > 0) formatted = `(${cleaned.substring(0, 3)}`;
-    if (cleaned.length > 3) formatted += `) ${cleaned.substring(3, 6)}`;
-    if (cleaned.length > 6) formatted += `-${cleaned.substring(6, 10)}`;
-
-    return formatted;
-  };
-
-  // Function to validate form before submission
   const validateForm = () => {
     if (
       !formData.fullName ||
@@ -90,10 +94,6 @@ export const Signup = () => {
       setPasswordError("Passwords do not match.");
       return false;
     }
-    if (formData.phone.length < 14) {
-      setGeneralError("Invalid phone number format.");
-      return false;
-    }
     if (
       !passwordCriteria.minLength ||
       !passwordCriteria.upperLowerCase ||
@@ -106,23 +106,68 @@ export const Signup = () => {
     return true;
   };
 
-  // Function to handle form submission
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-
-    // Validate form
     if (!validateForm()) return;
 
-    console.log("Signing up...");
-    navigate("/auth/login"); // Redirect to login after successful signup
+    // ✅ Hash password before sending to backend
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(formData.password, saltRounds);
+
+    // ✅ Prepare user data
+    const userData = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phoneNumber: formData.phone,
+      passwordHash: hashedPassword,
+    };
+
+    try {
+      const response = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.text();
+      if (response.ok) {
+        setSuccessMessage("Sign-up Successful!");
+        setGeneralError("");
+
+        // ✅ Clear form & reset validation states
+        setFormData({
+          fullName: "",
+          email: "",
+          emailVerify: "",
+          phone: "",
+          password: "",
+          passwordVerify: "",
+        });
+
+        setPasswordCriteria({
+          minLength: false,
+          upperLowerCase: false,
+          containsNumber: false,
+          containsSpecial: false,
+        });
+
+      } else {
+        setGeneralError("Registration failed: " + data);
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      setGeneralError("An error occurred. Please try again.");
+    }
   };
 
   return (
     <div className="signup-left">
       <div className="signup-form">
         <h1>Sign Up</h1>
+        {successMessage && <p className="success-message">{successMessage}</p>}
         {generalError && <p className="error-message">{generalError}</p>}
-        <form>
+
+        <form onSubmit={handleSignup}>
           <div className="fullname-input">
             <input
               type="text"
@@ -130,77 +175,51 @@ export const Signup = () => {
               placeholder="Full Name"
               value={formData.fullName}
               onChange={handleChange}
+              required
             />
             {nameError && <span className="error-message-inline">{nameError}</span>}
           </div>
+
           <div className="email-input">
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+            <input type="email" name="email" placeholder="Enter Email" value={formData.email} onChange={handleChange} required />
           </div>
+
           <div className="emailVerify-input">
-            <input
-              type="email"
-              name="emailVerify"
-              placeholder="Verify email"
-              value={formData.emailVerify}
-              onChange={handleChange}
-            />
+            <input type="email" name="emailVerify" placeholder="Verify Email" value={formData.emailVerify} onChange={handleChange} required />
             {emailError && <span className="error-message-inline">{emailError}</span>}
           </div>
+
           <div className="phone-input">
-            <input
-              type="text"
-              name="phone"
-              placeholder="Phone Number"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+            <input type="text" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handlePhoneChange} required />
           </div>
+
           <div className="password-input">
             <div className="password-field">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                placeholder="Create password"
+                placeholder="Create Password"
                 value={formData.password}
                 onChange={handleChange}
                 onFocus={() => setPasswordFocused(true)}
                 onBlur={() => setPasswordFocused(false)}
+                required
               />
               <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
-            {passwordFocused && (
-              <div className="password-criteria">
-                <p className={passwordCriteria.minLength ? "valid" : "invalid"}>
-                  <FaCheckCircle /> At least 12 characters
-                </p>
-                <p className={passwordCriteria.upperLowerCase ? "valid" : "invalid"}>
-                  <FaCheckCircle /> Uppercase & lowercase letters
-                </p>
-                <p className={passwordCriteria.containsNumber ? "valid" : "invalid"}>
-                  <FaCheckCircle /> Contains a number
-                </p>
-                <p className={passwordCriteria.containsSpecial ? "valid" : "invalid"}>
-                  <FaCheckCircle /> Contains a special character (!@#$%^&*)
-                </p>
-              </div>
-            )}
           </div>
+
           <div className="passwordVerify-input">
             <div className="password-field">
               <input
                 type={showPasswordVerify ? "text" : "password"}
                 name="passwordVerify"
-                placeholder="Verify password"
+                placeholder="Verify Password"
                 value={formData.passwordVerify}
                 onChange={handleChange}
+                required
               />
               <span className="toggle-password" onClick={() => setShowPasswordVerify(!showPasswordVerify)}>
                 {showPasswordVerify ? <FaEyeSlash /> : <FaEye />}
@@ -208,12 +227,13 @@ export const Signup = () => {
             </div>
             {passwordError && <span className="error-message-inline">{passwordError}</span>}
           </div>
-          <button type="submit" className="signup-button" onClick={handleSignup}>
-            Sign Up
-          </button>
+
+          <button type="submit" className="signup-button">Sign Up</button>
         </form>
+
+        {/* ✅ Added back login link */}
         <div className="login">
-          Already have an account?{" "}
+          Already signed up?{" "}
           <span className="nav-link" onClick={() => navigate("/auth/login")}>
             Login here
           </span>
