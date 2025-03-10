@@ -130,6 +130,8 @@ function PersonalPwManager() {
 
   return (
     <div className="pw-manager-container">
+      {/* Home Button */}
+      <button className="home-button" onClick={() => navigate("/home")}>🏠︎</button><br></br><br></br><br></br>
       <div className="three-column-container">
         {/* Left Column: Folders */}
         <div className="left-column">
