@@ -9,7 +9,8 @@ import profileIcon from "../Assets/defaultProfileImage.png";
 const TeamPwManager = () => {
   const navigate = useNavigate();
 
-  //--------------------------------------------------------------------------------------------------------------------------------
+  
+  //Profile Dropdown Menu (Top Right)
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -18,8 +19,8 @@ const TeamPwManager = () => {
   };
 
   const handleLogout = () => {
-    console.log("Logging out..."); // Replace with actual logout logic
-    navigate("/auth/login"); // Redirect to login page
+    console.log("Logging out..."); 
+    navigate("/auth/login"); 
   };
 
   // Close dropdown when clicking outside
@@ -33,11 +34,6 @@ const TeamPwManager = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-//--------------------------------------------------------------------------------------------------------------------------------
-
-
-
-  
 
   const [teams, setTeams] = useState([
     "My Company 1",

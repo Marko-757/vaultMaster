@@ -40,7 +40,7 @@ const ProfileSettings = () => {
 
   return (
     <div className="profile-settings-container">
-      <button className="back-button" onClick={() => navigate("/team")}></button>
+      <button className="back-button" onClick={() => navigate("/home")}></button>
       <div className="profile-content">
         {/* Profile Picture Section */}
         <div className="profile-section">
