@@ -1,10 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ManageRoles from "../components/manageRoles";
 import MyMembers from "../components/myMembers";
 import PasswordAndFileManagement from "../components/passwordAndFileManagement";
 import "./team_pw_manager.css";
+import profileIcon from "../Assets/defaultProfileImage.png";
 
 const TeamPwManager = () => {
+  const navigate = useNavigate();
+
+  
+  //Profile Dropdown Menu (Top Right)
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  const handleLogout = () => {
+    console.log("Logging out..."); 
+    navigate("/auth/login"); 
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
   const [teams, setTeams] = useState([
     "My Company 1",
     "My Company 2",
@@ -37,6 +67,26 @@ const TeamPwManager = () => {
 
   return (
     <div className="teams-container">
+
+      {/* Home Button */}
+      <button className="home-button" onClick={() => navigate("/home")}>🏠︎</button>
+
+      {/* Profile Button with Dropdown */}
+      <div className="profile-container" ref={dropdownRef}>
+        <img 
+          src={profileIcon} 
+          alt="Profile" 
+          className="profile-icon" 
+          onClick={toggleDropdown} 
+        />
+        {dropdownOpen && (
+          <div className="profile-dropdown">
+            <button onClick={() => navigate("/settings")}>Profile Settings</button>
+            <button onClick={handleLogout}>Log Out</button>
+          </div>
+        )}
+      </div>
+
       {/* Left Sidebar */}
       <div className="sidebar">
         <div className="sidebar-heading">
