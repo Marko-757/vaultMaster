@@ -17,13 +17,11 @@ public class PersonalPWService {
         this.repository = repository;
     }
 
-    // ✅ Add a new password
     public int addPassword(PersonalPWEntry entry) throws Exception {
         entry.setTimestamps();
         return repository.savePassword(entry);
     }
 
-    // ✅ Get all passwords for an existing user
     public List<PersonalPWEntry> getUserPasswords(UUID userId) {
         if (!repository.userExists(userId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist.");
@@ -31,7 +29,6 @@ public class PersonalPWService {
         return repository.getPasswordsByUser(userId);
     }
 
-    // ✅ Get a password by ID
     public PersonalPWEntry getPasswordById(Long entryId) {
         PersonalPWEntry entry = repository.getPasswordById(entryId);
         if (entry == null) {
@@ -40,7 +37,6 @@ public class PersonalPWService {
         return entry;
     }
 
-    // ✅ Delete a password
     public void deletePassword(Long entryId) {
         int rowsAffected = repository.deletePassword(entryId);
         if (rowsAffected == 0) {

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWEntry;
 import vaultmaster.com.vault.service.PersonalPWService;
+import vaultmaster.com.vault.util.AESUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class PersonalPWController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
 
-        UUID userId = UUID.fromString(authentication.getName()); // Get userId from JWT
+        UUID userId = UUID.fromString(authentication.getName());
         entry.setUserId(userId);
 
         // Validate required fields
@@ -74,28 +75,31 @@ public class PersonalPWController {
     }
 
     @PutMapping("/entry/{entryId}")
-    public ResponseEntity<String> updatePassword(
-            @PathVariable Long entryId,
-            @RequestBody PersonalPWEntry updatedEntry,
-            Authentication authentication) {
-
+    public ResponseEntity<String> updatePassword(@PathVariable Long entryId, @RequestBody PersonalPWEntry entry, Authentication authentication) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
 
-        UUID userId = UUID.fromString(authentication.getName());
-        updatedEntry.setUserId(userId);
-        updatedEntry.setEntryId(entryId); // Ensure the correct entry is targeted
-
         try {
-            service.updatePassword(updatedEntry);
+            UUID userId = UUID.fromString(authentication.getName());
+            System.out.println("Authenticated user ID: " + userId);
+            entry.setUserId(userId);
+
+            // Encrypt the new password before updating
+            String encrypted = AESUtil.encrypt(entry.getPasswordHash());
+            entry.setPasswordHash(encrypted);
+            entry.setEntryId(entryId);
+
+            service.updatePassword(entry);
             return ResponseEntity.ok("Password updated successfully!");
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body("Error: " + e.getReason());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Encryption error: " + e.getMessage());
         }
     }
+
+
 
 
     @DeleteMapping("/entry/{entryId}")
