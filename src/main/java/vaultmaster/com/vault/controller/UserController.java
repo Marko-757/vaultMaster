@@ -1,30 +1,32 @@
 package vaultmaster.com.vault.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import vaultmaster.com.vault.dto.LoginRequest;
 import vaultmaster.com.vault.dto.AuthResponse;
 import vaultmaster.com.vault.model.User;
+import vaultmaster.com.vault.security.JwtService;
 import vaultmaster.com.vault.service.UserService;
-import vaultmaster.com.vault.dto.AuthResponse;
-
-import jakarta.validation.Valid;
-
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/auth")
 public class UserController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
-    public UserController(UserService userService) {
+
+    @Autowired
+    public UserController(UserService userService, JwtService jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
-
     /**
      * Register a new user.
      */
@@ -41,24 +43,46 @@ public class UserController {
         return ResponseEntity.ok("User registered successfully!");
     }
 
-    /**
-     * Handles user login.
-     */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {
         try {
             AuthResponse authResponse = userService.login(request.getEmail(), request.getPassword());
-            return ResponseEntity.ok(authResponse); //
+
+            // Create HTTP-Only Cookie for JWT
+            ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", authResponse.getToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(24 * 60 * 60)
+                    .sameSite("Strict")
+                    .build();
+
+            response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+
+            return ResponseEntity.ok("Login successful.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
         }
     }
 
-
     /**
-     * Verify user registration.
-     /**
+     * Logs out the user by clearing the JWT cookie.
      */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+        ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+        return ResponseEntity.ok("Logged out successfully.");
+    }
+
+
     @GetMapping("/verify")
     public ResponseEntity<String> verifyUser(@RequestParam String token) {
         boolean isVerified = userService.verifyUser(token);
@@ -70,4 +94,24 @@ public class UserController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserFromToken(HttpServletRequest request) {
+        // Extract token from cookie
+        String token = jwtService.extractTokenFromRequest(request);
+
+        if (token == null || !jwtService.isTokenValid(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        // Extract user ID from the token
+        String userId = jwtService.extractUserId(token);
+
+        // Fetch user from the database using user ID
+        Optional<User> user = userService.getUserById(UUID.fromString(userId));
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+    }
 }

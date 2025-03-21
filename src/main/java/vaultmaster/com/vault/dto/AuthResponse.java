@@ -9,6 +9,14 @@ import vaultmaster.com.vault.model.User;
 @Setter
 @AllArgsConstructor
 public class AuthResponse {
-    private User user;
     private String token;
+    private String email;
+    private String fullName;
+
+    public AuthResponse(User user, String token) {
+        this.token = token;
+        this.email = user.getEmail();
+        this.fullName = user.getFullName();
+    }
+
 }

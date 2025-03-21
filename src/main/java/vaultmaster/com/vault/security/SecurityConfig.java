@@ -24,12 +24,14 @@ public class SecurityConfig {
                 config.setAllowedOrigins(List.of("http://localhost:3000"));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
                 config.setAllowCredentials(true);
                 return config;
             }))
             .csrf(csrf -> csrf.disable()) // ✅ Disable CSRF for API calls
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll() // ✅ Allow signup/login
+
                     .anyRequest().permitAll()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

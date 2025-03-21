@@ -64,17 +64,14 @@ public class UserService {
         User user = userOptional.get();
         String storedHash = user.getPasswordHash();
 
-        // 🔍 Debugging logs
         logger.info("Checking login for email: {}", email);
         logger.info("Stored Hash: {}", storedHash);
 
-        // ✅ Correct way to check password: use `matches()` instead of generating a new hash
         if (!passwordEncoder.matches(plaintextPassword, storedHash)) {
             logger.warn("Login failed: Incorrect password for email '{}'", email);
             throw new IllegalArgumentException("Incorrect password");
         }
 
-        // ✅ Generate a JWT token for the user
         String token = jwtService.generateToken(user);
 
         return new AuthResponse(user, token);
@@ -98,6 +95,20 @@ public class UserService {
 
         return false;
     }
+
+    public User getUserFromToken(String token) {
+        try {
+            String userId = jwtService.extractUserId(token); // Extract user ID
+            logger.info("Extracted User ID: {}", userId); // Log for debugging
+
+            return userRepository.findById(UUID.fromString(userId))
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        } catch (Exception e) {
+            logger.error("Error extracting user from token: {}", e.getMessage());
+            throw new IllegalArgumentException("Invalid or expired token", e);
+        }
+    }
+
 
     /**
      * Check if email exists in database.
@@ -124,4 +135,6 @@ public class UserService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
+
 }
