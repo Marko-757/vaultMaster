@@ -42,6 +42,23 @@ public class PersonalPWRepository {
         return jdbcTemplate.update(sql, entryId);
     }
 
+    public int updatePassword(PersonalPWEntry entry) {
+        String sql = """
+        UPDATE password_entries
+        SET account_name = ?, username = ?, password_hash = ?, url = ?, folder_id = ?, updated_at = NOW()
+        WHERE entry_id = ? AND user_id = ?
+    """;
+        return jdbcTemplate.update(sql,
+                entry.getAccountName(),
+                entry.getUsername(),
+                entry.getPasswordHash(),
+                entry.getWebsite(),
+                entry.getFolderId(),
+                entry.getEntryId(),
+                entry.getUserId());
+    }
+
+
     // ✅ Get a password entry by ID
     public PersonalPWEntry getPasswordById(Long entryId) {
         String sql = "SELECT * FROM password_entries WHERE entry_id = ?";
@@ -65,9 +82,16 @@ public class PersonalPWRepository {
         return jdbcTemplate.query(sql, new PersonalPWRowMapper(), userId);
     }
 
-    // ✅ Get all passwords associated with a folder
     public List<PersonalPWEntry> getPasswordsByFolder(UUID folderId) {
         String sql = "SELECT * FROM password_entries WHERE folder_id = ?";
         return jdbcTemplate.query(sql, new PersonalPWRowMapper(), folderId);
     }
+
+
+    public List<UUID> getUserFolderIds(UUID userId) {
+        String sql = "SELECT DISTINCT folder_id FROM password_entries WHERE user_id = ? AND folder_id IS NOT NULL";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getObject("folder_id", UUID.class), userId);
+    }
+
+
 }

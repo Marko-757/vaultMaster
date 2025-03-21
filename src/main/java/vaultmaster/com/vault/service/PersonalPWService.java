@@ -48,7 +48,20 @@ public class PersonalPWService {
         }
     }
 
-    // ✅ Get passwords by folder ID
+    public void updatePassword(PersonalPWEntry entry) {
+        int rowsAffected = repository.updatePassword(entry);
+        if (rowsAffected == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Password entry not found or user unauthorized.");
+        }
+    }
+
+    public List<UUID> getUserFolders(UUID userId) {
+        if (!repository.userExists(userId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exist.");
+        }
+        return repository.getUserFolderIds(userId);
+    }
+
     public List<PersonalPWEntry> getPasswordsByFolder(UUID folderId) {
         List<PersonalPWEntry> passwords = repository.getPasswordsByFolder(folderId);
         if (passwords == null || passwords.isEmpty()) {

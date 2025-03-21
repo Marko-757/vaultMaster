@@ -2,6 +2,7 @@ package vaultmaster.com.vault.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWEntry;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/passwords/personal")
+@RequestMapping("/api/passwords/personal")
 public class PersonalPWController {
     private final PersonalPWService service;
 
@@ -20,10 +21,16 @@ public class PersonalPWController {
         this.service = service;
     }
 
-    // ✅ Create a new password
     @PostMapping
-    public ResponseEntity<String> addPassword(@RequestBody PersonalPWEntry entry) {
-        // ✅ Validate required fields
+    public ResponseEntity<String> addPassword(@RequestBody PersonalPWEntry entry, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+
+        UUID userId = UUID.fromString(authentication.getName()); // Get userId from JWT
+        entry.setUserId(userId);
+
+        // Validate required fields
         String missingFields = validateEntry(entry);
         if (!missingFields.isEmpty()) {
             return ResponseEntity.badRequest().body("Missing required fields: " + missingFields);
@@ -37,11 +44,9 @@ public class PersonalPWController {
         }
     }
 
-    // ✅ Helper method to validate required fields
     private String validateEntry(PersonalPWEntry entry) {
         List<String> missingFields = new ArrayList<>();
 
-        if (entry.getUserId() == null) missingFields.add("userId");
         if (entry.getAccountName() == null || entry.getAccountName().trim().isEmpty()) missingFields.add("accountName");
         if (entry.getUsername() == null || entry.getUsername().trim().isEmpty()) missingFields.add("username");
         if (entry.getPasswordHash() == null || entry.getPasswordHash().trim().isEmpty()) missingFields.add("passwordHash");
@@ -49,17 +54,16 @@ public class PersonalPWController {
         return String.join(", ", missingFields);
     }
 
-    // ✅ Get all passwords for a user
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getUserPasswords(@PathVariable UUID userId) {
-        try {
-            return ResponseEntity.ok(service.getUserPasswords(userId));
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+    @GetMapping
+    public ResponseEntity<?> getUserPasswords(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
+
+        UUID userId = UUID.fromString(authentication.getName());
+        return ResponseEntity.ok(service.getUserPasswords(userId));
     }
 
-    // ✅ Get a password by its ID
     @GetMapping("/entry/{entryId}")
     public ResponseEntity<?> getPasswordById(@PathVariable Long entryId) {
         try {
@@ -69,7 +73,31 @@ public class PersonalPWController {
         }
     }
 
-    // ✅ Delete a password
+    @PutMapping("/entry/{entryId}")
+    public ResponseEntity<String> updatePassword(
+            @PathVariable Long entryId,
+            @RequestBody PersonalPWEntry updatedEntry,
+            Authentication authentication) {
+
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+
+        UUID userId = UUID.fromString(authentication.getName());
+        updatedEntry.setUserId(userId);
+        updatedEntry.setEntryId(entryId); // Ensure the correct entry is targeted
+
+        try {
+            service.updatePassword(updatedEntry);
+            return ResponseEntity.ok("Password updated successfully!");
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body("Error: " + e.getReason());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
+        }
+    }
+
+
     @DeleteMapping("/entry/{entryId}")
     public ResponseEntity<String> deletePassword(@PathVariable Long entryId) {
         try {
