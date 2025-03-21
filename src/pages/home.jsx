@@ -16,10 +16,25 @@ export const Home = () => {
       setDropdownOpen(!dropdownOpen);
     };
   
-    const handleLogout = () => {
-      console.log("Logging out..."); 
-      navigate("/auth/login"); 
+    const handleLogout = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+    
+        if (response.ok) {
+          console.log("Logout successful");
+    
+          navigate("/auth/login");
+        } else {
+          console.error("Logout failed:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error during logout:", error);
+      }
     };
+    
   
     // Close dropdown when clicking outside
     useEffect(() => {

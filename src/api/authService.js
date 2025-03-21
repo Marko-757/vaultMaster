@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
+
+
 const BASE_URL = "http://localhost:8080/api/auth";
 
-//Sign-up
-
+// Sign-up
 export const signup = async (userData) => {
     try {
         // Hash the password before sending
@@ -16,48 +17,113 @@ export const signup = async (userData) => {
         });
 
         if (!response.ok) {
-            throw new Error("Signup failed.");
+            const errorMessage = await response.text();
+            throw new Error(errorMessage || "Signup failed.");
         }
-        return await response.json();
+
+        return await response.text();
     } catch (error) {
-        console.error("Signup error:", error);
+        console.error("Signup error:", error.message);
         return null;
     }
 };
 
-
-
-//Login
+// Login
 export const login = async (email, password) => {
     try {
         const response = await fetch(`${BASE_URL}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }), // ✅ Send plaintext password
+            body: JSON.stringify({ email, password }),
+            credentials: "include", 
         });
 
         if (!response.ok) {
-            throw new Error("Invalid email or password.");
+            const errorMessage = await response.text();
+            throw new Error(errorMessage || "Invalid email or password.");
         }
 
-        const data = await response.json();
-
-        // ✅ Store token & user data if authentication succeeds
-        localStorage.setItem("jwtToken", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        return data;
+        return await response.text(); 
     } catch (error) {
-        console.error("Login error:", error);
+        console.error("Login error:", error.message);
         return null;
     }
 };
 
-
-
-//Logout
-export const logout = () => {
-    localStorage.removeItem("jwtToken");
-    localStorage.removeItem("user");
-    console.log("User logged out.");
+// Logout
+export const logout = async () => {
+    try {
+        await fetch(`${BASE_URL}/logout`, {
+            method: "POST",
+            credentials: "include", 
+        });
+    } catch (error) {
+        console.error("Logout error:", error.message);
+    }
 };
+
+// Check Authentication
+export const checkAuth = async () => {
+    try {
+        const response = await fetch("http://localhost:8080/api/auth/me", {
+            credentials: "include", // Sends the cookie
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return await response.json(); // Returns user data if authenticated
+    } catch (error) {
+        console.error("Auth check error:", error);
+        return null;
+    }
+};
+
+export const getProfile = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/users/profile", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          // No need to manually set the Authorization header if using HTTP-only cookies
+        },
+        credentials: "include", // This ensures cookies are sent with the request
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch profile");
+      }
+  
+      return await response.json(); // Return profile data if successful
+    } catch (error) {
+      console.error("Error fetching profile:", error.message);
+      throw error;
+    }
+  };
+  
+  
+  export const updateProfile = async (profileData) => {
+    try {
+      const token = localStorage.getItem("jwtToken"); // Get the JWT token
+      const response = await fetch("http://localhost:8080/api/users/profile", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData), // Send the updated profile data
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+  
+      return await response.json(); // Return the updated profile data
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+      throw error;
+    }
+  };
+
+  
