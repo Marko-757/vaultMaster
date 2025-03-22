@@ -9,6 +9,7 @@ import vaultmaster.com.vault.model.PersonalPWFolder;
 import vaultmaster.com.vault.service.PersonalPWFolderService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -46,12 +47,21 @@ public class PersonalPWFolderController {
     }
 
     @PutMapping("/{folderId}")
-    public ResponseEntity<String> updateFolder(@PathVariable UUID folderId, @RequestBody String newName) {
-        int rowsAffected = folderService.updateFolder(folderId, newName);
+    public ResponseEntity<String> updateFolder(
+            @PathVariable UUID folderId,
+            @RequestBody Map<String, String> payload
+    ) {
+        String newName = payload.get("folderName");
+        if (newName == null || newName.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Folder name cannot be empty");
+        }
+
+        int rowsAffected = folderService.updateFolder(folderId, newName.trim());
         return rowsAffected > 0
                 ? ResponseEntity.ok("Folder updated successfully!")
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Folder not found.");
     }
+
 
     @DeleteMapping("/{folderId}")
     public ResponseEntity<String> deleteFolder(@PathVariable UUID folderId) {
