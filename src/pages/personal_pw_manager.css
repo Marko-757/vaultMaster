@@ -141,25 +141,22 @@
 
 /* Sidebar Item Button */
 .sidebar-item-button {
-  background-color: #336dbf;
-  color: white;
+  flex-grow: 1;
+  text-align: left;
+  padding: 8px 12px;
   border: none;
-  padding: 12px 8px;
-  border-radius: 8px;
+  background-color: #f8f8f8; /* always visible background */
   cursor: pointer;
-  font-size: 16px;
-  width: 190px;
-  height: 45px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  display: block;
-  margin: 0 auto;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
 }
+
 .sidebar-item-button:hover {
-  background-color: #285a9c;
+  background-color: #e0e0e0; /* darker on hover for visibility */
 }
+
 .sidebar-item-button:active {
   transform: scale(0.98);
 }
@@ -470,3 +467,41 @@
 .profile-dropdown button:hover {
   background: #f2f2f2;
 }
+
+.folder-split-button {
+  width: 80%;
+  margin: 4px auto;
+  display: flex;
+}
+
+.folder-main-button {
+  flex: 1;                 /* Main button takes most of the available space */
+  text-align: left;
+}
+
+.folder-split-button .dropdown-toggle {
+  width: 40px;             /* Explicit smaller fixed width for dropdown */
+  flex: none;              /* Prevent dropdown button from growing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Bootstrap overrides (optional customization for colors) */
+.btn-primary {
+  background-color: #0d6efd; /* default Bootstrap blue */
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7; /* darker blue on hover */
+  border-color: #0a58ca;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f4ff;
+  color: #0d6efd;
+}
+
+

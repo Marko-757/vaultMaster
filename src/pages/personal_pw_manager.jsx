@@ -7,19 +7,16 @@ import { logout } from "../api/authService";
 import "./personal_pw_manager.css";
 import { useNavigate } from "react-router";
 import profileIcon from "../Assets/defaultProfileImage.png";
-import {
-  createPasswordEntry,
-  createPasswordFolder,
-  getAllPasswordFolders,
-  getAllPasswords,
-  getDecryptedPassword,
-} from "../api/personalPWService";
+import * as personalPWService from "../api/personalPWService";
 
 function PersonalPwManager() {
   const navigate = useNavigate();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const [folderDropdownOpen, setFolderDropdownOpen] = useState(null);
+  const folderDropdownRef = useRef(null);
 
   const [passwords, setPasswords] = useState([]);
   const [passwordFolders, setPasswordFolders] = useState([]);
@@ -36,6 +33,9 @@ function PersonalPwManager() {
   const [expandedFileFolders, setExpandedFileFolders] = useState(false);
   const previewCount = 2;
 
+  const [isRenamingFolder, setIsRenamingFolder] = useState(false);
+  const [folderBeingRenamed, setFolderBeingRenamed] = useState(null);
+
   const [passwordToDelete, setPasswordToDelete] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
@@ -47,8 +47,11 @@ function PersonalPwManager() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
+      if (
+        folderDropdownRef.current &&
+        !folderDropdownRef.current.contains(event.target)
+      ) {
+        setFolderDropdownOpen(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -59,25 +62,22 @@ function PersonalPwManager() {
     const fetchData = async () => {
       try {
         const [fetchedFolders, fetchedPasswords] = await Promise.all([
-          getAllPasswordFolders(),
-          getAllPasswords(),
+          personalPWService.getAllPasswordFolders(),
+          personalPWService.getAllPasswords(),
         ]);
-  
-        console.log("✅ Fetched Folders:", fetchedFolders);
-        console.log("✅ Fetched Passwords:", fetchedPasswords);
-  
+
+        console.log("Fetched Folders:", fetchedFolders);
+        console.log("Fetched Passwords:", fetchedPasswords);
+
         setPasswordFolders(fetchedFolders);
         setPasswords(fetchedPasswords);
       } catch (error) {
         console.error("🚨 Error fetching password data:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-  
-  
-  
 
   const filteredPasswords = selectedPasswordFolder
     ? passwords.filter((p) => p.folderId === selectedPasswordFolder.folderId)
@@ -96,17 +96,43 @@ function PersonalPwManager() {
     setPasswords((prev) => [...prev, newPasswordEntry]);
     setIsAddingPassword(false);
   };
-  
 
   const addPasswordFolder = async (newlyCreatedFolder) => {
     setPasswordFolders((prev) => [...prev, newlyCreatedFolder]);
     setIsAddingPasswordFolder(false);
   };
 
-  const deletePasswordFolder = (folderId) => {
-    const confirm = window.confirm("Are you sure you want to delete this folder?");
-    if (!confirm) return;
-    alert("Folder deletion logic not yet implemented.");
+  const deletePasswordFolder = async (folderId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this folder?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await personalPWService.deletePasswordFolder(folderId);
+      setPasswordFolders(
+        passwordFolders.filter((folder) => folder.folderId !== folderId)
+      );
+      setPasswords(
+        passwords.filter((password) => password.folderId !== folderId)
+      );
+      alert("Folder deleted successfully!");
+
+      if (
+        selectedPasswordFolder &&
+        selectedPasswordFolder.folderId === folderId
+      ) {
+        setSelectedPasswordFolder(null);
+      }
+    } catch (error) {
+      console.error("Error deleting folder:", error);
+      alert("Failed to delete folder.");
+    }
+  };
+
+  const renameFolder = (folder) => {
+    setFolderBeingRenamed(folder);
+    setIsRenamingFolder(true);
   };
 
   const displayedPasswordFolders =
@@ -125,17 +151,30 @@ function PersonalPwManager() {
 
   const confirmDeletePassword = () => {
     if (passwordToDelete) {
-      setPasswords(passwords.filter((p) => p.entryId !== passwordToDelete.entryId));
-      if (selectedPassword && selectedPassword.entryId === passwordToDelete.entryId) {
+      setPasswords(
+        passwords.filter((p) => p.entryId !== passwordToDelete.entryId)
+      );
+      if (
+        selectedPassword &&
+        selectedPassword.entryId === passwordToDelete.entryId
+      ) {
         setSelectedPassword(null);
       }
       setPasswordToDelete(null);
     }
   };
 
-  const startEditing = () => {
-    setIsEditing(true);
-    setEditData(selectedPassword);
+  const startEditing = async () => {
+    try {
+      const decryptedPassword = await personalPWService.getDecryptedPassword(
+        selectedPassword.entryId
+      );
+      setEditData({ ...selectedPassword, passwordHash: decryptedPassword });
+      setIsEditing(true);
+    } catch (error) {
+      console.error("🚨 Error decrypting password for editing:", error);
+      alert("Failed to decrypt password for editing.");
+    }
   };
 
   const cancelEditing = () => {
@@ -143,23 +182,41 @@ function PersonalPwManager() {
     setEditData({});
   };
 
-  const saveEditing = () => {
-    setPasswords(passwords.map((p) => (p.entryId === editData.entryId ? editData : p)));
-    setSelectedPassword(editData);
-    setIsEditing(false);
-    setEditData({});
+  const saveEditing = async () => {
+    try {
+      await personalPWService.updatePasswordEntry(editData.entryId, editData);
+      setPasswords(
+        passwords.map((p) => (p.entryId === editData.entryId ? editData : p))
+      );
+      setSelectedPassword(editData);
+      setDecryptedPassword(editData.passwordHash);
+      setIsEditing(false);
+      alert("Password updated successfully!");
+    } catch (error) {
+      console.error("Failed to update password:", error);
+      alert("Failed to update password.");
+    }
   };
 
   return (
     <div className="pw-manager-container">
-      <button className="home-button" onClick={() => navigate("/home")}>🏠︎</button>
+      <button className="home-button" onClick={() => navigate("/home")}>
+        🏠︎
+      </button>
 
       <div className="three-column-container">
         <div className="profile-container" ref={dropdownRef}>
-          <img src={profileIcon} alt="Profile" className="profile-icon" onClick={toggleDropdown} />
+          <img
+            src={profileIcon}
+            alt="Profile"
+            className="profile-icon"
+            onClick={toggleDropdown}
+          />
           {dropdownOpen && (
             <div className="profile-dropdown">
-              <button onClick={() => navigate("/settings")}>Profile Settings</button>
+              <button onClick={() => navigate("/settings")}>
+                Profile Settings
+              </button>
               <button onClick={handleLogout}>Log Out</button>
             </div>
           )}
@@ -174,20 +231,65 @@ function PersonalPwManager() {
           <div className="sidebar-section">
             <div className="section-header">
               <h2>Passwords</h2>
-              <button className="section-add-button" onClick={() => setIsAddingPasswordFolder(true)}>+</button>
+              <button
+                className="section-add-button"
+                onClick={() => setIsAddingPasswordFolder(true)}
+              >
+                +
+              </button>
             </div>
             <div className="folders-list-container scrollable">
               {displayedPasswordFolders.map((folder) => (
-                <div key={folder.folderId} className="folder-row">
-                  <button className="sidebar-item-button" onClick={() => setSelectedPasswordFolder(folder)}>
-                    <span className="team-name">{folder.folderName}</span>
+                <div
+                  key={folder.folderId}
+                  className="btn-group folder-split-button"
+                >
+                  <button
+                    type="button"
+                    className="btn btn-primary folder-main-button"
+                    onClick={() => setSelectedPasswordFolder(folder)}
+                  >
+                    {folder.folderName}
                   </button>
-                  <button className="folder-delete-button" onClick={() => deletePasswordFolder(folder.folderId)}>X</button>
+
+                  <button
+                    type="button"
+                    className="btn btn-primary dropdown-toggle dropdown-toggle-split"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <span className="visually-hidden">Toggle Dropdown</span>
+                  </button>
+
+                  <ul className="dropdown-menu">
+                    <li>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => renameFolder(folder)}
+                      >
+                        Rename
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        className="dropdown-item"
+                        onClick={() => deletePasswordFolder(folder.folderId)}
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  </ul>
                 </div>
               ))}
             </div>
+
             {passwordFolders.length > previewCount && (
-              <button className="see-toggle-button" onClick={() => setExpandedPasswordFolders(!expandedPasswordFolders)}>
+              <button
+                className="see-toggle-button"
+                onClick={() =>
+                  setExpandedPasswordFolders(!expandedPasswordFolders)
+                }
+              >
                 {expandedPasswordFolders ? "See Less" : "See More"}
               </button>
             )}
@@ -196,7 +298,12 @@ function PersonalPwManager() {
           <div className="sidebar-section">
             <div className="section-header">
               <h2>Files</h2>
-              <button className="section-add-button" onClick={() => setIsAddingFileFolder(true)}>+</button>
+              <button
+                className="section-add-button"
+                onClick={() => setIsAddingFileFolder(true)}
+              >
+                +
+              </button>
             </div>
             <div className="folders-list-container scrollable">
               {displayedFileFolders.map((folder) => (
@@ -204,7 +311,12 @@ function PersonalPwManager() {
                   <button className="sidebar-item-button">
                     <span className="team-name">{folder.name}</span>
                   </button>
-                  <button className="folder-delete-button" onClick={() => alert("Delete not implemented")}>X</button>
+                  <button
+                    className="folder-delete-button"
+                    onClick={() => alert("Delete not implemented")}
+                  >
+                    X
+                  </button>
                 </div>
               ))}
             </div>
@@ -224,7 +336,10 @@ function PersonalPwManager() {
                   className="password-name-button"
                   onClick={async () => {
                     try {
-                      const decrypted = await getDecryptedPassword(password.entryId);
+                      const decrypted =
+                        await personalPWService.getDecryptedPassword(
+                          password.entryId
+                        );
                       setSelectedPassword(password);
                       setDecryptedPassword(decrypted);
                       setShowPassword(false);
@@ -241,7 +356,10 @@ function PersonalPwManager() {
               ))
             )}
           </div>
-          <button className="add-password-button" onClick={() => setIsAddingPassword(true)}>
+          <button
+            className="add-password-button"
+            onClick={() => setIsAddingPassword(true)}
+          >
             Add Password
           </button>
         </div>
@@ -260,6 +378,36 @@ function PersonalPwManager() {
               onSave={addPasswordFolder}
               onCancel={() => setIsAddingPasswordFolder(false)}
             />
+          ) : isRenamingFolder ? (
+            <AddFolderForm
+              formType="password"
+              initialFolderName={folderBeingRenamed.folderName}
+              onSave={async ({ folderName }) => {
+                try {
+                  await personalPWService.renamePasswordFolder(
+                    folderBeingRenamed.folderId,
+                    folderName
+                  );
+                  setPasswordFolders(
+                    passwordFolders.map((f) =>
+                      f.folderId === folderBeingRenamed.folderId
+                        ? { ...f, folderName }
+                        : f
+                    )
+                  );
+                  setIsRenamingFolder(false);
+                  setFolderBeingRenamed(null);
+                  alert("Folder renamed successfully!");
+                } catch (error) {
+                  console.error("Error renaming folder:", error);
+                  alert("Failed to rename folder.");
+                }
+              }}
+              onCancel={() => {
+                setIsRenamingFolder(false);
+                setFolderBeingRenamed(null);
+              }}
+            />
           ) : selectedPassword ? (
             isEditing ? (
               <div className="edit-form-container">
@@ -269,7 +417,9 @@ function PersonalPwManager() {
                   <input
                     type="text"
                     value={editData.accountName || ""}
-                    onChange={(e) => setEditData({ ...editData, accountName: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, accountName: e.target.value })
+                    }
                   />
                 </div>
                 <div className="form-group">
@@ -277,7 +427,9 @@ function PersonalPwManager() {
                   <input
                     type="text"
                     value={editData.username || ""}
-                    onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, username: e.target.value })
+                    }
                   />
                 </div>
                 <div className="form-group">
@@ -285,7 +437,9 @@ function PersonalPwManager() {
                   <input
                     type="text"
                     value={editData.passwordHash || ""}
-                    onChange={(e) => setEditData({ ...editData, passwordHash: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, passwordHash: e.target.value })
+                    }
                   />
                 </div>
                 <div className="form-group">
@@ -293,17 +447,28 @@ function PersonalPwManager() {
                   <input
                     type="text"
                     value={editData.website || ""}
-                    onChange={(e) => setEditData({ ...editData, website: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, website: e.target.value })
+                    }
                   />
                 </div>
                 <div className="edit-actions">
-                  <button className="save-button" onClick={saveEditing}>Save</button>
-                  <button className="cancel-button" onClick={cancelEditing}>Cancel</button>
+                  <button className="save-button" onClick={saveEditing}>
+                    Save
+                  </button>
+                  <button className="cancel-button" onClick={cancelEditing}>
+                    Cancel
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="password-detail-view">
-                <button className="close-detail-button" onClick={() => setSelectedPassword(null)}>X</button>
+                <button
+                  className="close-detail-button"
+                  onClick={() => setSelectedPassword(null)}
+                >
+                  X
+                </button>
                 <PasswordInformation
                   password={selectedPassword}
                   decryptedPassword={decryptedPassword}
@@ -311,8 +476,16 @@ function PersonalPwManager() {
                   setShowPassword={setShowPassword}
                 />
                 <div className="password-actions">
-                  <button className="edit-password-button" onClick={startEditing}>Edit</button>
-                  <button className="delete-password-button" onClick={() => setPasswordToDelete(selectedPassword)}>
+                  <button
+                    className="edit-password-button"
+                    onClick={startEditing}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-password-button"
+                    onClick={() => setPasswordToDelete(selectedPassword)}
+                  >
                     Delete
                   </button>
                 </div>
@@ -327,10 +500,22 @@ function PersonalPwManager() {
       {passwordToDelete && (
         <div className="delete-modal">
           <div className="delete-modal-content">
-            <p>Are you sure you want to delete "{passwordToDelete.accountName}"?</p>
+            <p>
+              Are you sure you want to delete "{passwordToDelete.accountName}"?
+            </p>
             <div className="delete-modal-buttons">
-              <button className="confirm-delete-button" onClick={confirmDeletePassword}>Confirm</button>
-              <button className="cancel-delete-button" onClick={() => setPasswordToDelete(null)}>Cancel</button>
+              <button
+                className="confirm-delete-button"
+                onClick={confirmDeletePassword}
+              >
+                Confirm
+              </button>
+              <button
+                className="cancel-delete-button"
+                onClick={() => setPasswordToDelete(null)}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
