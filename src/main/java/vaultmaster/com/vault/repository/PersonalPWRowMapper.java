@@ -14,6 +14,7 @@ public class PersonalPWRowMapper implements RowMapper<PersonalPWEntry> {
                     .entryId(rs.getLong("entry_id"))
                     .userId(UUID.fromString(rs.getString("user_id")))
                     .accountName(rs.getString("account_name"))
+                    .username(rs.getString("username"))
                     .passwordHash(rs.getString("password_hash"))
                     .website(rs.getString("url"))
                     .folderId(rs.getString("folder_id") != null ? UUID.fromString(rs.getString("folder_id")) : null)

@@ -76,7 +76,6 @@ public class PersonalPWRepository {
         return count != null && count > 0;
     }
 
-    // ✅ Get all passwords for a user
     public List<PersonalPWEntry> getPasswordsByUser(UUID userId) {
         String sql = "SELECT * FROM password_entries WHERE user_id = ?";
         return jdbcTemplate.query(sql, new PersonalPWRowMapper(), userId);

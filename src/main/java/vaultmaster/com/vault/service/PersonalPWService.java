@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWEntry;
 import vaultmaster.com.vault.repository.PersonalPWRepository;
+import vaultmaster.com.vault.util.AESUtil;
 
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +50,15 @@ public class PersonalPWService {
         if (rowsAffected == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Password entry not found or user unauthorized.");
         }
+    }
+
+    public String decryptPasswordById(Long entryId, UUID userId) throws Exception {
+        PersonalPWEntry entry = repository.getPasswordById(entryId);
+        if (entry == null || !entry.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Password entry not found or unauthorized.");
+        }
+
+        return AESUtil.decrypt(entry.getPasswordHash());
     }
 
     public List<UUID> getUserFolders(UUID userId) {

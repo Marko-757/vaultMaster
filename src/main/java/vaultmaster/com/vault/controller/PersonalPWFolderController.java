@@ -14,43 +14,40 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/passwords/personal/folder")
 public class PersonalPWFolderController {
-    private final PersonalPWFolderService service;
 
-    public PersonalPWFolderController(PersonalPWFolderService service) {
-        this.service = service;
+    private final PersonalPWFolderService folderService;
+
+    public PersonalPWFolderController(PersonalPWFolderService folderService) {
+        this.folderService = folderService;
     }
 
     @PostMapping
-    public ResponseEntity<String> createFolder(@RequestBody PersonalPWFolder folder, Authentication authentication) {
+    public ResponseEntity<PersonalPWFolder> createFolder(@RequestBody PersonalPWFolder folder, Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UUID userId = UUID.fromString(authentication.getName());
         folder.setUserId(userId);
 
-        if (folder.getFolderId() == null) {
-            folder.setFolderId(UUID.randomUUID());
-        }
-
-        service.createFolder(folder);
-        return ResponseEntity.ok("Folder created successfully!");
+        folderService.createFolder(folder);
+        return ResponseEntity.ok(folder);
     }
 
-    @GetMapping
+    @GetMapping("/me/folders")
     public ResponseEntity<List<PersonalPWFolder>> getUserFolders(Authentication authentication) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UUID userId = UUID.fromString(authentication.getName());
-        List<PersonalPWFolder> folders = service.getUserFolders(userId);
+        List<PersonalPWFolder> folders = folderService.getUserFolders(userId);
         return ResponseEntity.ok(folders);
     }
 
     @PutMapping("/{folderId}")
     public ResponseEntity<String> updateFolder(@PathVariable UUID folderId, @RequestBody String newName) {
-        int rowsAffected = service.updateFolder(folderId, newName);
+        int rowsAffected = folderService.updateFolder(folderId, newName);
         return rowsAffected > 0
                 ? ResponseEntity.ok("Folder updated successfully!")
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).body("Folder not found.");
@@ -59,7 +56,7 @@ public class PersonalPWFolderController {
     @DeleteMapping("/{folderId}")
     public ResponseEntity<String> deleteFolder(@PathVariable UUID folderId) {
         try {
-            service.deleteFolder(folderId);
+            folderService.deleteFolder(folderId);
             return ResponseEntity.ok("Folder deleted successfully!");
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());

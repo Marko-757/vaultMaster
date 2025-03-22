@@ -16,6 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/passwords/personal")
 public class PersonalPWController {
+
     private final PersonalPWService service;
 
     public PersonalPWController(PersonalPWService service) {
@@ -23,46 +24,45 @@ public class PersonalPWController {
     }
 
     @PostMapping
-    public ResponseEntity<String> addPassword(@RequestBody PersonalPWEntry entry, Authentication authentication) {
+    public ResponseEntity<PersonalPWEntry> addPassword(@RequestBody PersonalPWEntry entry, Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UUID userId = UUID.fromString(authentication.getName());
         entry.setUserId(userId);
 
-        // Validate required fields
         String missingFields = validateEntry(entry);
         if (!missingFields.isEmpty()) {
-            return ResponseEntity.badRequest().body("Missing required fields: " + missingFields);
+            return ResponseEntity.badRequest().build();
         }
 
         try {
             service.addPassword(entry);
-            return ResponseEntity.ok("Password saved successfully!");
+            return ResponseEntity.ok(entry);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     private String validateEntry(PersonalPWEntry entry) {
         List<String> missingFields = new ArrayList<>();
-
         if (entry.getAccountName() == null || entry.getAccountName().trim().isEmpty()) missingFields.add("accountName");
         if (entry.getUsername() == null || entry.getUsername().trim().isEmpty()) missingFields.add("username");
         if (entry.getPasswordHash() == null || entry.getPasswordHash().trim().isEmpty()) missingFields.add("passwordHash");
-
         return String.join(", ", missingFields);
     }
 
-    @GetMapping
-    public ResponseEntity<?> getUserPasswords(Authentication authentication) {
+    @GetMapping("/me/passwords")
+    public ResponseEntity<List<PersonalPWEntry>> getAllUserPasswords(Authentication authentication) {
         if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UUID userId = UUID.fromString(authentication.getName());
-        return ResponseEntity.ok(service.getUserPasswords(userId));
+        List<PersonalPWEntry> entries = service.getUserPasswords(userId);
+        return ResponseEntity.ok(entries);
     }
 
     @GetMapping("/entry/{entryId}")
@@ -82,10 +82,8 @@ public class PersonalPWController {
 
         try {
             UUID userId = UUID.fromString(authentication.getName());
-            System.out.println("Authenticated user ID: " + userId);
             entry.setUserId(userId);
 
-            // Encrypt the new password before updating
             String encrypted = AESUtil.encrypt(entry.getPasswordHash());
             entry.setPasswordHash(encrypted);
             entry.setEntryId(entryId);
@@ -99,8 +97,20 @@ public class PersonalPWController {
         }
     }
 
+    @GetMapping("/entry/{entryId}/decrypt")
+    public ResponseEntity<String> getDecryptedPassword(@PathVariable Long entryId, Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
 
-
+        try {
+            UUID userId = UUID.fromString(authentication.getName());
+            String decrypted = service.decryptPasswordById(entryId, userId);
+            return ResponseEntity.ok(decrypted);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error decrypting password: " + e.getMessage());
+        }
+    }
 
     @DeleteMapping("/entry/{entryId}")
     public ResponseEntity<String> deletePassword(@PathVariable Long entryId) {
@@ -112,7 +122,6 @@ public class PersonalPWController {
         }
     }
 
-    // ✅ Get passwords by folder
     @GetMapping("/folder/{folderId}")
     public ResponseEntity<?> getPasswordsByFolder(@PathVariable UUID folderId) {
         try {
