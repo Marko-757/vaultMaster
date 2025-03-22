@@ -3,28 +3,48 @@ import FileList from "../components/fileList";
 import PasswordInformation from "../components/passwordInformation";
 import AddPasswordForm from "../components/addPasswordForm";
 import AddFolderForm from "../components/addFolderForm";
+import { logout } from "../api/authService";
 import "./personal_pw_manager.css";
 import { useNavigate } from "react-router";
 import profileIcon from "../Assets/defaultProfileImage.png";
-
+import {
+  createPasswordEntry,
+  createPasswordFolder,
+  getAllPasswordFolders,
+  getAllPasswords,
+  getDecryptedPassword,
+} from "../api/personalPWService";
 
 function PersonalPwManager() {
+  const navigate = useNavigate();
 
-
-  //Profile Dropdown Menu (Top Right)
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
-  };
-  
-  const handleLogout = () => {
-    console.log("Logging out..."); 
-    navigate("/auth/login"); 
-  };
-  
-  // Close dropdown when clicking outside
+
+  const [passwords, setPasswords] = useState([]);
+  const [passwordFolders, setPasswordFolders] = useState([]);
+  const [fileFolders, setFileFolders] = useState([]);
+
+  const [selectedPasswordFolder, setSelectedPasswordFolder] = useState(null);
+  const [selectedPassword, setSelectedPassword] = useState(null);
+
+  const [isAddingPassword, setIsAddingPassword] = useState(false);
+  const [isAddingPasswordFolder, setIsAddingPasswordFolder] = useState(false);
+  const [isAddingFileFolder, setIsAddingFileFolder] = useState(false);
+
+  const [expandedPasswordFolders, setExpandedPasswordFolders] = useState(false);
+  const [expandedFileFolders, setExpandedFileFolders] = useState(false);
+  const previewCount = 2;
+
+  const [passwordToDelete, setPasswordToDelete] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({});
+
+  const [decryptedPassword, setDecryptedPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -35,44 +55,67 @@ function PersonalPwManager() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [fetchedFolders, fetchedPasswords] = await Promise.all([
+          getAllPasswordFolders(),
+          getAllPasswords(),
+        ]);
+  
+        console.log("✅ Fetched Folders:", fetchedFolders);
+        console.log("✅ Fetched Passwords:", fetchedPasswords);
+  
+        setPasswordFolders(fetchedFolders);
+        setPasswords(fetchedPasswords);
+      } catch (error) {
+        console.error("🚨 Error fetching password data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+  
+  
+  
 
-  // Dummy password data
-  const [passwords, setPasswords] = useState([
-    { id: 1, name: "Google Account", username: "user@gmail.com", password: "password123", website: "https://google.com", folderId: 1 },
-    { id: 2, name: "GitHub", username: "devuser", password: "devpassword", website: "https://github.com", folderId: 1 },
-  ]);
-  const [files, setFiles] = useState([]);
+  const filteredPasswords = selectedPasswordFolder
+    ? passwords.filter((p) => p.folderId === selectedPasswordFolder.folderId)
+    : passwords;
 
-  // Dummy folder data: two items each by default
-  const [passwordFolders, setPasswordFolders] = useState([
-    { id: 1, name: "Personal Passwords" },
-    { id: 2, name: "Work Passwords" },
-  ]);
-  const [fileFolders, setFileFolders] = useState([
-    { id: 1, name: "Personal Files" },
-    { id: 2, name: "Work Files" },
-  ]);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/auth/login");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
-  // Selections
-  const [selectedPasswordFolder, setSelectedPasswordFolder] = useState(null);
-  const [selectedFileFolder, setSelectedFileFolder] = useState(null);
-  const [selectedPassword, setSelectedPassword] = useState(null);
+  const addPassword = async (newPasswordEntry) => {
+    setPasswords((prev) => [...prev, newPasswordEntry]);
+    setIsAddingPassword(false);
+  };
+  
 
-  // Adding forms states
-  const [isAddingPassword, setIsAddingPassword] = useState(false);
-  const [isAddingPasswordFolder, setIsAddingPasswordFolder] = useState(false);
-  const [isAddingFileFolder, setIsAddingFileFolder] = useState(false);
+  const addPasswordFolder = async (newlyCreatedFolder) => {
+    setPasswordFolders((prev) => [...prev, newlyCreatedFolder]);
+    setIsAddingPasswordFolder(false);
+  };
 
-  // "See More"/"See Less" states for folder lists (preview count = 2)
-  const previewCount = 2;
-  const [expandedPasswordFolders, setExpandedPasswordFolders] = useState(false);
-  const [expandedFileFolders, setExpandedFileFolders] = useState(false);
+  const deletePasswordFolder = (folderId) => {
+    const confirm = window.confirm("Are you sure you want to delete this folder?");
+    if (!confirm) return;
+    alert("Folder deletion logic not yet implemented.");
+  };
+
   const displayedPasswordFolders =
     passwordFolders.length > previewCount
       ? expandedPasswordFolders
         ? passwordFolders
         : passwordFolders.slice(0, previewCount)
       : passwordFolders;
+
   const displayedFileFolders =
     fileFolders.length > previewCount
       ? expandedFileFolders
@@ -80,116 +123,54 @@ function PersonalPwManager() {
         : fileFolders.slice(0, previewCount)
       : fileFolders;
 
-  // Filter passwords by selected folder
-  const filteredPasswords = selectedPasswordFolder
-    ? passwords.filter((p) => p.folderId === selectedPasswordFolder.id)
-    : passwords;
-
-  // Folder add and delete functions
-  const deletePasswordFolder = (folderId) => {
-    if (window.confirm("Are you sure you want to delete this folder?")) {
-      const updatedFolders = passwordFolders.filter((folder) => folder.id !== folderId);
-      setPasswordFolders(updatedFolders);
-      const updatedPasswords = passwords.map((p) =>
-        p.folderId === folderId ? { ...p, folderId: null } : p
-      );
-      setPasswords(updatedPasswords);
-    }
-  };
-
-  const deleteFileFolder = (folderId) => {
-    if (window.confirm("Are you sure you want to delete this folder?")) {
-      const updatedFolders = fileFolders.filter((folder) => folder.id !== folderId);
-      setFileFolders(updatedFolders);
-      const updatedFiles = files.filter((file) => file.folderId !== folderId);
-      setFiles(updatedFiles);
-    }
-  };
-
-  // Add functions
-  const addPassword = (newPassword) => {
-    setPasswords([
-      ...passwords,
-      { id: passwords.length + 1, folderId: selectedPasswordFolder?.id || null, ...newPassword },
-    ]);
-    setIsAddingPassword(false);
-  };
-
-  const addPasswordFolder = (folderName) => {
-    setPasswordFolders([...passwordFolders, { id: passwordFolders.length + 1, name: folderName }]);
-    setIsAddingPasswordFolder(false);
-  };
-
-  const addFileFolder = (folderName) => {
-    setFileFolders([...fileFolders, { id: fileFolders.length + 1, name: folderName }]);
-    setIsAddingFileFolder(false);
-  };
-
-  // Delete Confirmation Modal for Passwords
-  const [passwordToDelete, setPasswordToDelete] = useState(null);
   const confirmDeletePassword = () => {
     if (passwordToDelete) {
-      setPasswords(passwords.filter((p) => p.id !== passwordToDelete.id));
-      if (selectedPassword && selectedPassword.id === passwordToDelete.id) {
+      setPasswords(passwords.filter((p) => p.entryId !== passwordToDelete.entryId));
+      if (selectedPassword && selectedPassword.entryId === passwordToDelete.entryId) {
         setSelectedPassword(null);
       }
       setPasswordToDelete(null);
     }
   };
 
-  // Inline editing for password details in right column
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({});
   const startEditing = () => {
     setIsEditing(true);
     setEditData(selectedPassword);
   };
+
   const cancelEditing = () => {
     setIsEditing(false);
     setEditData({});
   };
+
   const saveEditing = () => {
-    setPasswords(passwords.map((p) => (p.id === editData.id ? editData : p)));
+    setPasswords(passwords.map((p) => (p.entryId === editData.entryId ? editData : p)));
     setSelectedPassword(editData);
     setIsEditing(false);
     setEditData({});
   };
 
-  const navigate = useNavigate();
-
   return (
     <div className="pw-manager-container">
+      <button className="home-button" onClick={() => navigate("/home")}>🏠︎</button>
 
-      {/* Home Button */}
-      <button className="home-button" onClick={() => navigate("/home")}>🏠︎</button><br></br><br></br><br></br>
       <div className="three-column-container">
+        <div className="profile-container" ref={dropdownRef}>
+          <img src={profileIcon} alt="Profile" className="profile-icon" onClick={toggleDropdown} />
+          {dropdownOpen && (
+            <div className="profile-dropdown">
+              <button onClick={() => navigate("/settings")}>Profile Settings</button>
+              <button onClick={handleLogout}>Log Out</button>
+            </div>
+          )}
+        </div>
 
-
-      {/* Profile Button with Dropdown */}
-      <div className="profile-container" ref={dropdownRef}>
-        <img 
-          src={profileIcon} 
-          alt="Profile" 
-          className="profile-icon" 
-          onClick={toggleDropdown} 
-        />
-        {dropdownOpen && (
-          <div className="profile-dropdown">
-            <button onClick={() => navigate("/settings")}>Profile Settings</button>
-            <button onClick={handleLogout}>Log Out</button>
-          </div>
-        )}
-      </div>
-
-
-        {/* Left Column: Folders */}
         <div className="left-column">
           <div className="sidebar-heading">
             <div className="sidebar-heading-top">Personal</div>
             <div className="sidebar-heading-bottom">Passwords & Files</div>
           </div>
           <hr className="divider" />
-          {/* Password Folders Section */}
           <div className="sidebar-section">
             <div className="section-header">
               <h2>Passwords</h2>
@@ -197,11 +178,11 @@ function PersonalPwManager() {
             </div>
             <div className="folders-list-container scrollable">
               {displayedPasswordFolders.map((folder) => (
-                <div key={folder.id} className="folder-row">
+                <div key={folder.folderId} className="folder-row">
                   <button className="sidebar-item-button" onClick={() => setSelectedPasswordFolder(folder)}>
-                    <span className="team-name">{folder.name}</span>
+                    <span className="team-name">{folder.folderName}</span>
                   </button>
-                  <button className="folder-delete-button" onClick={() => deletePasswordFolder(folder.id)}>X</button>
+                  <button className="folder-delete-button" onClick={() => deletePasswordFolder(folder.folderId)}>X</button>
                 </div>
               ))}
             </div>
@@ -212,7 +193,6 @@ function PersonalPwManager() {
             )}
           </div>
           <hr className="divider" />
-          {/* File Folders Section */}
           <div className="sidebar-section">
             <div className="section-header">
               <h2>Files</h2>
@@ -221,22 +201,16 @@ function PersonalPwManager() {
             <div className="folders-list-container scrollable">
               {displayedFileFolders.map((folder) => (
                 <div key={folder.id} className="folder-row">
-                  <button className="sidebar-item-button" onClick={() => setSelectedFileFolder(folder)}>
+                  <button className="sidebar-item-button">
                     <span className="team-name">{folder.name}</span>
                   </button>
-                  <button className="folder-delete-button" onClick={() => deleteFileFolder(folder.id)}>X</button>
+                  <button className="folder-delete-button" onClick={() => alert("Delete not implemented")}>X</button>
                 </div>
               ))}
             </div>
-            {fileFolders.length > previewCount && (
-              <button className="see-toggle-button" onClick={() => setExpandedFileFolders(!expandedFileFolders)}>
-                {expandedFileFolders ? "See Less" : "See More"}
-              </button>
-            )}
           </div>
         </div>
 
-        {/* Middle Column: Password Names List */}
         <div className="middle-column">
           <h2 className="column-heading">Passwords</h2>
           <hr className="middle-divider" />
@@ -246,11 +220,23 @@ function PersonalPwManager() {
             ) : (
               filteredPasswords.map((password) => (
                 <button
-                  key={password.id}
+                  key={password.entryId}
                   className="password-name-button"
-                  onClick={() => { setSelectedPassword(password); setIsEditing(false); }}
+                  onClick={async () => {
+                    try {
+                      const decrypted = await getDecryptedPassword(password.entryId);
+                      setSelectedPassword(password);
+                      setDecryptedPassword(decrypted);
+                      setShowPassword(false);
+                      setIsEditing(false);
+                    } catch (error) {
+                      console.error("Failed to decrypt password", error);
+                      setSelectedPassword(password);
+                      setDecryptedPassword("");
+                    }
+                  }}
                 >
-                  {password.name}
+                  {password.accountName}
                 </button>
               ))
             )}
@@ -260,33 +246,20 @@ function PersonalPwManager() {
           </button>
         </div>
 
-        {/* Right Column: Password Details / Add/Edit Form */}
         <div className="right-column">
           {isAddingPassword ? (
-            <div className="password-detail-view">
-              <AddPasswordForm
-                folders={passwordFolders}
-                selectedFolder={selectedPasswordFolder}
-                onSave={addPassword}
-                onCancel={() => setIsAddingPassword(false)}
-              />
-            </div>
+            <AddPasswordForm
+              folders={passwordFolders}
+              selectedFolder={selectedPasswordFolder}
+              onSave={addPassword}
+              onCancel={() => setIsAddingPassword(false)}
+            />
           ) : isAddingPasswordFolder ? (
-            <div className="password-detail-view">
-              <AddFolderForm
-                formType="password"
-                onSave={addPasswordFolder}
-                onCancel={() => setIsAddingPasswordFolder(false)}
-              />
-            </div>
-          ) : isAddingFileFolder ? (
-            <div className="password-detail-view">
-              <AddFolderForm
-                formType="file"
-                onSave={addFileFolder}
-                onCancel={() => setIsAddingFileFolder(false)}
-              />
-            </div>
+            <AddFolderForm
+              formType="password"
+              onSave={addPasswordFolder}
+              onCancel={() => setIsAddingPasswordFolder(false)}
+            />
           ) : selectedPassword ? (
             isEditing ? (
               <div className="edit-form-container">
@@ -295,8 +268,8 @@ function PersonalPwManager() {
                   <label>Account Name:</label>
                   <input
                     type="text"
-                    value={editData.name || ""}
-                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    value={editData.accountName || ""}
+                    onChange={(e) => setEditData({ ...editData, accountName: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
@@ -311,8 +284,8 @@ function PersonalPwManager() {
                   <label>Password:</label>
                   <input
                     type="text"
-                    value={editData.password || ""}
-                    onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+                    value={editData.passwordHash || ""}
+                    onChange={(e) => setEditData({ ...editData, passwordHash: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
@@ -331,7 +304,12 @@ function PersonalPwManager() {
             ) : (
               <div className="password-detail-view">
                 <button className="close-detail-button" onClick={() => setSelectedPassword(null)}>X</button>
-                <PasswordInformation password={selectedPassword} />
+                <PasswordInformation
+                  password={selectedPassword}
+                  decryptedPassword={decryptedPassword}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                />
                 <div className="password-actions">
                   <button className="edit-password-button" onClick={startEditing}>Edit</button>
                   <button className="delete-password-button" onClick={() => setPasswordToDelete(selectedPassword)}>
@@ -341,24 +319,18 @@ function PersonalPwManager() {
               </div>
             )
           ) : (
-            
             <div className="no-password-selected">No Password Selected</div>
           )}
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       {passwordToDelete && (
         <div className="delete-modal">
           <div className="delete-modal-content">
-            <p>Are you sure you want to delete "{passwordToDelete.name}"?</p>
+            <p>Are you sure you want to delete "{passwordToDelete.accountName}"?</p>
             <div className="delete-modal-buttons">
-              <button className="confirm-delete-button" onClick={confirmDeletePassword}>
-                Confirm
-              </button>
-              <button className="cancel-delete-button" onClick={() => setPasswordToDelete(null)}>
-                Cancel
-              </button>
+              <button className="confirm-delete-button" onClick={confirmDeletePassword}>Confirm</button>
+              <button className="cancel-delete-button" onClick={() => setPasswordToDelete(null)}>Cancel</button>
             </div>
           </div>
         </div>

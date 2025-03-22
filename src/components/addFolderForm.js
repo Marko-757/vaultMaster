@@ -1,20 +1,28 @@
 import React, { useState } from "react";
-import "./addFolderForm.css";
+import "./addPasswordForm.css";
+import { createPasswordFolder } from "../api/personalPWService";
 
 function AddFolderForm({ formType, onSave, onCancel }) {
   const [folderName, setFolderName] = useState("");
 
-  const handleSave = () => {
-    if (folderName.trim() === "") {
-      alert("Folder name cannot be empty.");
+  const handleSave = async () => {
+    if (!folderName.trim()) {
+      alert("Please provide a folder name.");
       return;
     }
-    onSave(folderName);
+
+    try {
+      const newFolder = await createPasswordFolder({ folderName });
+      onSave(newFolder);
+    } catch (error) {
+      console.error("Error creating folder:", error);
+      alert("Failed to create folder.");
+    }
   };
 
   return (
-    <div className="add-folder-form">
-      <h3>{formType === "password" ? "Create New Password Folder" : "Create New File Folder"}</h3>
+    <div className="add-password-form">
+      <h3>Add New {formType === "password" ? "Password" : "File"} Folder</h3>
       <input
         type="text"
         placeholder="Folder Name"

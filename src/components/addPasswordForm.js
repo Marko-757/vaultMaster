@@ -1,14 +1,15 @@
 import React, { useState } from "react";
 import PasswordGenerator from "./passwordGenerator";
 import "./addPasswordForm.css";
+import { createPasswordEntry } from "../api/personalPWService";
 
-function AddPasswordForm({ folders, selectedFolder, onSave, onCancel }) {
+function AddPasswordForm({ folders = [], selectedFolder, onSave, onCancel }) {
   const [formData, setFormData] = useState({
-    name: "",
+    accountName: "",
     username: "",
-    password: "",
+    passwordHash: "",
     website: "",
-    folderId: selectedFolder?.id || null,
+    folderId: selectedFolder?.folderId || "",
   });
 
   const handleInputChange = (e) => {
@@ -16,22 +17,38 @@ function AddPasswordForm({ folders, selectedFolder, onSave, onCancel }) {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSave = () => {
-    if (formData.name && formData.username && formData.password) {
-      onSave(formData);
-    } else {
-      alert("Please fill out all required fields.");
+  const handleSave = async () => {
+    if (!formData.accountName || !formData.username || !formData.passwordHash) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+  
+    const dataToSubmit = {
+      ...formData,
+      website: formData.website?.trim() === "" ? null : formData.website,
+    };
+  
+    try {
+      console.log("📤 Submitting password entry:", dataToSubmit);
+      const createdEntry = await createPasswordEntry(dataToSubmit); // <- this calls the function above
+      onSave(createdEntry);
+    } catch (error) {
+      console.error("🚫 Error creating password:", error.message);
+      alert("Failed to create password.");
     }
   };
+  
+  
+
 
   return (
     <div className="add-password-form">
       <h3>Add New Password</h3>
       <input
         type="text"
-        name="name"
+        name="accountName"
         placeholder="Account Name (e.g., GitHub)"
-        value={formData.name}
+        value={formData.accountName}
         onChange={handleInputChange}
       />
       <input
@@ -43,9 +60,9 @@ function AddPasswordForm({ folders, selectedFolder, onSave, onCancel }) {
       />
       <input
         type="text"
-        name="password"
+        name="passwordHash"
         placeholder="Password"
-        value={formData.password}
+        value={formData.passwordHash}
         onChange={handleInputChange}
       />
       <input
@@ -58,22 +75,16 @@ function AddPasswordForm({ folders, selectedFolder, onSave, onCancel }) {
       <select
         name="folderId"
         value={formData.folderId || ""}
-        onChange={(e) =>
-          setFormData({ ...formData, folderId: e.target.value || null })
-        }
+        onChange={(e) => setFormData({ ...formData, folderId: e.target.value || null })}
       >
         <option value="">No Folder</option>
         {folders.map((folder) => (
-          <option key={folder.id} value={folder.id}>
-            {folder.name}
+          <option key={folder.folderId} value={folder.folderId}>
+            {folder.folderName}
           </option>
         ))}
       </select>
-      <PasswordGenerator
-        onGenerate={(password) =>
-          setFormData({ ...formData, password })
-        }
-      />
+      <PasswordGenerator onGenerate={(password) => setFormData({ ...formData, passwordHash: password })} />
       <div className="form-buttons">
         <button onClick={handleSave}>Save</button>
         <button onClick={onCancel}>Cancel</button>
