@@ -8,6 +8,7 @@ import "./personal_pw_manager.css";
 import { useNavigate } from "react-router";
 import profileIcon from "../Assets/defaultProfileImage.png";
 import * as personalPWService from "../api/personalPWService";
+import NavbarVaultMaster from "../components/navbarVaultMaster";
 
 function PersonalPwManager() {
   const navigate = useNavigate();
@@ -90,8 +91,28 @@ function PersonalPwManager() {
   };
 
   const addPassword = async (newPasswordEntry) => {
-    setPasswords((prev) => [...prev, newPasswordEntry]);
-    setIsAddingPassword(false);
+    try {
+      const createdEntry = await personalPWService.createPasswordEntry(
+        newPasswordEntry
+      );
+
+      // Decrypt the password for immediate UI display
+      const decrypted = await personalPWService.getDecryptedPassword(
+        createdEntry.entryId
+      );
+      console.log("🌐 received decrypted password from backend:", decrypted);
+
+      // Save encrypted entry, then set decrypted for preview
+      setPasswords((prev) => [...prev, createdEntry]);
+      setSelectedPassword(createdEntry);
+      setDecryptedPassword(decrypted);
+      setShowPassword(false);
+      setIsEditing(false);
+      setIsAddingPassword(false);
+    } catch (error) {
+      console.error("🚨 Error adding or decrypting password:", error);
+      alert("Failed to add password.");
+    }
   };
 
   const addPasswordFolder = async (newlyCreatedFolder) => {
@@ -128,8 +149,11 @@ function PersonalPwManager() {
   };
 
   const renameFolder = (folder) => {
-    setFolderBeingRenamed(folder);
     setIsRenamingFolder(true);
+    setFolderBeingRenamed(folder);
+    setIsAddingPassword(false);
+    setIsAddingPasswordFolder(false);
+    setSelectedPassword(null);
   };
 
   const displayedPasswordFolders =
@@ -168,10 +192,19 @@ function PersonalPwManager() {
 
   const startEditing = async () => {
     try {
-      const decryptedPassword = await personalPWService.getDecryptedPassword(
+      const decrypted = await personalPWService.getDecryptedPassword(
         selectedPassword.entryId
       );
-      setEditData({ ...selectedPassword, passwordHash: decryptedPassword });
+
+      setEditData({
+        entryId: selectedPassword.entryId,
+        accountName: selectedPassword.accountName,
+        username: selectedPassword.username,
+        website: selectedPassword.website,
+        folderId: selectedPassword.folderId,
+        passwordHash: decrypted,
+      });
+
       setIsEditing(true);
     } catch (error) {
       console.error("🚨 Error decrypting password for editing:", error);
@@ -202,201 +235,232 @@ function PersonalPwManager() {
 
   return (
     <div className="pw-manager-container">
-    <button className="home-button" onClick={() => navigate("/home")}>
-      🏠︎
-    </button>
-
-    <div className="three-column-container">
-      {/* Profile Icon */}
-      <div className="profile-container" ref={dropdownRef}>
-        <img
-          src={profileIcon}
-          alt="Profile"
-          className="profile-icon"
-          onClick={toggleDropdown}
-        />
-        {dropdownOpen && (
-          <div className="profile-dropdown">
-            <button onClick={() => navigate("/settings")}>
-              Profile Settings
-            </button>
-            <button onClick={handleLogout}>Log Out</button>
-          </div>
-        )}
-      </div>
-
-      {/* LEFT COLUMN */}
-      <div className="left-column">
-        <div className="sidebar-heading">
-          <div className="sidebar-heading-top">Personal</div>
-          <div className="sidebar-heading-bottom">Passwords & Files</div>
+      <button className="home-button" onClick={() => navigate("/home")}>
+        🏠︎
+      </button>
+      <NavbarVaultMaster onLogout={handleLogout} />
+      <div className="three-column-container">
+        {/* Profile Icon */}
+        <div className="profile-container" ref={dropdownRef}>
+          <img
+            src={profileIcon}
+            alt="Profile"
+            className="profile-icon"
+            onClick={toggleDropdown}
+          />
+          {dropdownOpen && (
+            <div className="profile-dropdown">
+              <button onClick={() => navigate("/settings")}>
+                Profile Settings
+              </button>
+              <button onClick={handleLogout}>Log Out</button>
+            </div>
+          )}
         </div>
-        <hr className="divider" />
 
-        {/* All Passwords (stationary) */}
-        <button
-          className="btn btn-outline-primary mb-3 w-100"
-          onClick={() => setSelectedPasswordFolder(null)}
-        >
-          All Passwords
-        </button>
+        {/* left column */}
+        <div className="left-column">
+          <div className="sidebar-heading">
+            <div className="sidebar-heading-top">Personal</div>
+            <div className="sidebar-heading-bottom">Passwords & Files</div>
+          </div>
+          <hr className="divider" />
 
-        {/* Scrollable Accordion Section */}
-        <div className="left-scrollable-section">
-          <div className="accordion-wrapper">
-            <div className="accordion w-100" id="foldersAccordion">
-              {/* Password Folders Accordion */}
-              <div className="accordion-item">
-                <h2 className="accordion-header" id="headingPasswords">
-                  <button
-                    className="accordion-button"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapsePasswords"
-                    aria-expanded="true"
-                    aria-controls="collapsePasswords"
-                  >
-                    Password Folders
-                  </button>
-                </h2>
-                <div
-                  id="collapsePasswords"
-                  className="accordion-collapse collapse show"
-                  aria-labelledby="headingPasswords"
-                  data-bs-parent="#foldersAccordion"
-                >
-                  <div className="accordion-body">
-                    {passwordFolders.map((folder) => (
-                      <div
-                        key={folder.folderId}
-                        className="btn-group w-100 mb-2 folder-split-button"
-                      >
-                        <button
-                          type="button"
-                          className="btn btn-primary flex-grow-1"
-                          onClick={() => setSelectedPasswordFolder(folder)}
-                        >
-                          {folder.folderName}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0 small-dropdown"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                        >
-                          <span className="visually-hidden">Toggle Dropdown</span>
-                        </button>
-                        <ul className="dropdown-menu">
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              onClick={() => renameFolder(folder)}
-                            >
-                              Rename
-                            </button>
-                          </li>
-                          <li>
-                            <button
-                              className="dropdown-item"
-                              onClick={() => deletePasswordFolder(folder.folderId)}
-                            >
-                              Delete
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    ))}
+          {/* All Passwords (stationary) */}
+          <button
+            className={`btn btn-outline-primary mb-3 w-100 ${
+              selectedPasswordFolder === null ? "active-folder" : ""
+            }`}
+            onClick={() => setSelectedPasswordFolder(null)}
+          >
+            All Passwords
+          </button>
 
+          {/* Scrollable Accordion Section */}
+          <div className="left-scrollable-section">
+            <div className="accordion-wrapper">
+              <div className="accordion w-100" id="foldersAccordion">
+                {/* Password Folders Accordion */}
+                <div className="accordion-item">
+                  <h2 className="accordion-header" id="headingPasswords">
                     <button
-                      className="btn btn-success w-100"
-                      onClick={() => setIsAddingPasswordFolder(true)}
+                      className="accordion-button"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapsePasswords"
+                      aria-expanded="true"
+                      aria-controls="collapsePasswords"
                     >
-                      + Add Folder
+                      Password Folders
                     </button>
+                  </h2>
+                  <div
+                    id="collapsePasswords"
+                    className="accordion-collapse collapse"
+                    aria-labelledby="headingPasswords"
+                    data-bs-parent="#foldersAccordion"
+                  >
+                    <div className="accordion-body">
+                      {passwordFolders.map((folder) => (
+                        <div
+                          key={folder.folderId}
+                          className="btn-group w-100 mb-2 folder-split-button"
+                        >
+                          <button
+                            type="button"
+                            className={`btn btn-primary flex-grow-1 ${
+                              selectedPasswordFolder?.folderId ===
+                              folder.folderId
+                                ? "active-folder"
+                                : ""
+                            }`}
+                            onClick={() => setSelectedPasswordFolder(folder)}
+                          >
+                            {folder.folderName}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0 small-dropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <span className="visually-hidden">
+                              Toggle Dropdown
+                            </span>
+                          </button>
+                          <ul className="dropdown-menu">
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => renameFolder(folder)}
+                              >
+                                Rename
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() =>
+                                  deletePasswordFolder(folder.folderId)
+                                }
+                              >
+                                Delete
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      ))}
+
+                      <button
+                        className="btn btn-success w-100"
+                        onClick={() => {
+                          setIsAddingPasswordFolder(true);
+                          setIsAddingPassword(false);
+                          setIsRenamingFolder(false);
+                          setSelectedPassword(null);
+                        }}
+                      >
+                        + Add Folder
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* File Folders Accordion */}
-              <div className="accordion-item">
-                <h2 className="accordion-header" id="headingFiles">
-                  <button
-                    className="accordion-button collapsed"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#collapseFiles"
-                    aria-expanded="false"
-                    aria-controls="collapseFiles"
-                  >
-                    File Folders
-                  </button>
-                </h2>
-                <div
-                  id="collapseFiles"
-                  className="accordion-collapse collapse"
-                  aria-labelledby="headingFiles"
-                  data-bs-parent="#foldersAccordion"
-                >
-                  <div className="accordion-body">
-                    {fileFolders.map((folder) => (
-                      <div key={folder.id} className="folder-row">
-                        <button className="sidebar-item-button">
-                          {folder.name}
-                        </button>
-                      </div>
-                    ))}
+                {/* File Folders Accordion */}
+                <div className="accordion-item">
+                  <h2 className="accordion-header" id="headingFiles">
                     <button
-                      className="btn btn-success w-100"
-                      onClick={() => setIsAddingFileFolder(true)}
+                      className="accordion-button collapsed"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseFiles"
+                      aria-expanded="false"
+                      aria-controls="collapseFiles"
                     >
-                      + Add File Folder
+                      File Folders
                     </button>
+                  </h2>
+                  <div
+                    id="collapseFiles"
+                    className="accordion-collapse collapse"
+                    aria-labelledby="headingFiles"
+                    data-bs-parent="#foldersAccordion"
+                  >
+                    <div className="accordion-body">
+                      {fileFolders.map((folder) => (
+                        <div key={folder.id} className="folder-row">
+                          <button className="sidebar-item-button">
+                            {folder.name}
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        className="btn btn-success w-100"
+                        onClick={() => setIsAddingFileFolder(true)}
+                      >
+                        + Add File Folder
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
         <div className="middle-column">
-          <h2 className="column-heading">Passwords</h2>
-          <hr className="middle-divider" />
+          <div className="sticky-header">
+            <h2 className="column-heading">Passwords</h2>
+          </div>
+
           <div className="password-name-list">
+            <button
+              className="add-password-button"
+              onClick={() => {
+                setIsAddingPassword(true);
+                setIsAddingPasswordFolder(false);
+                setIsRenamingFolder(false);
+                setSelectedPassword(null);
+              }}
+            >
+              + Add Password
+            </button>
+
             {filteredPasswords.length === 0 ? (
               <div className="no-passwords">No Passwords Found</div>
             ) : (
-              filteredPasswords.map((password) => (
-                <button
-                  key={password.entryId}
-                  className="password-name-button"
-                  onClick={async () => {
-                    try {
-                      const decrypted =
-                        await personalPWService.getDecryptedPassword(
-                          password.entryId
-                        );
-                      setSelectedPassword(password);
-                      setDecryptedPassword(decrypted);
-                      setShowPassword(false);
-                      setIsEditing(false);
-                    } catch (error) {
-                      console.error("Failed to decrypt password", error);
-                      setSelectedPassword(password);
-                      setDecryptedPassword("");
-                    }
-                  }}
-                >
-                  {password.accountName}
-                </button>
-              ))
+              [...filteredPasswords]
+                .sort((a, b) => a.accountName.localeCompare(b.accountName))
+                .map((password) => (
+                  <button
+                    key={password.entryId}
+                    className={`password-name-button ${
+                      selectedPassword?.entryId === password.entryId
+                        ? "active-password"
+                        : ""
+                    }`}
+                    onClick={async () => {
+                      try {
+                        const decrypted =
+                          await personalPWService.getDecryptedPassword(
+                            password.entryId
+                          );
+                        setSelectedPassword(password);
+                        setDecryptedPassword(decrypted);
+                        setShowPassword(false);
+                        setIsEditing(false);
+                      } catch (error) {
+                        console.error("Failed to decrypt password", error);
+                        setSelectedPassword(password);
+                        setDecryptedPassword("");
+                      }
+                    }}
+                  >
+                    {password.accountName}
+                  </button>
+                ))
             )}
           </div>
-          <button
-            className="add-password-button"
-            onClick={() => setIsAddingPassword(true)}
-          >
-            Add Password
-          </button>
         </div>
 
         <div className="right-column">
@@ -504,6 +568,7 @@ function PersonalPwManager() {
                 >
                   X
                 </button>
+                {console.log("🔍 decryptedPassword prop:", decryptedPassword)}
                 <PasswordInformation
                   password={selectedPassword}
                   decryptedPassword={decryptedPassword}
