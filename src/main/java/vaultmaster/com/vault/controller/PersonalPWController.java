@@ -38,6 +38,10 @@ public class PersonalPWController {
         }
 
         try {
+            // Encrypt password before storing
+            String encrypted = AESUtil.encrypt(entry.getPasswordHash());
+            entry.setPasswordHash(encrypted);
+
             service.addPassword(entry);
             return ResponseEntity.ok(entry);
         } catch (Exception e) {
@@ -45,6 +49,7 @@ public class PersonalPWController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     private String validateEntry(PersonalPWEntry entry) {
         List<String> missingFields = new ArrayList<>();
