@@ -36,6 +36,21 @@ export async function createPasswordEntry(data) {
     return await response.text();
   }
 
+  export const deletePassword = async (entryId) => {
+    const response = await fetch(`http://localhost:8080/api/passwords/personal/entry/${entryId}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+  
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to delete password");
+    }
+  
+    return await response.text();
+  };
+  
+
   export const createPasswordFolder = async ({ folderName }) => {
     const response = await fetch(`${BASE_URL}/folder`, {
       method: "POST",

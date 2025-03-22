@@ -66,9 +66,6 @@ function PersonalPwManager() {
           personalPWService.getAllPasswords(),
         ]);
 
-        console.log("Fetched Folders:", fetchedFolders);
-        console.log("Fetched Passwords:", fetchedPasswords);
-
         setPasswordFolders(fetchedFolders);
         setPasswords(fetchedPasswords);
       } catch (error) {
@@ -149,18 +146,23 @@ function PersonalPwManager() {
         : fileFolders.slice(0, previewCount)
       : fileFolders;
 
-  const confirmDeletePassword = () => {
+  const confirmDeletePassword = async () => {
     if (passwordToDelete) {
-      setPasswords(
-        passwords.filter((p) => p.entryId !== passwordToDelete.entryId)
-      );
-      if (
-        selectedPassword &&
-        selectedPassword.entryId === passwordToDelete.entryId
-      ) {
-        setSelectedPassword(null);
+      try {
+        await personalPWService.deletePassword(passwordToDelete.entryId);
+        const updatedPasswords = await personalPWService.getAllPasswords();
+        setPasswords(updatedPasswords);
+        if (
+          selectedPassword &&
+          selectedPassword.entryId === passwordToDelete.entryId
+        ) {
+          setSelectedPassword(null);
+        }
+        setPasswordToDelete(null);
+      } catch (err) {
+        console.error("Failed to delete password:", err);
+        alert("Failed to delete password.");
       }
-      setPasswordToDelete(null);
     }
   };
 
@@ -200,129 +202,162 @@ function PersonalPwManager() {
 
   return (
     <div className="pw-manager-container">
-      <button className="home-button" onClick={() => navigate("/home")}>
-        🏠︎
-      </button>
+    <button className="home-button" onClick={() => navigate("/home")}>
+      🏠︎
+    </button>
 
-      <div className="three-column-container">
-        <div className="profile-container" ref={dropdownRef}>
-          <img
-            src={profileIcon}
-            alt="Profile"
-            className="profile-icon"
-            onClick={toggleDropdown}
-          />
-          {dropdownOpen && (
-            <div className="profile-dropdown">
-              <button onClick={() => navigate("/settings")}>
-                Profile Settings
-              </button>
-              <button onClick={handleLogout}>Log Out</button>
-            </div>
-          )}
-        </div>
-
-        <div className="left-column">
-          <div className="sidebar-heading">
-            <div className="sidebar-heading-top">Personal</div>
-            <div className="sidebar-heading-bottom">Passwords & Files</div>
+    <div className="three-column-container">
+      {/* Profile Icon */}
+      <div className="profile-container" ref={dropdownRef}>
+        <img
+          src={profileIcon}
+          alt="Profile"
+          className="profile-icon"
+          onClick={toggleDropdown}
+        />
+        {dropdownOpen && (
+          <div className="profile-dropdown">
+            <button onClick={() => navigate("/settings")}>
+              Profile Settings
+            </button>
+            <button onClick={handleLogout}>Log Out</button>
           </div>
-          <hr className="divider" />
-          <div className="sidebar-section">
-            <div className="section-header">
-              <h2>Passwords</h2>
-              <button
-                className="section-add-button"
-                onClick={() => setIsAddingPasswordFolder(true)}
-              >
-                +
-              </button>
-            </div>
-            <div className="folders-list-container scrollable">
-              {displayedPasswordFolders.map((folder) => (
+        )}
+      </div>
+
+      {/* LEFT COLUMN */}
+      <div className="left-column">
+        <div className="sidebar-heading">
+          <div className="sidebar-heading-top">Personal</div>
+          <div className="sidebar-heading-bottom">Passwords & Files</div>
+        </div>
+        <hr className="divider" />
+
+        {/* All Passwords (stationary) */}
+        <button
+          className="btn btn-outline-primary mb-3 w-100"
+          onClick={() => setSelectedPasswordFolder(null)}
+        >
+          All Passwords
+        </button>
+
+        {/* Scrollable Accordion Section */}
+        <div className="left-scrollable-section">
+          <div className="accordion-wrapper">
+            <div className="accordion w-100" id="foldersAccordion">
+              {/* Password Folders Accordion */}
+              <div className="accordion-item">
+                <h2 className="accordion-header" id="headingPasswords">
+                  <button
+                    className="accordion-button"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapsePasswords"
+                    aria-expanded="true"
+                    aria-controls="collapsePasswords"
+                  >
+                    Password Folders
+                  </button>
+                </h2>
                 <div
-                  key={folder.folderId}
-                  className="btn-group folder-split-button"
+                  id="collapsePasswords"
+                  className="accordion-collapse collapse show"
+                  aria-labelledby="headingPasswords"
+                  data-bs-parent="#foldersAccordion"
                 >
-                  <button
-                    type="button"
-                    className="btn btn-primary folder-main-button"
-                    onClick={() => setSelectedPasswordFolder(folder)}
-                  >
-                    {folder.folderName}
-                  </button>
+                  <div className="accordion-body">
+                    {passwordFolders.map((folder) => (
+                      <div
+                        key={folder.folderId}
+                        className="btn-group w-100 mb-2 folder-split-button"
+                      >
+                        <button
+                          type="button"
+                          className="btn btn-primary flex-grow-1"
+                          onClick={() => setSelectedPasswordFolder(folder)}
+                        >
+                          {folder.folderName}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0 small-dropdown"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          <span className="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul className="dropdown-menu">
+                          <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => renameFolder(folder)}
+                            >
+                              Rename
+                            </button>
+                          </li>
+                          <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => deletePasswordFolder(folder.folderId)}
+                            >
+                              Delete
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    ))}
 
+                    <button
+                      className="btn btn-success w-100"
+                      onClick={() => setIsAddingPasswordFolder(true)}
+                    >
+                      + Add Folder
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* File Folders Accordion */}
+              <div className="accordion-item">
+                <h2 className="accordion-header" id="headingFiles">
                   <button
+                    className="accordion-button collapsed"
                     type="button"
-                    className="btn btn-primary dropdown-toggle dropdown-toggle-split"
-                    data-bs-toggle="dropdown"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseFiles"
                     aria-expanded="false"
+                    aria-controls="collapseFiles"
                   >
-                    <span className="visually-hidden">Toggle Dropdown</span>
+                    File Folders
                   </button>
-
-                  <ul className="dropdown-menu">
-                    <li>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => renameFolder(folder)}
-                      >
-                        Rename
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => deletePasswordFolder(folder.folderId)}
-                      >
-                        Delete
-                      </button>
-                    </li>
-                  </ul>
+                </h2>
+                <div
+                  id="collapseFiles"
+                  className="accordion-collapse collapse"
+                  aria-labelledby="headingFiles"
+                  data-bs-parent="#foldersAccordion"
+                >
+                  <div className="accordion-body">
+                    {fileFolders.map((folder) => (
+                      <div key={folder.id} className="folder-row">
+                        <button className="sidebar-item-button">
+                          {folder.name}
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      className="btn btn-success w-100"
+                      onClick={() => setIsAddingFileFolder(true)}
+                    >
+                      + Add File Folder
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-
-            {passwordFolders.length > previewCount && (
-              <button
-                className="see-toggle-button"
-                onClick={() =>
-                  setExpandedPasswordFolders(!expandedPasswordFolders)
-                }
-              >
-                {expandedPasswordFolders ? "See Less" : "See More"}
-              </button>
-            )}
-          </div>
-          <hr className="divider" />
-          <div className="sidebar-section">
-            <div className="section-header">
-              <h2>Files</h2>
-              <button
-                className="section-add-button"
-                onClick={() => setIsAddingFileFolder(true)}
-              >
-                +
-              </button>
-            </div>
-            <div className="folders-list-container scrollable">
-              {displayedFileFolders.map((folder) => (
-                <div key={folder.id} className="folder-row">
-                  <button className="sidebar-item-button">
-                    <span className="team-name">{folder.name}</span>
-                  </button>
-                  <button
-                    className="folder-delete-button"
-                    onClick={() => alert("Delete not implemented")}
-                  >
-                    X
-                  </button>
-                </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
-
+      </div>
         <div className="middle-column">
           <h2 className="column-heading">Passwords</h2>
           <hr className="middle-divider" />

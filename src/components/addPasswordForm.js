@@ -38,9 +38,6 @@ function AddPasswordForm({ folders = [], selectedFolder, onSave, onCancel }) {
     }
   };
   
-  
-
-
   return (
     <div className="add-password-form">
       <h3>Add New Password</h3>
