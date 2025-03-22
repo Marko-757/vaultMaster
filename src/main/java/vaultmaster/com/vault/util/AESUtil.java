@@ -49,16 +49,26 @@ public class AESUtil {
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
 
-        return new String(cipher.doFinal(encryptedBytes));
+        return new String(cipher.doFinal(encryptedBytes), StandardCharsets.UTF_8);
     }
 
+    public static boolean isValidEncryptedFormat(String encryptedData) {
+        if (encryptedData == null || !encryptedData.contains(":")) return false;
 
+        String[] parts = encryptedData.split(":");
+        if (parts.length != 2) return false;
 
-    public static String generateIV() {
-        byte[] iv = new byte[16]; // AES requires exactly 16 bytes
-        new SecureRandom().nextBytes(iv);
-        return Base64.getEncoder().encodeToString(iv); // Encode for storage
+        try {
+            // Try decoding both parts from Base64
+            Base64.getDecoder().decode(parts[0]);
+            Base64.getDecoder().decode(parts[1]);
+            return true;
+        } catch (IllegalArgumentException e) {
+            // Base64 decoding failed
+            return false;
+        }
     }
+
 
 }
 

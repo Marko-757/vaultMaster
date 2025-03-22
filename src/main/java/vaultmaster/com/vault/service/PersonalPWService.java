@@ -18,10 +18,10 @@ public class PersonalPWService {
         this.repository = repository;
     }
 
-    public int addPassword(PersonalPWEntry entry) throws Exception {
-        entry.setTimestamps();
-        return repository.savePassword(entry);
+    public PersonalPWEntry addPassword(PersonalPWEntry entry) {
+        return repository.insertPassword(entry);
     }
+
 
     public List<PersonalPWEntry> getUserPasswords(UUID userId) {
         if (!repository.userExists(userId)) {
@@ -58,8 +58,23 @@ public class PersonalPWService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Password entry not found or unauthorized.");
         }
 
-        return AESUtil.decrypt(entry.getPasswordHash());
+        String encryptedPassword = entry.getPasswordHash();
+
+        // 🐞 Debug log to check what’s being decrypted
+        System.out.println("🔐 Encrypted password from DB: " + encryptedPassword);
+
+        // 🔍 Validate format before decrypting
+        if (!AESUtil.isValidEncryptedFormat(encryptedPassword)) {
+            throw new IllegalArgumentException("Encrypted password format is invalid (missing IV or delimiter).");
+        }
+
+        String decrypted = AESUtil.decrypt(encryptedPassword);
+        System.out.println("🔓 Decrypted password: " + decrypted); // 👀 Optional second debug
+
+        return decrypted;
     }
+
+
 
     public List<UUID> getUserFolders(UUID userId) {
         if (!repository.userExists(userId)) {

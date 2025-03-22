@@ -9,6 +9,7 @@ import vaultmaster.com.vault.model.PersonalPWEntry;
 import vaultmaster.com.vault.service.PersonalPWService;
 import vaultmaster.com.vault.util.AESUtil;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class PersonalPWController {
     public PersonalPWController(PersonalPWService service) {
         this.service = service;
     }
+
 
     @PostMapping
     public ResponseEntity<PersonalPWEntry> addPassword(@RequestBody PersonalPWEntry entry, Authentication authentication) {
@@ -38,18 +40,31 @@ public class PersonalPWController {
         }
 
         try {
-            // Encrypt password before storing
-            String encrypted = AESUtil.encrypt(entry.getPasswordHash());
-            entry.setPasswordHash(encrypted);
+            // Set timestamps 🕒
+            entry.setCreatedAt(LocalDateTime.now());
+            entry.setUpdatedAt(LocalDateTime.now());
+            System.out.println("[DEBUG] Raw password (from request): " + entry.getPasswordHash());
 
-            service.addPassword(entry);
-            return ResponseEntity.ok(entry);
+            // Encrypt the password before storing 🔐
+            String original = entry.getPasswordHash();
+            System.out.println("[DEBUG] Incoming password value: " + original);
+
+            if (!AESUtil.isValidEncryptedFormat(original)) {
+                String encrypted = AESUtil.encrypt(original);
+                System.out.println("[DEBUG] Password was plaintext. Encrypted to: " + encrypted);
+                entry.setPasswordHash(encrypted);
+            } else {
+                System.out.println("[DEBUG] Password is already encrypted. Skipping encryption.");
+            }
+
+
+            PersonalPWEntry savedEntry = service.addPassword(entry);
+            return ResponseEntity.ok(savedEntry);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
     private String validateEntry(PersonalPWEntry entry) {
         List<String> missingFields = new ArrayList<>();
