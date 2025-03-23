@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/passwords/personal/folder")
+@RequestMapping("/api/folders/personal")
 public class PersonalPWFolderController {
 
     private final PersonalPWFolderService folderService;
@@ -35,7 +35,7 @@ public class PersonalPWFolderController {
         return ResponseEntity.ok(folder);
     }
 
-    @GetMapping("/me/folders")
+    @GetMapping("/me")
     public ResponseEntity<List<PersonalPWFolder>> getUserFolders(Authentication authentication) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -1,69 +1,24 @@
-/*package vaultmaster.com.vault.model;
+package vaultmaster.com.vault.model;
 
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table("two_factor_auth")
 public class TwoFactorAuth {
 
     @Id
-    private UUID authId;
+    private UUID authId; // Spring will auto-generate this if you omit it on save
     private UUID userId;
-    private String token; // OTP
+    private String token;
     private LocalDateTime expiresAt;
     private boolean isValid;
     private LocalDateTime createdAt;
-
-    // Getters and Setters
-    public UUID getAuthId() {
-        return authId;
-    }
-
-    public void setAuthId(UUID authId) {
-        this.authId = authId;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public LocalDateTime getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
 }
-*/

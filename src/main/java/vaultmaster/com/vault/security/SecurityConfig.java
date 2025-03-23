@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/2fa/**").permitAll() // ✅ Allow OTP endpoints without login
                         .requestMatchers("/api/passwords/personal/**").authenticated()
                         .anyRequest().authenticated()
                 )

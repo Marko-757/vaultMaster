@@ -9,6 +9,7 @@ import vaultmaster.com.vault.dto.LoginRequest;
 import vaultmaster.com.vault.dto.AuthResponse;
 import vaultmaster.com.vault.model.User;
 import vaultmaster.com.vault.security.JwtService;
+import vaultmaster.com.vault.service.TwoFactorAuthService;
 import vaultmaster.com.vault.service.UserService;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,12 +21,14 @@ public class UserController {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final TwoFactorAuthService twoFactorAuthService;
 
 
     @Autowired
-    public UserController(UserService userService, JwtService jwtService) {
+    public UserController(UserService userService, JwtService jwtService, TwoFactorAuthService twoFactorAuthService) {
         this.userService = userService;
         this.jwtService = jwtService;
+        this.twoFactorAuthService = twoFactorAuthService;
     }
     /**
      * Register a new user.
@@ -48,8 +51,14 @@ public class UserController {
         try {
             AuthResponse authResponse = userService.login(request.getEmail(), request.getPassword());
 
-            // Create HTTP-Only Cookie for JWT
-            ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", authResponse.getToken())
+            // Send OTP to user's email using their ID and email from DB
+            twoFactorAuthService.generateAndSendOTP(authResponse.getUserId(), authResponse.getEmail());
+
+            // Generate a JWT with otpVerified = false
+            String jwtWithOtpFlag = jwtService.generateTokenWithOtpFlag(authResponse.getUserId(), false);
+
+            // Create HTTP-only JWT cookie
+            ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", jwtWithOtpFlag)
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
@@ -59,11 +68,13 @@ public class UserController {
 
             response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
-            return ResponseEntity.ok("Login successful.");
+            return ResponseEntity.ok("OTP sent to your email. Please verify to complete login.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password.");
         }
     }
+
+
 
     /**
      * Logs out the user by clearing the JWT cookie.

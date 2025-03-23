@@ -36,25 +36,39 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Extract token from cookie
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/auth/") || path.startsWith("/api/2fa/")) {
+            filterChain.doFilter(request, response);
+            return;  // Skip JWT validation for 2FA and authentication routes
+        }
+
+        // 🔒 Continue with token validation for protected routes
         String token = jwtService.extractTokenFromRequest(request);
 
         if (token != null && jwtService.isTokenValid(token)) {
             String userId = jwtService.extractUserId(token);
+            boolean otpVerified = jwtService.extractOtpVerified(token);
 
-            Optional<User> optionalUser = userRepository.findById(UUID.fromString(userId));
-            if (optionalUser.isPresent()) {
-                User user = optionalUser.get();
-
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userId, null, List.of());
-  // No roles for now
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (otpVerified) {
+                Optional<User> optionalUser = userRepository.findById(UUID.fromString(userId));
+                if (optionalUser.isPresent()) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userId, null, List.of());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
+            } else {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("OTP verification required.");
+                return;
             }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid or expired token.");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
+
 }

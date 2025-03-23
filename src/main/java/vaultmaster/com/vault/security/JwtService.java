@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import vaultmaster.com.vault.model.User;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -25,6 +26,31 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))  // 24-hour expiration
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public String generateTokenWithOtpFlag(UUID userId, boolean otpVerified) {
+        return Jwts.builder()
+                .setSubject(userId.toString())
+                .claim("otpVerified", otpVerified)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24)) // 24 hours
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public boolean extractOtpVerified(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(SECRET_KEY)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.get("otpVerified", Boolean.class) != null
+                    && claims.get("otpVerified", Boolean.class);
+        } catch (Exception e) {
+            return false; // Treat invalid or missing claim as "not verified"
+        }
     }
 
     public String extractTokenFromRequest(HttpServletRequest request) {
@@ -61,6 +87,14 @@ public class JwtService {
                 .getSubject();  // Extracts the user ID from token
     }
 
+    // New method to get the authenticated userId directly
+    public String getAuthenticatedUserId(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
+        if (token != null && isTokenValid(token)) {
+            return extractUserId(token);  // Extract the user ID from the token
+        }
+        throw new IllegalArgumentException("Token is invalid or missing");
+    }
 
     public String extractEmail(String token) {
         try {
