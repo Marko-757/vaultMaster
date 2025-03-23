@@ -1,24 +1,24 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* 🔒 Prevent full-page scroll */
+  overflow: hidden; 
 }
-
 
 /* Overall Layout */
 .pw-manager-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden; /* 🔒 Prevent overflow */
+  overflow: hidden; 
   font-family: Arial, sans-serif;
 }
 
 .three-column-container {
   display: flex;
   flex: 1;
-  overflow: hidden; /* prevent extra scrollbars */
+  overflow: hidden; 
 }
 
 /* Left Column */
@@ -71,7 +71,7 @@ html, body {
 
 /* Expanded accordion header styling */
 .accordion-button:not(.collapsed) {
-  background-color: #e7f1ff; /* light blue */
+  background-color: #e7f1ff; 
   color: #000;
   font-weight: bold;
 }
@@ -85,13 +85,13 @@ html, body {
   max-height: 100vh;
   position: relative;
 
-  /* Hide scrollbar but keep scrolling */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE/Edge */
+  
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
 }
 
 .middle-column::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none; 
 }
 
 .sticky-header {
@@ -131,14 +131,13 @@ html, body {
   flex: 1;
   overflow-y: auto;
 
-  /* Hide scrollbar while keeping scroll functionality */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE/Edge */
+  
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
 }
 .password-name-list::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none; 
 }
-
 
 .password-name-button {
   width: 80%;

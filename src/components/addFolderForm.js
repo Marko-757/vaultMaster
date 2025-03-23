@@ -32,7 +32,11 @@ function AddFolderForm({ formType, initialFolderName = "", onSave, onCancel }) {
 
   return (
     <div className="add-password-form">
-      <h3>{initialFolderName ? "Rename Folder" : `Add New ${formType === "password" ? "Password" : "File"} Folder`}</h3>
+      <h3>
+        {initialFolderName
+          ? "Rename Folder"
+          : `Add New ${formType === "password" ? "Password" : "File"} Folder`}
+      </h3>
       <input
         type="text"
         placeholder="Folder Name"

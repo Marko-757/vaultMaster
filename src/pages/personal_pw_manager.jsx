@@ -67,10 +67,13 @@ function PersonalPwManager() {
           personalPWService.getAllPasswords(),
         ]);
 
+        console.log("Fetched Folders:", fetchedFolders); // Check the data
+        console.log("Fetched Passwords:", fetchedPasswords); // Check the data
+
         setPasswordFolders(fetchedFolders);
         setPasswords(fetchedPasswords);
       } catch (error) {
-        console.error("🚨 Error fetching password data:", error);
+        console.error("Error fetching password data:", error);
       }
     };
 
@@ -100,7 +103,7 @@ function PersonalPwManager() {
       const decrypted = await personalPWService.getDecryptedPassword(
         createdEntry.entryId
       );
-      console.log("🌐 received decrypted password from backend:", decrypted);
+      console.log("Received decrypted password from backend:", decrypted);
 
       // Save encrypted entry, then set decrypted for preview
       setPasswords((prev) => [...prev, createdEntry]);
@@ -110,7 +113,7 @@ function PersonalPwManager() {
       setIsEditing(false);
       setIsAddingPassword(false);
     } catch (error) {
-      console.error("🚨 Error adding or decrypting password:", error);
+      console.error("Error adding or decrypting password:", error);
       alert("Failed to add password.");
     }
   };
@@ -207,7 +210,7 @@ function PersonalPwManager() {
 
       setIsEditing(true);
     } catch (error) {
-      console.error("🚨 Error decrypting password for editing:", error);
+      console.error("Error decrypting password for editing:", error);
       alert("Failed to decrypt password for editing.");
     }
   };
