@@ -1,116 +1,136 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaUserCircle } from "react-icons/fa";
+import React, { useRef, useState } from "react";
 import "./passwordAndFileManagement.css";
 
-const PasswordAndFileManagement = ({ selectedTeam, onBack }) => {
-  const navigate = useNavigate();
+const PasswordAndFileManagement = () => {
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newItem, setNewItem] = useState({ type: "password", name: "", value: "" });
+  const fileInputRef = useRef(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
 
-  // Toggle password visibility
   const toggleVisibility = (id) => {
-    setItems(items.map((item) =>
+    setItems(items.map(item =>
       item.id === id ? { ...item, hidden: !item.hidden } : item
     ));
   };
 
-  // Delete item with confirmation
   const deleteItem = (id) => {
     if (window.confirm("Are you sure you want to delete this item?")) {
-      setItems(items.filter((item) => item.id !== id));
+      setItems(items.filter(item => item.id !== id));
     }
   };
 
-  // Handle adding new passwords or files
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFileName(file.name);
+      setNewItem({ ...newItem, name: file.name, file });
+    }
+  };
+
   const addNewItem = () => {
-    if (newItem.name.trim() === "") {
-      alert("Please enter a name.");
-      return;
+    if (newItem.type === "password") {
+      if (!newItem.name || !newItem.value) {
+        alert("Please enter a name and password.");
+        return;
+      }
+    } else {
+      if (!newItem.file) {
+        alert("Please choose a file.");
+        return;
+      }
     }
 
     const itemToAdd = {
       id: items.length + 1,
       type: newItem.type,
       name: newItem.name,
-      value: newItem.type === "password" ? newItem.value : "",
+      value: newItem.value || "",
+      file: newItem.file || null,
       hidden: true,
     };
 
     setItems([...items, itemToAdd]);
     setShowModal(false);
     setNewItem({ type: "password", name: "", value: "" });
+    setSelectedFileName("");
+  };
+
+  const downloadFile = (item) => {
+    if (!item.file) return;
+
+    const blobUrl = URL.createObjectURL(item.file);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = item.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
   };
 
   return (
-    <div className="pafm-container">
-      {/* Banner Row: Back Button, Banner, and Profile Button */}
-      <div className="banner-wrapper">
-        <button className="back-button" onClick={onBack}>←</button>
-        <h2 className="section-banner">{selectedTeam} - Password and File Management</h2>
-        <button className="profile-button" onClick={() => navigate("/settings")}>
-          <FaUserCircle />
-        </button>
-      </div>
+    <div className="password-file-container">
+      <div className="header">Password and File Management</div>
 
-      <div className="pafm-items-list">
+      <div className="items-list">
         {items.length === 0 ? (
-          <p className="pafm-empty-message">
-            No passwords or files available. Add one using the button below.
-          </p>
+          <p className="empty-message">No passwords or files available. Add one using the button below.</p>
         ) : (
-          items.map((item) => (
-            <div key={item.id} className="pafm-item-card">
-              <span className="pafm-item-name">{item.name}</span>
+          items.map(item => (
+            <div key={item.id} className="item-card">
+              <div className="item-info">
+                <span className="item-name">{item.name}</span>
+                <span className="item-label">{item.type === "password" ? "Password" : "File"}</span>
+              </div>
 
-              <div className="pafm-item-actions">
+              <div className="item-actions">
                 {item.type === "password" ? (
                   <>
-                    <span className="pafm-password">
+                    <span className="password">
                       {item.hidden ? "●●●●●●●●" : item.value}
                     </span>
-                    <button className="pafm-icon-button" onClick={() => toggleVisibility(item.id)}>
-                      👁️
-                    </button>
+                    <button className="icon-button" onClick={() => toggleVisibility(item.id)}>👁️</button>
                   </>
                 ) : (
-                  <button className="pafm-icon-button">⬇️</button>
+                  <button className="icon-button" onClick={() => downloadFile(item)}>⬇️</button>
                 )}
-                <button className="pafm-icon-button pafm-delete" onClick={() => deleteItem(item.id)}>
-                  🗑️
-                </button>
+                <button className="icon-button delete" onClick={() => deleteItem(item.id)}>🗑️</button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      <button className="pafm-add-button" onClick={() => setShowModal(true)}>Add</button>
+      <button className="add-button" onClick={() => setShowModal(true)}>+</button>
 
       {showModal && (
-        <div className="pafm-modal">
-          <div className="pafm-modal-content">
-            <h3>Add</h3>
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Add Password or File</h3>
+
             <label>Type:</label>
             <select
               value={newItem.type}
-              onChange={(e) => setNewItem({ ...newItem, type: e.target.value })}
+              onChange={(e) => {
+                const type = e.target.value;
+                setNewItem({ type, name: "", value: "", file: null });
+                setSelectedFileName("");
+              }}
             >
               <option value="password">Password</option>
               <option value="file">File</option>
             </select>
 
-            <label>Name:</label>
-            <input
-              type="text"
-              placeholder="Enter name"
-              value={newItem.name}
-              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-            />
-
             {newItem.type === "password" && (
               <>
+                <label>Name:</label>
+                <input
+                  type="text"
+                  placeholder="Enter name"
+                  value={newItem.name}
+                  onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                />
                 <label>Password:</label>
                 <input
                   type="text"
@@ -121,9 +141,27 @@ const PasswordAndFileManagement = ({ selectedTeam, onBack }) => {
               </>
             )}
 
-            <div className="pafm-modal-buttons">
-              <button className="pafm-confirm-button" onClick={addNewItem}>Add</button>
-              <button className="pafm-cancel-button" onClick={() => setShowModal(false)}>Cancel</button>
+            {newItem.type === "file" && (
+              <>
+                <label>Choose File:</label>
+                <button
+                  className="file-picker-button"
+                  onClick={() => fileInputRef.current.click()}
+                >
+                  {selectedFileName ? selectedFileName : "Browse..."}
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                />
+              </>
+            )}
+
+            <div className="modal-buttons">
+              <button className="confirm-button" onClick={addNewItem}>Add</button>
+              <button className="cancel-button" onClick={() => setShowModal(false)}>Cancel</button>
             </div>
           </div>
         </div>
