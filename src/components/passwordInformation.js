@@ -1,34 +1,28 @@
 import React from "react";
 import "./passwordInformation.css";
 
-function PasswordInformation({ password }) {
-  if (!password) {
-    return <div className="password-info">No password selected.</div>;
-  }
+function PasswordInformation({ password, decryptedPassword, showPassword, setShowPassword }) {
+  if (!password) return null;
+
+  const maskedPassword = "•••••••••";
+  const displayedPassword = showPassword
+    ? decryptedPassword || "[Unable to decrypt]"
+    : maskedPassword;
 
   return (
     <div className="password-info">
-      <h3>Password Details</h3>
-      <div className="info-field">
-        <label>Account Name:</label>
-        <span>{password.name}</span>
-      </div>
-      <div className="info-field">
-        <label>Username:</label>
-        <span>{password.username}</span>
-      </div>
-      <div className="info-field">
-        <label>Password:</label>
-        <span>{password.password}</span>
-      </div>
-      {password.website && (
-        <div className="info-field">
-          <label>Website:</label>
-          <a href={password.website} target="_blank" rel="noopener noreferrer">
-            {password.website}
-          </a>
-        </div>
-      )}
+      <h3>{password.accountName}</h3>
+      <p><strong>Username:</strong> {password.username}</p>
+      <p>
+        <strong>Password:</strong> {displayedPassword}
+        <button
+          onClick={() => setShowPassword(!showPassword)}
+          style={{ marginLeft: "10px" }}
+        >
+          {showPassword ? "Hide" : "Show"}
+        </button>
+      </p>
+      <p><strong>Website:</strong> {password.website || "—"}</p>
     </div>
   );
 }

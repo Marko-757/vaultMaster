@@ -1,17 +1,40 @@
 import React, { useRef, useState } from "react";
 import "./2fa.css";
 import { useNavigate } from "react-router-dom";
+import { verifyOtp } from "../api/2faService";
 
 export const TwoFA = () => {
   const navigate = useNavigate();
   const [codes, setCodes] = useState(["", "", "", "", "", ""]); // State to store the 6-digit code
   const inputRefs = useRef([]); // Refs for the input boxes
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const code = codes.join(""); // Combine the codes into a single string
-    console.log("Submitted code:", code);
-    // Add your submission logic here
+    const code = codes.join("").trim();
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/2fa/verify?otp=${code}`, // You might also need `userId` here depending on backend
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        alert(errorText || "Invalid OTP. Try again.");
+        return;
+      }
+
+      const result = await response.text();
+      console.log("OTP verified:", result);
+      // Redirect to the password manager or wherever you want
+      navigate("/personal");
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      alert("Something went wrong verifying the OTP.");
+    }
   };
 
   const handleInputChange = (index, value) => {

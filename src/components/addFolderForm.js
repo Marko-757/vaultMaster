@@ -1,20 +1,42 @@
-import React, { useState } from "react";
-import "./addFolderForm.css";
+import React, { useState, useEffect } from "react";
+import "./addPasswordForm.css";
+import { createPasswordFolder } from "../api/personalPWService";
 
-function AddFolderForm({ formType, onSave, onCancel }) {
-  const [folderName, setFolderName] = useState("");
+function AddFolderForm({ formType, initialFolderName = "", onSave, onCancel }) {
+  const [folderName, setFolderName] = useState(initialFolderName);
 
-  const handleSave = () => {
-    if (folderName.trim() === "") {
-      alert("Folder name cannot be empty.");
+  useEffect(() => {
+    setFolderName(initialFolderName);
+  }, [initialFolderName]);
+
+  const handleSave = async () => {
+    if (!folderName.trim()) {
+      alert("Please provide a folder name.");
       return;
     }
-    onSave(folderName);
+
+    try {
+      if (initialFolderName) {
+        // Renaming mode
+        onSave({ folderName });
+      } else {
+        // Creating mode
+        const newFolder = await createPasswordFolder({ folderName });
+        onSave(newFolder);
+      }
+    } catch (error) {
+      console.error("Error processing folder:", error);
+      alert("Failed to save folder.");
+    }
   };
 
   return (
-    <div className="add-folder-form">
-      <h3>{formType === "password" ? "Create New Password Folder" : "Create New File Folder"}</h3>
+    <div className="add-password-form">
+      <h3>
+        {initialFolderName
+          ? "Rename Folder"
+          : `Add New ${formType === "password" ? "Password" : "File"} Folder`}
+      </h3>
       <input
         type="text"
         placeholder="Folder Name"

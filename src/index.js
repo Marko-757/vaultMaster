@@ -18,6 +18,9 @@ import Home from './pages/home';
 import App from './App';
 import TeamPwManager from './pages/team_pw_manager';
 import ProfileSettings from './pages/profileSettings';
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+
 
 // Define the router with correct paths
 const router = createBrowserRouter([
@@ -59,7 +62,7 @@ const router = createBrowserRouter([
   },
   {
     path: "*",
-    element: <h1>404 - Page Not Found</h1>, // Handles unknown routes
+    element: <h1>404 - Page Not Found</h1>,
   },
 ]);
 
