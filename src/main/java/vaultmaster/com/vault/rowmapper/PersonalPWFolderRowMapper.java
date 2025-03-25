@@ -1,4 +1,4 @@
-package vaultmaster.com.vault.repository;
+package vaultmaster.com.vault.rowmapper;
 
 import vaultmaster.com.vault.model.PersonalPWFolder;
 import org.springframework.jdbc.core.RowMapper;

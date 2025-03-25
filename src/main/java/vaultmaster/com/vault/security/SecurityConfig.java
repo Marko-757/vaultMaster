@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/2fa/**").permitAll() // ✅ Allow OTP endpoints without login
                         .requestMatchers("/api/passwords/personal/**").authenticated()
+                        .requestMatchers("/api/files/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

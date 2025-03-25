@@ -1,12 +1,9 @@
 package vaultmaster.com.vault.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import vaultmaster.com.vault.model.PersonalPWEntry;
-import vaultmaster.com.vault.repository.PersonalPWRowMapper;
+import vaultmaster.com.vault.rowmapper.PersonalPWRowMapper;
 
 import java.sql.*;
 import java.time.LocalDateTime;

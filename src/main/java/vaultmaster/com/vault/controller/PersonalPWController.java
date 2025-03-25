@@ -66,6 +66,7 @@ public class PersonalPWController {
         }
     }
 
+    //Validate user on entry request
     private String validateEntry(PersonalPWEntry entry) {
         List<String> missingFields = new ArrayList<>();
         if (entry.getAccountName() == null || entry.getAccountName().trim().isEmpty()) missingFields.add("accountName");
@@ -74,6 +75,7 @@ public class PersonalPWController {
         return String.join(", ", missingFields);
     }
 
+    //Get all user passwords
     @GetMapping("/me/passwords")
     public ResponseEntity<List<PersonalPWEntry>> getAllUserPasswords(Authentication authentication) {
         if (authentication == null) {
@@ -93,7 +95,7 @@ public class PersonalPWController {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         }
     }
-
+    // Update Password
     @PutMapping("/entry/{entryId}")
     public ResponseEntity<String> updatePassword(@PathVariable Long entryId, @RequestBody PersonalPWEntry entry, Authentication authentication) {
         if (authentication == null) {

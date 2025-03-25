@@ -1,4 +1,4 @@
-package vaultmaster.com.vault.repository;
+package vaultmaster.com.vault.rowmapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import vaultmaster.com.vault.model.PersonalPWEntry;

@@ -1,11 +1,13 @@
 package vaultmaster.com.vault.service;
+
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 import java.util.UUID;
 
@@ -55,5 +57,14 @@ public class S3Service {
                 .build();
 
         return s3Client.getObjectAsBytes(getRequest).asByteArray();
+    }
+
+    public void deleteFile(String key) {
+        DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+
+        s3Client.deleteObject(deleteRequest);
     }
 }
