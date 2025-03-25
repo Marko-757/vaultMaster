@@ -122,7 +122,7 @@ body {
   margin: 10px auto;
 }
 
-.password-name-list {
+.entry-list {
   padding: 20px 0;
   display: flex;
   flex-direction: column;
@@ -135,11 +135,11 @@ body {
   scrollbar-width: none; 
   -ms-overflow-style: none; 
 }
-.password-name-list::-webkit-scrollbar {
+.entry-list::-webkit-scrollbar {
   display: none; 
 }
 
-.password-name-button {
+.entry-name-button {
   width: 80%;
   max-width: 250px;
   padding: 8px 14px;
@@ -152,7 +152,7 @@ body {
   text-align: center;
   transition: background-color 0.2s ease;
 }
-.password-name-button:hover {
+.entry-name-button:hover {
   background-color: #0b5ed7;
 }
 .active-password {

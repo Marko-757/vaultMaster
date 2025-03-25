@@ -9,6 +9,9 @@ import { useNavigate } from "react-router";
 import profileIcon from "../Assets/defaultProfileImage.png";
 import * as personalPWService from "../api/personalPWService";
 import NavbarVaultMaster from "../components/navbarVaultMaster";
+import AddFileForm from "../components/addFileForm";
+import AddFileFolderForm from "../components/addFileFolderForm";
+import * as personalFileService from "../api/personalFileService";
 
 function PersonalPwManager() {
   const navigate = useNavigate();
@@ -44,6 +47,16 @@ function PersonalPwManager() {
   const [decryptedPassword, setDecryptedPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const [selectedFileFolder, setSelectedFileFolder] = useState(null);
+  const [files, setFiles] = useState([]);
+  const filteredFiles = selectedFileFolder
+    ? files.filter(
+        (f) =>
+          f.folderId === selectedFileFolder.folderId ||
+          f.folderId === selectedFileFolder.id
+      )
+    : files;
+
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   useEffect(() => {
@@ -62,18 +75,26 @@ function PersonalPwManager() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [fetchedFolders, fetchedPasswords] = await Promise.all([
-          personalPWService.getAllPasswordFolders(),
-          personalPWService.getAllPasswords(),
-        ]);
+        const [fetchedPasswordFolders, fetchedPasswords, fetchedFiles] =
+          await Promise.all([
+            personalPWService.getAllPasswordFolders(),
+            personalPWService.getAllPasswords(),
+            personalFileService.getAllFiles(),
+          ]);
 
-        console.log("Fetched Folders:", fetchedFolders); // Check the data
-        console.log("Fetched Passwords:", fetchedPasswords); // Check the data
-
-        setPasswordFolders(fetchedFolders);
+        setPasswordFolders(fetchedPasswordFolders);
         setPasswords(fetchedPasswords);
+        setFiles(fetchedFiles);
+
+        try {
+          const fetchedFileFolders =
+            await personalFileService.getAllFileFolders();
+          setFileFolders(fetchedFileFolders);
+        } catch (err) {
+          console.warn("Failed to fetch file folders (optional):", err.message);
+        }
       } catch (error) {
-        console.error("Error fetching password data:", error);
+        console.error("Error fetching password or file data:", error);
       }
     };
 
@@ -236,6 +257,12 @@ function PersonalPwManager() {
     }
   };
 
+  ////// Files///////
+  const addFileFolder = async (newFolder) => {
+    setFileFolders((prev) => [...prev, newFolder]);
+    setIsAddingFileFolder(false);
+  };
+
   return (
     <div className="pw-manager-container">
       <button className="home-button" onClick={() => navigate("/home")}>
@@ -354,11 +381,11 @@ function PersonalPwManager() {
                           </ul>
                         </div>
                       ))}
-
                       <button
                         className="btn btn-success w-100"
                         onClick={() => {
                           setIsAddingPasswordFolder(true);
+                          setIsAddingFileFolder(false);
                           setIsAddingPassword(false);
                           setIsRenamingFolder(false);
                           setSelectedPassword(null);
@@ -369,7 +396,15 @@ function PersonalPwManager() {
                     </div>
                   </div>
                 </div>
-
+                    {/* All Files (stationary) */}
+                    <button
+                      className={`btn btn-outline-primary mb-3 w-100 ${
+                        selectedFileFolder === null ? "active-folder" : ""
+                      }`}
+                      onClick={() => setSelectedFileFolder(null)}
+                    >
+                      All Files
+                    </button>
                 {/* File Folders Accordion */}
                 <div className="accordion-item">
                   <h2 className="accordion-header" id="headingFiles">
@@ -392,12 +427,49 @@ function PersonalPwManager() {
                   >
                     <div className="accordion-body">
                       {fileFolders.map((folder) => (
-                        <div key={folder.id} className="folder-row">
-                          <button className="sidebar-item-button">
-                            {folder.name}
+                        <div
+                          key={folder.folderId || folder.id}
+                          className="btn-group w-100 mb-2 folder-split-button"
+                        >
+                          <button
+                            type="button"
+                            className={`btn btn-success flex-grow-1 ${
+                              selectedFileFolder?.folderId ===
+                                folder.folderId ||
+                              selectedFileFolder?.id === folder.id
+                                ? "active-folder"
+                                : ""
+                            }`}
+                            onClick={() => setSelectedFileFolder(folder)}
+                          >
+                            {folder.folderName || folder.name}
                           </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-success dropdown-toggle dropdown-toggle-split flex-shrink-0 small-dropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <span className="visually-hidden">
+                              Toggle Dropdown
+                            </span>
+                          </button>
+                          <ul className="dropdown-menu">
+                            <li>
+                              <button className="dropdown-item" disabled>
+                                Rename
+                              </button>
+                            </li>
+                            <li>
+                              <button className="dropdown-item" disabled>
+                                Delete
+                              </button>
+                            </li>
+                          </ul>
                         </div>
                       ))}
+
                       <button
                         className="btn btn-success w-100"
                         onClick={() => setIsAddingFileFolder(true)}
@@ -412,11 +484,12 @@ function PersonalPwManager() {
           </div>
         </div>
         <div className="middle-column">
+          {/* Passwords Section */}
           <div className="sticky-header">
             <h2 className="column-heading">Passwords</h2>
           </div>
 
-          <div className="password-name-list">
+          <div className="entry-list">
             <button
               className="add-password-button"
               onClick={() => {
@@ -437,7 +510,7 @@ function PersonalPwManager() {
                 .map((password) => (
                   <button
                     key={password.entryId}
-                    className={`password-name-button ${
+                    className={`entry-name-button ${
                       selectedPassword?.entryId === password.entryId
                         ? "active-password"
                         : ""
@@ -464,6 +537,43 @@ function PersonalPwManager() {
                 ))
             )}
           </div>
+
+          {/* Files Section */}
+          <div className="sticky-header">
+            <h2 className="column-heading">Files</h2>
+          </div>
+
+          <div className="entry-list">
+            <button
+              className="add-password-button"
+              onClick={() => {
+                alert("Upload file feature coming soon!");
+              }}
+            >
+              + Upload File
+            </button>
+
+            {filteredFiles.length === 0 ? (
+              <div className="no-passwords">No Files Found</div>
+            ) : (
+              [...filteredFiles]
+                .sort((a, b) =>
+                  a.originalFilename.localeCompare(b.originalFilename)
+                )
+                .map((file) => (
+                  <button
+                    key={file.fileId}
+                    className="entry-name-button"
+                    onClick={() => {
+                      alert(`Selected file: ${file.originalFilename}`);
+                      // TODO: Add file preview/download in right column
+                    }}
+                  >
+                    {file.originalFilename}
+                  </button>
+                ))
+            )}
+          </div>
         </div>
 
         <div className="right-column">
@@ -479,6 +589,14 @@ function PersonalPwManager() {
               formType="password"
               onSave={addPasswordFolder}
               onCancel={() => setIsAddingPasswordFolder(false)}
+            />
+          ) : isAddingFileFolder ? (
+            <AddFileFolderForm
+              onSave={(newFolder) => {
+                setFileFolders((prev) => [...prev, newFolder]);
+                setIsAddingFileFolder(false);
+              }}
+              onCancel={() => setIsAddingFileFolder(false)}
             />
           ) : isRenamingFolder ? (
             <AddFolderForm
