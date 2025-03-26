@@ -18,6 +18,7 @@ public class PersonalFile {
     private UUID folderId; // can be null
     private String fileKey;
     private String originalFilename;
+    private String mimeType;
     private long fileSize;
     private LocalDateTime uploadedAt;
 }

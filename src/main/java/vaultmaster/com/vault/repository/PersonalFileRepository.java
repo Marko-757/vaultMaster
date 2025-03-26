@@ -20,11 +20,10 @@ public class PersonalFileRepository {
 
     public void save(PersonalFile file) {
         String sql = """
-            INSERT INTO personal_file_uploads (
-                file_id, user_id, folder_id, file_key,
-                original_filename, file_size, uploaded_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """;
+        INSERT INTO personal_file_uploads
+        (file_id, user_id, folder_id, file_key, original_filename, file_size, mime_type, uploaded_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """;
 
         jdbcTemplate.update(sql,
                 file.getFileId(),
@@ -33,9 +32,11 @@ public class PersonalFileRepository {
                 file.getFileKey(),
                 file.getOriginalFilename(),
                 file.getFileSize(),
+                file.getMimeType(),
                 Timestamp.valueOf(file.getUploadedAt())
         );
     }
+
 
     public Optional<PersonalFile> findById(UUID fileId) {
         String sql = "SELECT * FROM personal_file_uploads WHERE file_id = ?";

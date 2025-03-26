@@ -20,7 +20,9 @@ public class PersonalFileRowMapper implements RowMapper<PersonalFile> {
                 .fileKey(rs.getString("file_key"))
                 .originalFilename(rs.getString("original_filename"))
                 .fileSize(rs.getLong("file_size"))
+                .mimeType(rs.getString("mime_type"))
                 .uploadedAt(rs.getTimestamp("uploaded_at").toLocalDateTime())
                 .build();
     }
 }
+
