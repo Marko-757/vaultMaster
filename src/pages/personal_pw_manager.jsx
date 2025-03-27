@@ -220,10 +220,13 @@ function PersonalPwManager() {
   };
 
   const startEditing = async () => {
+    console.log("Starting editing...");
     try {
       const decrypted = await personalPWService.getDecryptedPassword(
         selectedPassword.entryId
       );
+
+      console.log("Decrypted password:", decrypted);
 
       setEditData({
         entryId: selectedPassword.entryId,
@@ -234,7 +237,8 @@ function PersonalPwManager() {
         passwordHash: decrypted,
       });
 
-      setIsEditing(true);
+      console.log("Edit data set:", editData);
+      setIsEditing(true); // Ensure this is triggered.
     } catch (error) {
       console.error("Error decrypting password for editing:", error);
       alert("Failed to decrypt password for editing.");
@@ -693,40 +697,76 @@ function PersonalPwManager() {
               onCancel={() => setIsAddingFile(false)}
             />
           ) : selectedPassword ? (
-            isEditing ? (
-              <div className="edit-form-container">
-                {/* Password Edit Form */}
-                {/* ... unchanged content ... */}
-              </div>
-            ) : (
-              <div className="password-detail-view">
-                <button
-                  className="close-detail-button"
-                  onClick={() => setSelectedPassword(null)}
-                >
-                  X
-                </button>
-                <PasswordInformation
-                  password={selectedPassword}
-                  decryptedPassword={decryptedPassword}
-                  showPassword={showPassword}
-                  setShowPassword={setShowPassword}
-                />
-                <div className="password-actions">
-                  <button
-                    className="edit-password-button"
-                    onClick={startEditing}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-password-button"
-                    onClick={() => setPasswordToDelete(selectedPassword)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+                isEditing ? (
+                  <div className="edit-form-container">
+                    {/* Render the Edit Form */}
+                    <h2>Edit Password</h2>
+                    <form>
+                      <div>
+                        <label>Account Name</label>
+                        <input
+                          type="text"
+                          value={editData.accountName}
+                          onChange={(e) => setEditData({ ...editData, accountName: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label>Username</label>
+                        <input
+                          type="text"
+                          value={editData.username}
+                          onChange={(e) => setEditData({ ...editData, username: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label>Website</label>
+                        <input
+                          type="text"
+                          value={editData.website}
+                          onChange={(e) => setEditData({ ...editData, website: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label>Password</label>
+                        <input
+                          type="password"
+                          value={editData.passwordHash}
+                          onChange={(e) => setEditData({ ...editData, passwordHash: e.target.value })}
+                        />
+                      </div>
+                      <button type="button" onClick={saveEditing}>Save</button>
+                      <button type="button" onClick={cancelEditing}>Cancel</button>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="password-detail-view">
+                    <button
+                      className="close-detail-button"
+                      onClick={() => setSelectedPassword(null)}
+                    >
+                      X
+                    </button>
+                    <PasswordInformation
+                      password={selectedPassword}
+                      decryptedPassword={decryptedPassword}
+                      showPassword={showPassword}
+                      setShowPassword={setShowPassword}
+                    />
+                    <div className="password-actions">
+                      <button
+                        className="edit-password-button"
+                        onClick={startEditing} 
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="delete-password-button"
+                        onClick={() => setPasswordToDelete(selectedPassword)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
             )
           ) : selectedFile ? (
             <FileInformation

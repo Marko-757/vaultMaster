@@ -18,6 +18,7 @@ export const uploadFiles = async (files, folderId = null) => {
   return response.data;
 };
 
+
 // Get all personal files
 export const getAllFiles = async () => {
   const response = await axios.get(`${BASE_FILE_URL}/all`, {

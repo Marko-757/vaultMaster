@@ -179,6 +179,7 @@ body {
   width: 80%;
   max-width: 250px;
 }
+
 .add-password-button:hover {
   background-color: #157347;
 }
@@ -218,9 +219,14 @@ body {
 .active-folder {
   background-color: #004aad !important;
   color: white !important;
-  font-weight: bold;
   border-color: #00338d;
 }
+
+.folder-btn {
+  font-size: 14px;
+  padding: 6px 10px;
+}
+
 
 /* Folder Name */
 .sidebar-item-button {
@@ -418,8 +424,6 @@ body {
   gap: 10px;
   margin-top: 12px;
 }
-
-
 
 /* Home Button */
 .home-button {
