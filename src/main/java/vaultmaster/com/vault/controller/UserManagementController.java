@@ -14,11 +14,11 @@ import vaultmaster.com.vault.security.JwtService;
 public class UserManagementController {
 
     private final UserService userService;
-    private final JwtService jwtService;  // Inject JwtService
+    private final JwtService jwtService;
 
     public UserManagementController(UserService userService, JwtService jwtService) {
         this.userService = userService;
-        this.jwtService = jwtService;  // Assign injected JwtService to the class field
+        this.jwtService = jwtService;
     }
 
 
