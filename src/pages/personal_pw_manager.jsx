@@ -453,11 +453,11 @@ function PersonalPwManager() {
                       {fileFolders.map((folder) => (
                         <div
                           key={folder.folderId || folder.id}
-                          className="btn-group w-100 mb-2 folder-split-button"
+                          className="btn-group w-100 mb-2"
                         >
                           <button
                             type="button"
-                            className={`btn btn-success flex-grow-1 ${
+                            className={`btn btn-primary flex-grow-1 ${
                               selectedFileFolder?.folderId ===
                                 folder.folderId ||
                               selectedFileFolder?.id === folder.id

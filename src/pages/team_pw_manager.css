@@ -1,3 +1,4 @@
+/* Teams Container Layout */
 .teams-container {
   display: flex;
   height: 100vh;
@@ -7,7 +8,7 @@
 /* Left Sidebar with Off-White Background */
 .sidebar {
   width: 20%;
-  background-color: #f7f7f7; 
+  background-color: #f7f7f7;
   padding: 15px;
   display: flex;
   flex-direction: column;
@@ -73,24 +74,6 @@
   background-color: rgba(0, 123, 255, 0.1);
 }
 
-/* Home button */
-.home-button {
-    position: absolute;
-    top: 10px;
-    left: 60px;
-    padding: 5px 10px;
-    font-size: 16px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.home-button:hover {
-    background-color: #0056b3;
-}
-
 /* Sidebar Section */
 .sidebar-section {
   display: flex;
@@ -102,7 +85,9 @@
 
 /* Container for Each Entry (Team/ Membership) */
 .team-item {
-  width: 250px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
   margin: 0 auto;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
@@ -113,6 +98,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  align-items: center;  /* Center the content */
 }
 
 /* Scrollable List When Expanded */
@@ -122,42 +108,51 @@
   scrollbar-gutter: stable;
 }
 
-/* Name Boxes (Team and Membership Buttons) */
-.team-button,
-.membership-button {
-  background-color: #336dbf; 
+.btn-group {
+  display: flex;
+  width: 100%; 
+  justify-content: center; 
+  align-items: center; 
+}
+
+.btn-primary {
+  background-color: #336dbf;
   color: white;
-  border: none;
-  padding: 12px 8px;
-  border-radius: 8px;
+  border-radius: 0.25rem;
+  border-top-left-radius: 0.25rem;
+  border-bottom-left-radius: 0.25rem;
+}
+
+.dropdown-toggle-split {
+  background-color: #336dbf;
+  border-color: #336dbf;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  width: 40px; /* Make the dropdown button smaller */
+}
+.dropdown-toggle-split {
+  margin-left: -1px; /* Removes the gap between buttons */
+}
+
+.dropdown-menu {
+  min-width: 200px;
+  left: 50%;
+  transform: translateX(-50%); /* Center the dropdown */
+}
+
+/* Dropdown Styling */
+.dropdown-item {
+  padding: 10px 20px;
+  font-size: 14px;
   cursor: pointer;
-  font-size: 16px;
-  width: 190px; 
-  height: 45px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-  display: block;
-  margin: 0 auto;
-}
-.team-button:hover,
-.membership-button:hover {
-  background-color: #285a9c; /* Slightly darker for hover */
-}
-.team-button:active,
-.membership-button:active {
-  transform: scale(0.98);
+  text-align: left;
 }
 
-/* Team/ Membership Name Styling */
-.team-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.dropdown-item:hover {
+  background-color: #f2f2f2;
 }
 
-/* Input Fields for Adding/Editing */
+/* Add Input Fields for Adding/Editing */
 .team-input,
 .membership-input {
   width: 190px;
@@ -224,7 +219,7 @@
 .section-banner {
   display: flex;
   align-items: center;
-  background-color: #333; 
+  background-color: #333;
   color: #fff;
   padding: 10px;
   height: 35px;
@@ -293,7 +288,6 @@
   padding: 20px;
   text-align: center;
 }
-
 
 /* Profile container for dropdown */
 .profile-container {
@@ -367,4 +361,48 @@
 
 .home-button:hover {
   background-color: #0056b3;
+}
+
+.left-column {
+  width: 250px; /* Adjust width as needed */
+  background-color: #f8f9fa;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+/* Accordion Body for scrollable behavior */
+.scrollable-accordion {
+  max-height: 300px; /* Adjust height based on the number of items you expect */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* Optional: For smoother transitions */
+.accordion-button {
+  transition: all 0.3s ease-in-out;
+}
+
+.accordion-body {
+  transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out; 
+}
+
+/* Custom scrollbar (if needed) */
+.scrollable-accordion::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-accordion::-webkit-scrollbar-thumb {
+  background-color: #007bff;
+  border-radius: 10px;
+}
+
+.scrollable-accordion::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }

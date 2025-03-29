@@ -1,26 +1,62 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ManageRoles from "../components/manageRoles";
-import MyMembers from "../components/myMembers";
-import PasswordAndFileManagement from "../components/passwordAndFileManagement";
 import "./team_pw_manager.css";
 import profileIcon from "../Assets/defaultProfileImage.png";
+import MyMembers from "../components/myMembers";
+import ManageRoles from "../components/manageRoles";
+import PasswordAndFileManagement from "../components/passwordAndFileManagement";
+import TeamCreationForm from "../components/teamCreationForm";
+import { getAllTeamsForUser, createTeam } from "../api/teamService";
 
 const TeamPwManager = () => {
   const navigate = useNavigate();
-
-  
-  //Profile Dropdown Menu (Top Right)
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showTeamCreationModal, setShowTeamCreationModal] = useState(false);
 
-  const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen);
-  };
+  // Toggle dropdown
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const handleLogout = () => {
-    console.log("Logging out..."); 
-    navigate("/auth/login"); 
+    console.log("Logging out...");
+    navigate("/auth/login");
+  };
+
+  // Fetch teams from the backend
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const fetchedTeams = await getAllTeamsForUser(); // Use the service function to get teams
+        setTeams(fetchedTeams);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      }
+    };
+
+    fetchTeams();
+  }, []);
+
+  // Show and hide the team creation modal
+  const openTeamCreationModal = () => {
+    setShowTeamCreationModal(true);
+  };
+
+  const closeTeamCreationModal = () => {
+    setShowTeamCreationModal(false);
+  };
+
+  // Handle team creation
+  const handleCreateTeam = async (teamName) => {
+    try {
+      const newTeam = await createTeam(teamName); // Use the service function to create a team
+      setTeams((prevTeams) => [...prevTeams, newTeam]);
+      setSelectedTeam(newTeam); // Automatically select the new team
+    } catch (error) {
+      console.error("Error creating team:", error);
+    }
   };
 
   // Close dropdown when clicking outside
@@ -34,179 +70,160 @@ const TeamPwManager = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
-  const [teams, setTeams] = useState([
-    "My Company 1",
-    "My Company 2",
-    "My Company 3",
-    "My Company 4",
-  ]);
-  const [memberships, setMemberships] = useState([
-    "My Membership 1",
-    "My Membership 2",
-    "My Membership 3",
-    "My Membership 4",
-  ]);
-  const [selectedTeam, setSelectedTeam] = useState(teams[0]);
-  const [selectedOption, setSelectedOption] = useState(null);
-
-  const [expandedTeams, setExpandedTeams] = useState(false);
-  const [expandedMemberships, setExpandedMemberships] = useState(false);
-
-  const [showTeamInput, setShowTeamInput] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
-
-  const [showMembershipInput, setShowMembershipInput] = useState(false);
-  const [newMembershipName, setNewMembershipName] = useState("");
-
-  const previewCount = 3;
-  const displayedTeams = expandedTeams ? teams : teams.slice(0, previewCount);
-  const displayedMemberships = expandedMemberships
-    ? memberships
-    : memberships.slice(0, previewCount);
-
   return (
-    <div className="teams-container">
-
+    <div className="teams-container d-flex">
       {/* Home Button */}
-      <button className="home-button" onClick={() => navigate("/home")}>🏠︎</button>
+      <button className="home-button" onClick={() => navigate("/home")}>
+        🏠︎
+      </button>
 
       {/* Profile Button with Dropdown */}
       <div className="profile-container" ref={dropdownRef}>
-        <img 
-          src={profileIcon} 
-          alt="Profile" 
-          className="profile-icon" 
-          onClick={toggleDropdown} 
+        <img
+          src={profileIcon}
+          alt="Profile"
+          className="profile-icon"
+          onClick={toggleDropdown}
         />
         {dropdownOpen && (
           <div className="profile-dropdown">
-            <button onClick={() => navigate("/settings")}>Profile Settings</button>
+            <button onClick={() => navigate("/settings")}>
+              Profile Settings
+            </button>
             <button onClick={handleLogout}>Log Out</button>
           </div>
         )}
       </div>
 
-      {/* Left Sidebar */}
-      <div className="sidebar">
+      {/* Left Sidebar with Accordion */}
+      <div className="left-column">
         <div className="sidebar-heading">
           <div className="sidebar-heading-top">Teams</div>
           <div className="sidebar-heading-bottom">Passwords & Files</div>
         </div>
         <hr className="divider" />
 
-        {/* Teams Section */}
-        <div className="sidebar-section">
-          <div className="section-header">
-            <h2>My Teams</h2>
-            <button
-              className="section-add-button"
-              onClick={() => setShowTeamInput(true)}
-            >
-              +
-            </button>
-          </div>
-          <div
-            className={`teams-list-container ${expandedTeams ? "scrollable" : ""}`}
+        {/* All View Buttons (Teams & Memberships) */}
+        <div className="all-view-buttons">
+          <button
+            className={`btn btn-outline-primary mb-2 w-100 ${selectedOption === "teams" ? "active-folder" : ""}`}
+            onClick={() => {
+              setSelectedOption("teams");
+            }}
           >
-            {displayedTeams.map((team, index) => (
-              <div key={index} className="team-item">
-                <button
-                  className={`team-button ${
-                    selectedTeam === team ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedTeam(team);
-                    setSelectedOption(null);
-                  }}
-                >
-                  <span className="team-name">{team}</span>
-                </button>
-              </div>
-            ))}
-            {showTeamInput && (
-              <div className="team-item">
-                <input
-                  type="text"
-                  className="team-input"
-                  value={newTeamName}
-                  onChange={(e) => setNewTeamName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newTeamName.trim() !== "") {
-                      setTeams([...teams, newTeamName.trim()]);
-                      setNewTeamName("");
-                      setShowTeamInput(false);
-                    }
-                  }}
-                  autoFocus
-                  placeholder="Enter new team name"
-                />
-              </div>
-            )}
-          </div>
-          {teams.length > previewCount && (
-            <button
-              className="see-toggle-button"
-              onClick={() => setExpandedTeams(!expandedTeams)}
-            >
-              {expandedTeams ? "See Less" : "See More"}
-            </button>
-          )}
+            All Teams
+          </button>
+          <button
+            className={`btn btn-outline-primary mb-2 w-100 ${selectedOption === "memberships" ? "active-folder" : ""}`}
+            onClick={() => {
+              setSelectedOption("memberships");
+            }}
+          >
+            All Memberships
+          </button>
         </div>
 
-        <hr className="divider" />
-
-        {/* Memberships Section */}
-        <div className="sidebar-section">
-          <div className="section-header">
-            <h2>My Memberships</h2>
-            <button
-              className="section-add-button"
-              onClick={() => setShowMembershipInput(true)}
-            >
-              +
-            </button>
-          </div>
-          <div
-            className={`memberships-list-container ${
-              expandedMemberships ? "scrollable" : ""
-            }`}
-          >
-            {displayedMemberships.map((membership, index) => (
-              <div key={index} className="team-item">
-                <button className="membership-button">
-                  <span className="team-name">{membership}</span>
+        {/* Teams Accordion */}
+        <div className="accordion-wrapper">
+          <div className="accordion" id="teamsAccordion">
+            <div className="accordion-item">
+              <h2 className="accordion-header" id="headingTeams">
+                <button
+                  className="accordion-button"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseTeams"
+                  aria-expanded="true"
+                  aria-controls="collapseTeams"
+                >
+                  Teams
                 </button>
+              </h2>
+              <div
+                id="collapseTeams"
+                className={`accordion-collapse collapse ${teams.length > 0 ? "show" : ""}`}
+                aria-labelledby="headingTeams"
+                data-bs-parent="#teamsAccordion"
+              >
+                <div className="accordion-body scrollable-accordion">
+                  {teams.length === 0 ? (
+                    <div>No teams available. Create a new team!</div>
+                  ) : (
+                    teams.map((team) => (
+                      <div key={team.teamId} className="team-item">
+                        <div className="btn-group w-100 mb-2">
+                          <button
+                            type="button"
+                            className={`btn btn-primary flex-grow-1 ${selectedTeam?.teamId === team.teamId ? "active-folder" : ""}`}
+                            onClick={() => setSelectedTeam(team)}
+                          >
+                            {team.teamName}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                          >
+                            <span className="visually-hidden">
+                              Toggle Dropdown
+                            </span>
+                          </button>
+                          <ul className="dropdown-menu">
+                            <li>
+                              <button className="dropdown-item">Rename</button>
+                            </li>
+                            <li>
+                              <button className="dropdown-item">Delete</button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <button
+                    className="btn btn-success w-100"
+                    onClick={openTeamCreationModal}
+                  >
+                    + Add Team
+                  </button>
+                </div>
               </div>
-            ))}
-            {showMembershipInput && (
-              <div className="team-item">
-                <input
-                  type="text"
-                  className="membership-input"
-                  value={newMembershipName}
-                  onChange={(e) => setNewMembershipName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && newMembershipName.trim() !== "") {
-                      setMemberships([...memberships, newMembershipName.trim()]);
-                      setNewMembershipName("");
-                      setShowMembershipInput(false);
-                    }
-                  }}
-                  autoFocus
-                  placeholder="Enter new membership name"
-                />
-              </div>
-            )}
+            </div>
           </div>
-          {memberships.length > previewCount && (
-            <button
-              className="see-toggle-button"
-              onClick={() => setExpandedMemberships(!expandedMemberships)}
-            >
-              {expandedMemberships ? "See Less" : "See More"}
-            </button>
-          )}
+        </div>
+
+        {/* Memberships Accordion */}
+        <div className="accordion-wrapper">
+          <div className="accordion" id="membershipsAccordion">
+            <div className="accordion-item">
+              <h2 className="accordion-header" id="headingMemberships">
+                <button
+                  className="accordion-button"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseMemberships"
+                  aria-expanded="true"
+                  aria-controls="collapseMemberships"
+                >
+                  Memberships
+                </button>
+              </h2>
+              <div
+                id="collapseMemberships"
+                className="accordion-collapse collapse"
+                aria-labelledby="headingMemberships"
+                data-bs-parent="#membershipsAccordion"
+              >
+                <div className="accordion-body scrollable-accordion">
+                  {/* Insert your memberships data here */}
+                  <div>No memberships available.</div>
+                  {/* Placeholder for memberships */}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -220,7 +237,7 @@ const TeamPwManager = () => {
           <PasswordAndFileManagement selectedTeam={selectedTeam} onBack={() => setSelectedOption(null)} />
         ) : (
           <div>
-            <h1 className="banner">{selectedTeam}</h1>
+            <h1 className="banner">{selectedTeam ? selectedTeam.teamName : "No team selected"}</h1>
             <div className="options-container">
               <button
                 className="option-button"
@@ -244,6 +261,13 @@ const TeamPwManager = () => {
           </div>
         )}
       </div>
+
+      {/* Team Creation Modal */}
+      <TeamCreationForm
+        isVisible={showTeamCreationModal}
+        onClose={closeTeamCreationModal}
+        onCreateTeam={handleCreateTeam}
+      />
     </div>
   );
 };
