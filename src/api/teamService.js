@@ -1,15 +1,26 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = '/api/teams';
+const BASE_URL = "http://localhost:8080/api/teams";
 
-/**
- * Create a new team.
- * @param {string} teamName - The name of the new team.
- * @returns {Promise} - Resolves with the created team.
- */
+// Helper function to get the token
+const getAuthToken = () => {
+  return localStorage.getItem("jwtToken");
+};
+
+// Create a new team.
 export const createTeam = async (teamName) => {
   try {
-    const response = await axios.post(API_URL, { teamName });
+    const token = getAuthToken();
+    const response = await axios.post(
+      BASE_URL,
+      { teamName },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error creating team:", error);
@@ -17,13 +28,16 @@ export const createTeam = async (teamName) => {
   }
 };
 
-/**
- * Get all teams for the logged-in user.
- * @returns {Promise} - Resolves with the list of teams.
- */
+// Get all teams for a user.
 export const getAllTeamsForUser = async () => {
   try {
-    const response = await axios.get(`${API_URL}/user`);
+    const token = getAuthToken();
+    const response = await axios.get(`${BASE_URL}/user`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching user's teams:", error);
@@ -31,13 +45,16 @@ export const getAllTeamsForUser = async () => {
   }
 };
 
-/**
- * Get all teams.
- * @returns {Promise} - Resolves with the list of all teams.
- */
+// Get all teams (general access).
 export const getAllTeams = async () => {
   try {
-    const response = await axios.get(API_URL);
+    const token = getAuthToken();
+    const response = await axios.get(BASE_URL, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching all teams:", error);
@@ -45,14 +62,16 @@ export const getAllTeams = async () => {
   }
 };
 
-/**
- * Get a team by its ID.
- * @param {string} teamId - The ID of the team.
- * @returns {Promise} - Resolves with the team data.
- */
+// Get a team by its ID.
 export const getTeamById = async (teamId) => {
   try {
-    const response = await axios.get(`${API_URL}/${teamId}`);
+    const token = getAuthToken();
+    const response = await axios.get(`${BASE_URL}/${teamId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching team by ID:", error);
@@ -60,15 +79,20 @@ export const getTeamById = async (teamId) => {
   }
 };
 
-/**
- * Update a team name by its ID.
- * @param {string} teamId - The ID of the team to update.
- * @param {string} newTeamName - The new team name.
- * @returns {Promise} - Resolves with the updated team data.
- */
+// Method to update team name
 export const updateTeamName = async (teamId, newTeamName) => {
   try {
-    const response = await axios.put(`${API_URL}/${teamId}`, { teamName: newTeamName });
+    const token = localStorage.getItem("jwtToken");
+    const response = await axios.put(
+      `${BASE_URL}/${teamId}`,
+      { teamName: newTeamName },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      }
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating team name:", error);
@@ -76,14 +100,16 @@ export const updateTeamName = async (teamId, newTeamName) => {
   }
 };
 
-/**
- * Delete a team by its ID.
- * @param {string} teamId - The ID of the team to delete.
- * @returns {Promise} - Resolves with a success message.
- */
+// Delete a team by its ID.
 export const deleteTeam = async (teamId) => {
   try {
-    const response = await axios.delete(`${API_URL}/${teamId}`);
+    const token = getAuthToken();
+    const response = await axios.delete(`${BASE_URL}/${teamId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error deleting team:", error);
