@@ -476,3 +476,16 @@ body {
 .profile-dropdown button:hover {
   background: #f2f2f2;
 }
+
+.toast.fade {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.form-buttons {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start; 
+  gap: 0.5rem; 
+}
+
+

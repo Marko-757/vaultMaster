@@ -19,10 +19,10 @@ function AddPasswordForm({ folders = [], selectedFolder, onSave, onCancel }) {
   };
 
   const handleSave = async () => {
-    if (saving) return; // Prevent double submit
+    if (saving) return;
     setSaving(true);
 
-    console.log("✅ handleSave triggered");
+    console.log("handleSave triggered");
 
     if (!formData.accountName || !formData.username || !formData.password) {
       alert("Please fill in all required fields.");
@@ -37,10 +37,10 @@ function AddPasswordForm({ folders = [], selectedFolder, onSave, onCancel }) {
     };
 
     try {
-      console.log("📤 Submitting password entry to parent:", dataToSubmit);
-      onSave(dataToSubmit); // Pass up to parent
+      console.log("Submitting password entry to parent:", dataToSubmit);
+      onSave(dataToSubmit);
     } catch (error) {
-      console.error("🚫 Error passing password up:", error.message);
+      console.error("Error passing password up:", error.message);
       alert("Failed to add password.");
     } finally {
       setSaving(false);
@@ -71,6 +71,11 @@ function AddPasswordForm({ folders = [], selectedFolder, onSave, onCancel }) {
         value={formData.password}
         onChange={handleInputChange}
       />
+      <PasswordGenerator
+        onGenerate={(password) =>
+          setFormData((prev) => ({ ...prev, password }))
+        }
+      />
       <input
         type="text"
         name="website"
@@ -92,12 +97,6 @@ function AddPasswordForm({ folders = [], selectedFolder, onSave, onCancel }) {
           </option>
         ))}
       </select>
-
-      <PasswordGenerator
-        onGenerate={(password) =>
-          setFormData((prev) => ({ ...prev, password }))
-        }
-      />
 
       <div className="form-buttons">
         <button onClick={handleSave} disabled={saving}>

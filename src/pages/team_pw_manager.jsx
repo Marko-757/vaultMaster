@@ -6,6 +6,8 @@ import MyMembers from "../components/myMembers";
 import ManageRoles from "../components/manageRoles";
 import PasswordAndFileManagement from "../components/passwordAndFileManagement";
 import TeamCreationForm from "../components/teamCreationForm";
+import NavbarVaultMaster from "../components/navbarVaultMaster";
+
 import {
   getAllTeamsForUser,
   createTeam,
@@ -134,275 +136,277 @@ const TeamPwManager = () => {
   }, []);
 
   return (
-    <div className="teams-container d-flex">
-      {/* Home Button */}
+    <div classname="team-pw-container">
       <button className="home-button" onClick={() => navigate("/home")}>
         🏠︎
       </button>
-
-      {/* Profile Button with Dropdown */}
-      <div className="profile-container" ref={dropdownRef}>
-        <img
-          src={profileIcon}
-          alt="Profile"
-          className="profile-icon"
-          onClick={toggleDropdown}
-        />
-        {dropdownOpen && (
-          <div className="profile-dropdown">
-            <button onClick={() => navigate("/settings")}>
-              Profile Settings
-            </button>
-            <button onClick={handleLogout}>Log Out</button>
-          </div>
-        )}
-      </div>
-
-      {/* Left Sidebar with Accordion */}
-      <div className="left-column">
-        <div className="sidebar-heading">
-          <div className="sidebar-heading-top">Teams</div>
-          <div className="sidebar-heading-bottom">Passwords & Files</div>
+      <NavbarVaultMaster onLogout={handleLogout} />
+      <div className="three-column-container">
+        {/* Profile Icon */}
+        <div className="profile-container" ref={dropdownRef}>
+          <img
+            src={profileIcon}
+            alt="Profile"
+            className="profile-icon"
+            onClick={toggleDropdown}
+          />
+          {dropdownOpen && (
+            <div className="profile-dropdown">
+              <button onClick={() => navigate("/settings")}>
+                Profile Settings
+              </button>
+              <button onClick={handleLogout}>Log Out</button>
+            </div>
+          )}
         </div>
-        <hr className="divider" />
+        <div className="teams-container d-flex">
+          {/* Left Sidebar with Accordion */}
+          <div className="left-column">
+            <div className="sidebar-heading">
+              <div className="sidebar-heading-top">Teams</div>
+              <div className="sidebar-heading-bottom">Passwords & Files</div>
+            </div>
+            <hr className="divider" />
 
-        {/* Teams Accordion */}
-        <div className="accordion-wrapper">
-          <div className="accordion" id="teamsAccordion">
-            <div className="accordion-item">
-              <h2 className="accordion-header" id="headingTeams">
-                <button
-                  className="accordion-button"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseTeams"
-                  aria-expanded="true"
-                  aria-controls="collapseTeams"
-                >
-                  Teams
-                </button>
-              </h2>
-              <div
-                id="collapseTeams"
-                className={`accordion-collapse collapse ${
-                  teams.length > 0 ? "show" : ""
-                }`}
-                aria-labelledby="headingTeams"
-                data-bs-parent="#teamsAccordion"
-              >
-                <div className="accordion-body scrollable-accordion">
-                  {teams.length === 0 ? (
-                    <div>No teams available. Create a new team!</div>
-                  ) : (
-                    teams.map((team) => (
-                      <div key={team.teamId} className="team-item">
-                        <div className="btn-group w-100 mb-2">
-                          <button
-                            type="button"
-                            className={`btn btn-primary flex-grow-1 ${
-                              selectedTeam?.teamId === team.teamId
-                                ? "active-folder"
-                                : ""
-                            }`}
-                            onClick={() => setSelectedTeam(team)}
-                          >
-                            {team.teamName}
-                          </button>
-
-                          <button
-                            type="button"
-                            className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            <span className="visually-hidden">
-                              Toggle Dropdown
-                            </span>
-                          </button>
-                          <ul className="dropdown-menu">
-                            <li>
-                              <button
-                                className="dropdown-item"
-                                onClick={() => openRenameModal(team)}
-                              >
-                                Rename
-                              </button>
-                            </li>
-                            <li>
-                              <button
-                                className="dropdown-item"
-                                onClick={() => openDeleteModal(team)}
-                              >
-                                Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                  <button
-                    className="btn btn-success w-100"
-                    onClick={openTeamCreationModal}
+            {/* Teams Accordion */}
+            <div className="accordion-wrapper">
+              <div className="accordion" id="teamsAccordion">
+                <div className="accordion-item">
+                  <h2 className="accordion-header" id="headingTeams">
+                    <button
+                      className="accordion-button"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseTeams"
+                      aria-expanded="true"
+                      aria-controls="collapseTeams"
+                    >
+                      Teams
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseTeams"
+                    className={`accordion-collapse collapse ${
+                      teams.length > 0 ? "show" : ""
+                    }`}
+                    aria-labelledby="headingTeams"
+                    data-bs-parent="#teamsAccordion"
                   >
-                    + Add Team
-                  </button>
+                    <div className="accordion-body scrollable-accordion">
+                      {teams.length === 0 ? (
+                        <div>No teams available. Create a new team!</div>
+                      ) : (
+                        teams.map((team) => (
+                          <div key={team.teamId} className="team-item">
+                            <div className="btn-group w-100 mb-2">
+                              <button
+                                type="button"
+                                className={`btn btn-primary flex-grow-1 ${
+                                  selectedTeam?.teamId === team.teamId
+                                    ? "active-folder"
+                                    : ""
+                                }`}
+                                onClick={() => setSelectedTeam(team)}
+                              >
+                                {team.teamName}
+                              </button>
+
+                              <button
+                                type="button"
+                                className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                              >
+                                <span className="visually-hidden">
+                                  Toggle Dropdown
+                                </span>
+                              </button>
+                              <ul className="dropdown-menu">
+                                <li>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => openRenameModal(team)}
+                                  >
+                                    Rename
+                                  </button>
+                                </li>
+                                <li>
+                                  <button
+                                    className="dropdown-item"
+                                    onClick={() => openDeleteModal(team)}
+                                  >
+                                    Delete
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      <button
+                        className="btn btn-success w-100"
+                        onClick={openTeamCreationModal}
+                      >
+                        + Add Team
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Memberships Accordion */}
+            <div className="accordion-wrapper">
+              <div className="accordion" id="membershipsAccordion">
+                <div className="accordion-item">
+                  <h2 className="accordion-header" id="headingMemberships">
+                    <button
+                      className="accordion-button"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#collapseMemberships"
+                      aria-expanded="true"
+                      aria-controls="collapseMemberships"
+                    >
+                      Memberships
+                    </button>
+                  </h2>
+                  <div
+                    id="collapseMemberships"
+                    className="accordion-collapse collapse"
+                    aria-labelledby="headingMemberships"
+                    data-bs-parent="#membershipsAccordion"
+                  >
+                    <div className="accordion-body scrollable-accordion">
+                      <div>No memberships available.</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Memberships Accordion */}
-        <div className="accordion-wrapper">
-          <div className="accordion" id="membershipsAccordion">
-            <div className="accordion-item">
-              <h2 className="accordion-header" id="headingMemberships">
-                <button
-                  className="accordion-button"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseMemberships"
-                  aria-expanded="true"
-                  aria-controls="collapseMemberships"
-                >
-                  Memberships
-                </button>
-              </h2>
-              <div
-                id="collapseMemberships"
-                className="accordion-collapse collapse"
-                aria-labelledby="headingMemberships"
-                data-bs-parent="#membershipsAccordion"
-              >
-                <div className="accordion-body scrollable-accordion">
-                  <div>No memberships available.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="main-content">
-        {selectedOption === "members" ? (
-          <MyMembers
-            selectedTeam={selectedTeam}
-            onBack={() => setSelectedOption(null)}
-          />
-        ) : selectedOption === "roles" ? (
-          <ManageRoles
-            selectedTeam={selectedTeam}
-            onBack={() => setSelectedOption(null)}
-          />
-        ) : selectedOption === "password" ? (
-          <PasswordAndFileManagement
-            selectedTeam={selectedTeam}
-            onBack={() => setSelectedOption(null)}
-          />
-        ) : (
-          <div>
-            <h1 className="banner">
-              {selectedTeam ? selectedTeam.teamName : "No team selected"}
-            </h1>
-            <div className="options-container">
-              <button
-                className="option-button"
-                onClick={() => setSelectedOption("password")}
-              >
-                Password and File Management
-              </button>
-              <button
-                className="option-button"
-                onClick={() => setSelectedOption("members")}
-              >
-                My Members
-              </button>
-              <button
-                className="option-button"
-                onClick={() => setSelectedOption("roles")}
-              >
-                Manage Roles
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Team Creation Form */}
-      <TeamCreationForm
-        isVisible={showTeamCreationModal}
-        onClose={closeTeamCreationModal}
-        onCreateTeam={handleCreateTeam}
-      />
-
-      {/* Rename Team Modal */}
-      {isRenameModalOpen && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-content">
-              <h2>Rename Team</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleRenameTeam();
-                }}
-              >
-                <div className="input-container">
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    placeholder="Enter new team name"
-                    className="team-input"
-                    autoFocus
-                  />
-                </div>
-                <div className="modal-buttons">
-                  <button type="submit" className="confirm-button">
-                    Rename
+          {/* Main Content Area */}
+          <div className="main-content">
+            {selectedOption === "members" ? (
+              <MyMembers
+                selectedTeam={selectedTeam}
+                onBack={() => setSelectedOption(null)}
+              />
+            ) : selectedOption === "roles" ? (
+              <ManageRoles
+                selectedTeam={selectedTeam}
+                onBack={() => setSelectedOption(null)}
+              />
+            ) : selectedOption === "password" ? (
+              <PasswordAndFileManagement
+                selectedTeam={selectedTeam}
+                onBack={() => setSelectedOption(null)}
+              />
+            ) : (
+              <div>
+                <h1 className="banner">
+                  {selectedTeam ? selectedTeam.teamName : "No team selected"}
+                </h1>
+                <div className="options-container">
+                  <button
+                    className="option-button"
+                    onClick={() => setSelectedOption("password")}
+                  >
+                    Password and File Management
                   </button>
                   <button
-                    type="button"
-                    className="cancel-button"
-                    onClick={() => setIsRenameModalOpen(false)}
+                    className="option-button"
+                    onClick={() => setSelectedOption("members")}
                   >
-                    Cancel
+                    My Members
+                  </button>
+                  <button
+                    className="option-button"
+                    onClick={() => setSelectedOption("roles")}
+                  >
+                    Manage Roles
                   </button>
                 </div>
-              </form>
-            </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
 
-      {/* Delete Team Confirmation Modal */}
-      {isDeleteModalOpen && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-content">
-              <h2>Are you sure you want to delete this team?</h2>
-              <div className="modal-buttons">
-                <button
-                  type="button"
-                  className="confirm-button"
-                  onClick={handleDeleteTeam}
-                >
-                  Yes, Delete
-                </button>
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={() => setIsDeleteModalOpen(false)}
-                >
-                  Cancel
-                </button>
+          {/* Team Creation Form */}
+          <TeamCreationForm
+            isVisible={showTeamCreationModal}
+            onClose={closeTeamCreationModal}
+            onCreateTeam={handleCreateTeam}
+          />
+
+          {/* Rename Team Modal */}
+          {isRenameModalOpen && (
+            <div className="overlay">
+              <div className="modal">
+                <div className="modal-content">
+                  <h2>Rename Team</h2>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleRenameTeam();
+                    }}
+                  >
+                    <div className="input-container">
+                      <input
+                        type="text"
+                        value={newTeamName}
+                        onChange={(e) => setNewTeamName(e.target.value)}
+                        placeholder="Enter new team name"
+                        className="team-input"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="modal-buttons">
+                      <button type="submit" className="confirm-button">
+                        Rename
+                      </button>
+                      <button
+                        type="button"
+                        className="cancel-button"
+                        onClick={() => setIsRenameModalOpen(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Delete Team Confirmation Modal */}
+          {isDeleteModalOpen && (
+            <div className="overlay">
+              <div className="modal">
+                <div className="modal-content">
+                  <h2>Are you sure you want to delete this team?</h2>
+                  <div className="modal-buttons">
+                    <button
+                      type="button"
+                      className="confirm-button"
+                      onClick={handleDeleteTeam}
+                    >
+                      Yes, Delete
+                    </button>
+                    <button
+                      type="button"
+                      className="cancel-button"
+                      onClick={() => setIsDeleteModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

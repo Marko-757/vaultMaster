@@ -13,6 +13,8 @@ import AddFileForm from "../components/addFileForm";
 import AddFileFolderForm from "../components/addFileFolderForm";
 import * as personalFileService from "../api/personalFileService";
 import FileInformation from "../components/FileInformation";
+import Toast from "bootstrap/js/dist/toast";
+import { FaEye, FaEyeSlash, FaRegCopy } from "react-icons/fa";
 
 function PersonalPwManager() {
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ function PersonalPwManager() {
   const [folderBeingRenamed, setFolderBeingRenamed] = useState(null);
 
   const [passwordToDelete, setPasswordToDelete] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
 
@@ -54,6 +57,8 @@ function PersonalPwManager() {
   const [viewMode, setViewMode] = useState("passwords");
   const [isAddingFile, setIsAddingFile] = useState(false);
 
+  const [showEditPassword, setShowEditPassword] = useState(false);
+
   const filteredFiles = selectedFileFolder
     ? files.filter(
         (f) =>
@@ -61,6 +66,36 @@ function PersonalPwManager() {
           f.folderId === selectedFileFolder.id
       )
     : files;
+
+  const showToast = (message, delay = 2000) => {
+    const toastId = `toast-${Date.now()}`;
+
+    const toastHTML = `
+        <div id="${toastId}" class="toast text-bg-primary fade" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 250px;">
+          <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+        </div>
+      `;
+
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    container.insertAdjacentHTML("beforeend", toastHTML);
+
+    const toastEl = document.getElementById(toastId);
+    const toast = new Toast(toastEl, {
+      delay: Number(delay),
+      autohide: true,
+    });
+
+    toast.show();
+
+    toastEl.addEventListener("hidden.bs.toast", () => {
+      toastEl.remove();
+    });
+  };
 
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
@@ -118,35 +153,30 @@ function PersonalPwManager() {
       console.error("Logout failed", error);
     }
   };
-
-  const addPassword = async (newPasswordEntry) => {
+  const addPassword = async (entry) => {
     try {
-      const createdEntry = await personalPWService.createPasswordEntry(
-        newPasswordEntry
-      );
-
-      // Decrypt the password for immediate UI display
+      const created = await personalPWService.createPasswordEntry(entry);
       const decrypted = await personalPWService.getDecryptedPassword(
-        createdEntry.entryId
+        created.entryId
       );
-      console.log("Received decrypted password from backend:", decrypted);
-
-      // Save encrypted entry, then set decrypted for preview
-      setPasswords((prev) => [...prev, createdEntry]);
-      setSelectedPassword(createdEntry);
+      setPasswords((prev) => [...prev, created]);
+      setSelectedPassword(created);
       setDecryptedPassword(decrypted);
-      setShowPassword(false);
-      setIsEditing(false);
       setIsAddingPassword(false);
-    } catch (error) {
-      console.error("Error adding or decrypting password:", error);
-      alert("Failed to add password.");
+      showToast("Password added!", "success");
+    } catch {
+      showToast("Failed to add password.", "danger");
     }
   };
 
-  const addPasswordFolder = async (newlyCreatedFolder) => {
-    setPasswordFolders((prev) => [...prev, newlyCreatedFolder]);
-    setIsAddingPasswordFolder(false);
+  const addPasswordFolder = async (folder) => {
+    try {
+      setPasswordFolders((prev) => [...prev, folder]);
+      setIsAddingPasswordFolder(false);
+      showToast("Password folder created!", 3000);
+    } catch {
+      showToast("Failed to create password folder.", 3000);
+    }
   };
 
   const deletePasswordFolder = async (folderId) => {
@@ -163,7 +193,7 @@ function PersonalPwManager() {
       setPasswords(
         passwords.filter((password) => password.folderId !== folderId)
       );
-      alert("Folder deleted successfully!");
+      showToast("Folder deleted successfully!");
 
       if (
         selectedPasswordFolder &&
@@ -173,7 +203,7 @@ function PersonalPwManager() {
       }
     } catch (error) {
       console.error("Error deleting folder:", error);
-      alert("Failed to delete folder.");
+      showToast("Failed to delete folder.");
     }
   };
 
@@ -205,18 +235,21 @@ function PersonalPwManager() {
         await personalPWService.deletePassword(passwordToDelete.entryId);
         const updatedPasswords = await personalPWService.getAllPasswords();
         setPasswords(updatedPasswords);
-        if (
-          selectedPassword &&
-          selectedPassword.entryId === passwordToDelete.entryId
-        ) {
-          setSelectedPassword(null);
-        }
+        setSelectedPassword(null);
         setPasswordToDelete(null);
+        showToast("Password deleted!", 3000);
       } catch (err) {
         console.error("Failed to delete password:", err);
-        alert("Failed to delete password.");
+        showToast("Failed to delete password.", 3000);
       }
     }
+  };
+
+  const handleCopy = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => showToast("Password copied to clipboard!", "success"))
+      .catch(() => showToast("Failed to copy password.", "danger"));
   };
 
   const startEditing = async () => {
@@ -241,7 +274,7 @@ function PersonalPwManager() {
       setIsEditing(true); // Ensure this is triggered.
     } catch (error) {
       console.error("Error decrypting password for editing:", error);
-      alert("Failed to decrypt password for editing.");
+      showToast("Failed to decrypt password for editing.");
     }
   };
 
@@ -259,17 +292,36 @@ function PersonalPwManager() {
       setSelectedPassword(editData);
       setDecryptedPassword(editData.passwordHash);
       setIsEditing(false);
-      alert("Password updated successfully!");
-    } catch (error) {
-      console.error("Failed to update password:", error);
-      alert("Failed to update password.");
+      showToast("Password updated!", 3000);
+    } catch {
+      showToast("Failed to update password.", 3000);
+    }
+  };
+
+  const handleFileUpload = async (formData) => {
+    try {
+      await personalFileService.uploadFiles(
+        formData.getAll("files"),
+        formData.get("folderId") || null
+      );
+      const updated = await personalFileService.getAllFiles();
+      setFiles(updated);
+      setIsAddingFile(false);
+      showToast("File(s) uploaded!", "success");
+    } catch {
+      showToast("File upload failed.", "danger");
     }
   };
 
   ////// Files///////
-  const addFileFolder = async (newFolder) => {
-    setFileFolders((prev) => [...prev, newFolder]);
-    setIsAddingFileFolder(false);
+  const addFileFolder = async (folder) => {
+    try {
+      setFileFolders((prev) => [...prev, folder]);
+      setIsAddingFileFolder(false);
+      showToast("File folder created!", 3000);
+    } catch {
+      showToast("Failed to create file folder.", 3000);
+    }
   };
 
   return (
@@ -664,10 +716,10 @@ function PersonalPwManager() {
                   );
                   setIsRenamingFolder(false);
                   setFolderBeingRenamed(null);
-                  alert("Folder renamed successfully!");
+                  showToast("Folder renamed successfully!");
                 } catch (error) {
                   console.error("Error renaming folder:", error);
-                  alert("Failed to rename folder.");
+                  showToast("Failed to rename folder.");
                 }
               }}
               onCancel={() => {
@@ -688,85 +740,141 @@ function PersonalPwManager() {
                   const updatedFiles = await personalFileService.getAllFiles();
                   setFiles(updatedFiles);
                   setIsAddingFile(false);
-                  alert("File(s) uploaded successfully!");
+                  showToast("File(s) uploaded successfully!");
                 } catch (error) {
                   console.error("Failed to upload file(s):", error);
-                  alert("Failed to upload file(s).");
+                  showToast("Failed to upload file(s).");
                 }
               }}
               onCancel={() => setIsAddingFile(false)}
             />
           ) : selectedPassword ? (
-                isEditing ? (
-                  <div className="edit-form-container">
-                    {/* Render the Edit Form */}
-                    <h2>Edit Password</h2>
-                    <form>
-                      <div>
-                        <label>Account Name</label>
-                        <input
-                          type="text"
-                          value={editData.accountName}
-                          onChange={(e) => setEditData({ ...editData, accountName: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <label>Username</label>
-                        <input
-                          type="text"
-                          value={editData.username}
-                          onChange={(e) => setEditData({ ...editData, username: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <label>Website</label>
-                        <input
-                          type="text"
-                          value={editData.website}
-                          onChange={(e) => setEditData({ ...editData, website: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <label>Password</label>
-                        <input
-                          type="password"
-                          value={editData.passwordHash}
-                          onChange={(e) => setEditData({ ...editData, passwordHash: e.target.value })}
-                        />
-                      </div>
-                      <button type="button" onClick={saveEditing}>Save</button>
-                      <button type="button" onClick={cancelEditing}>Cancel</button>
-                    </form>
-                  </div>
-                ) : (
-                  <div className="password-detail-view">
-                    <button
-                      className="close-detail-button"
-                      onClick={() => setSelectedPassword(null)}
-                    >
-                      X
-                    </button>
-                    <PasswordInformation
-                      password={selectedPassword}
-                      decryptedPassword={decryptedPassword}
-                      showPassword={showPassword}
-                      setShowPassword={setShowPassword}
+            isEditing ? (
+              <div className="edit-form-container">
+                {/* Render the Edit Form */}
+                <h2>Edit Password</h2>
+                <form>
+                  <div>
+                    <label>Account Name</label>
+                    <input
+                      type="text"
+                      value={editData.accountName}
+                      onChange={(e) =>
+                        setEditData({
+                          ...editData,
+                          accountName: e.target.value,
+                        })
+                      }
                     />
-                    <div className="password-actions">
-                      <button
-                        className="edit-password-button"
-                        onClick={startEditing} 
+                  </div>
+                  <div>
+                    <label>Username</label>
+                    <input
+                      type="text"
+                      value={editData.username}
+                      onChange={(e) =>
+                        setEditData({ ...editData, username: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Website</label>
+                    <input
+                      type="text"
+                      value={editData.website}
+                      onChange={(e) =>
+                        setEditData({ ...editData, website: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>Password</label>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <input
+                        type={showEditPassword ? "text" : "password"}
+                        value={editData.passwordHash}
+                        onChange={(e) =>
+                          setEditData({
+                            ...editData,
+                            passwordHash: e.target.value,
+                          })
+                        }
+                        style={{ flex: 1 }}
+                      />
+                      <span
+                        className="icon-button"
+                        onClick={() => setShowEditPassword((prev) => !prev)}
+                        title={
+                          showEditPassword ? "Hide password" : "Show password"
+                        }
                       >
-                        Edit
-                      </button>
-                      <button
-                        className="delete-password-button"
-                        onClick={() => setPasswordToDelete(selectedPassword)}
+                        {showEditPassword ? <FaEyeSlash /> : <FaEye />}
+                      </span>
+                      <span
+                        className="icon-button"
+                        onClick={() => handleCopy(editData.passwordHash)}
+                        title="Copy password"
                       >
-                        Delete
-                      </button>
+                        <FaRegCopy />
+                      </span>
                     </div>
                   </div>
+                  <div className="form-buttons">
+                  <button
+                    type="button"
+                    className="btn btn-success me-2"
+                    onClick={saveEditing}
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={cancelEditing}
+                  >
+                    Cancel
+                  </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="password-detail-view">
+                <button
+                  className="close-detail-button"
+                  onClick={() => setSelectedPassword(null)}
+                >
+                  X
+                </button>
+                <PasswordInformation
+                  password={selectedPassword}
+                  decryptedPassword={decryptedPassword}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                />
+                <div className="password-actions">
+                  <button
+                    className="edit-password-button"
+                    onClick={startEditing}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-password-button"
+                    onClick={() => {
+                      setPasswordToDelete(selectedPassword);
+                      setIsDeleteModalOpen(true);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
             )
           ) : selectedFile ? (
             <FileInformation
@@ -786,6 +894,40 @@ function PersonalPwManager() {
           )}
         </div>
       </div>
+
+      <div
+        className="toast-container position-fixed bottom-0 end-0 p-3"
+        style={{ zIndex: 9999 }}
+        id="toast-container"
+      ></div>
+      {isDeleteModalOpen && (
+        <div className="overlay">
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Are you sure you want to delete this password?</h2>
+              <div className="modal-buttons">
+                <button
+                  type="button"
+                  className="confirm-button"
+                  onClick={async () => {
+                    await confirmDeletePassword();
+                    setIsDeleteModalOpen(false);
+                  }}
+                >
+                  Yes, Delete
+                </button>
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={() => setIsDeleteModalOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

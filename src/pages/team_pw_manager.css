@@ -1,3 +1,11 @@
+.pw-manager-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden; 
+  font-family: Arial, sans-serif;
+}
+
 /* Teams Container Layout */
 .teams-container {
   display: flex;
