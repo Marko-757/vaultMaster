@@ -1,7 +1,8 @@
 import React from "react";
 import * as personalFileService from "../api/personalFileService";
+import "./fileInformation.css";
 
-function FileInformation({ file, onClose, onDelete }) {
+function FileInformation({ file, onClose, onDelete, showToast }) {
   const handleDownload = async () => {
     try {
       const blob = await personalFileService.downloadFile(file.fileKey);
@@ -13,9 +14,11 @@ function FileInformation({ file, onClose, onDelete }) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+
+      showToast("File downloaded!", 3000);
     } catch (error) {
       console.error("Failed to download file:", error);
-      alert("Failed to download file.");
+      showToast("Failed to download file.", 3000);
     }
   };
 
@@ -33,6 +36,14 @@ function FileInformation({ file, onClose, onDelete }) {
     }
   };
 
+  const getFileExtensionLabel = (filename) => {
+    const parts = filename.split(".");
+    if (parts.length < 2) return "Unknown";
+    const ext = parts.pop().toLowerCase();
+    return `.${ext}`;
+  };
+  
+
   return (
     <div className="file-detail-view">
       <button className="close-detail-button" onClick={onClose}>
@@ -44,20 +55,26 @@ function FileInformation({ file, onClose, onDelete }) {
         <strong>Name:</strong> {file.originalFilename}
       </p>
       <p>
-        <strong>Type:</strong> {file.extension || "Unknown"}
+        <strong>Type:</strong> {getFileExtensionLabel(file.originalFilename)}
       </p>
+
       <p>
         <strong>Size:</strong>{" "}
         {file.fileSize > 1024
           ? `${(file.fileSize / 1024).toFixed(2)} KB`
           : `${file.fileSize} bytes`}
       </p>
-
       <div className="file-actions">
-        <button className="download-button" onClick={handleDownload}>
+        <button
+          className="file-action-button download-button"
+          onClick={handleDownload}
+        >
           Download
         </button>
-        <button className="delete-file-button" onClick={handleDelete}>
+        <button
+          className="file-action-button delete-button"
+          onClick={handleDelete}
+        >
           Delete
         </button>
       </div>

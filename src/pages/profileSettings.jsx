@@ -1,29 +1,32 @@
 import React, { useState, useEffect } from "react";
 import "./profileSettings.css";
-import { getProfile, updateProfile } from "../api/authService"; // Import the getProfile function
+import { getProfile, updateProfile } from "../api/authService";
 import axios from "axios";
+import defaultProfileImage from "../Assets/defaultProfileImage.png";
+import { useNavigate } from "react-router-dom";
 
 const ProfileSettings = () => {
   const [userProfile, setUserProfile] = useState({
     fullName: "",
     email: "",
     phoneNumber: "",
-    profilePicture: "", // If you want to show a profile picture
+    profilePicture: defaultProfileImage,
   });
 
-  // State for modal visibility
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // State for password fields
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch profile data when component mounts
+  const navigate = useNavigate();
+
+  const handleGoBack = () => {
+    navigate(-1); // navigates to the previous page in history
+  };
+
   useEffect(() => {
-    // Fetch profile data when the component mounts
     getProfile()
       .then((data) => {
         if (data) {
@@ -50,7 +53,7 @@ const ProfileSettings = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const updatedProfile = await updateProfile(userProfile); 
+      const updatedProfile = await updateProfile(userProfile);
       if (updatedProfile) {
         alert("Profile updated successfully!");
       } else {
@@ -61,34 +64,15 @@ const ProfileSettings = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="loading-screen">
-        <span>Loading...</span> 
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="error-message">
-        <span>Error: {error}</span>
-      </div>
-    );
-  }
-
-  // Modal for changing password
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // Handle password change
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
 
-    // Send password change request to backend
     const response = await fetch("/api/users/change-password", {
       method: "POST",
       headers: {
@@ -108,57 +92,92 @@ const ProfileSettings = () => {
     }
   };
 
+  if (loading) {
+    return <div className="loading-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="error-message">Error: {error}</div>;
+  }
+
   return (
-    <div className="profile-settings-container">
-      <div className="profile-content">
-        <div className="profile-section">
-          <h2>Your Profile</h2>
-          <form className="settings-form" onSubmit={handleSave}>
-            <div className="form-group">
-              <label>Full Name:</label>
+    <div className="container py-5">
+      <button className="btn btn-outline-secondary mb-3" onClick={handleGoBack}>
+        ← Back
+      </button>
+
+      <h2 className="mb-4">User Settings</h2>
+      <form onSubmit={handleSave}>
+        <div className="row mb-4">
+          <div className="col-md-6">
+            <h4>Profile Picture</h4>
+            <div className="mb-3">
+              <img
+                src={userProfile.profilePicture}
+                alt="Profile"
+                className="img-thumbnail mb-2"
+                style={{ maxWidth: "150px" }}
+              />
+              <input
+                className="form-control"
+                type="file"
+                id="profilePicture"
+                disabled
+              />
+            </div>
+          </div>
+          <div className="col-md-6">
+            <h4>Personal Information</h4>
+            <div className="mb-3">
+              <label htmlFor="fullName" className="form-label">
+                Full Name
+              </label>
               <input
                 type="text"
+                className="form-control"
+                id="fullName"
                 name="fullName"
                 value={userProfile.fullName}
                 onChange={handleInputChange}
-                required
               />
             </div>
-            <div className="form-group">
-              <label>Email:</label>
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label">
+                Email address
+              </label>
               <input
                 type="email"
+                className="form-control"
+                id="email"
                 name="email"
                 value={userProfile.email}
                 onChange={handleInputChange}
-                required
               />
             </div>
-            <div className="form-group">
-              <label>Phone Number:</label>
+            <div className="mb-3">
+              <label htmlFor="phoneNumber" className="form-label">
+                Phone Number
+              </label>
               <input
-                type="text"
+                type="tel"
+                className="form-control"
+                id="phoneNumber"
                 name="phoneNumber"
                 value={userProfile.phoneNumber}
                 onChange={handleInputChange}
-                required
               />
             </div>
-          </form>
+          </div>
         </div>
 
-        {/* Password Section */}
-        <div>
-          <button className="change-password-button" onClick={openModal}>
-            Change Password
-          </button>
-          <button type="submit" className="save-button">
+        <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+          <button type="submit" className="btn btn-primary">
             Save Changes
           </button>
         </div>
-      </div>
+      </form>
 
-      {/* Modal for Changing Password */}
+      {/* Modal */}
       <div
         className={`modal-overlay ${isModalOpen ? "active" : ""}`}
         onClick={closeModal}

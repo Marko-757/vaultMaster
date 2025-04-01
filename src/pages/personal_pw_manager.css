@@ -199,11 +199,7 @@ body {
 }
 
 /* Folder Buttons */
-.folder-split-button {
-  width: 100%;
-  display: flex;
-  margin-bottom: 6px;
-}
+
 .folder-main-button {
   flex: 1;
   text-align: left;
@@ -488,4 +484,41 @@ body {
   gap: 0.5rem; 
 }
 
+.copied-tooltip {
+  position: absolute;
+  background-color: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  top: -1.5rem;
+  right: 0;
+  z-index: 999;
+}
 
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* File Folders (default blue like password folders) */
+.folder-split-button .btn.btn-primary {
+  background-color: #0d6efd;
+  color: white;
+}
+.folder-split-button .btn.btn-primary:hover {
+  background-color: #0b5ed7;
+}
+
+/* Active state for selected file folder */
+.folder-split-button .btn.btn-primary.active-folder {
+  background-color: #004aad !important;
+  border-color: #00338d !important;
+}
+
+/* Active file button */
+.active-file {
+  background-color: #004aad !important;
+  border: 2px solid #00338d;
+}

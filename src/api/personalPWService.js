@@ -77,8 +77,8 @@ export async function getAllPasswords() {
   return await response.json();
 }
 
-export async function getPasswordsInFolder(folderId) {
-  const response = await fetch(`${BASE_PASSWORD_URL}/folder/${folderId}`, {
+export async function getPasswordsInFolder(passwordFolderId) {
+  const response = await fetch(`${BASE_PASSWORD_URL}/folder/${passwordFolderId}`, {
     credentials: "include",
   });
 
@@ -89,14 +89,14 @@ export async function getPasswordsInFolder(folderId) {
   return await response.json();
 }
 
-export const createPasswordFolder = async ({ folderName }) => {
+export const createPasswordFolder = async ({ passwordFolderName }) => {
   const response = await fetch(`${BASE_FOLDER_URL}`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ folderName }),
+    body: JSON.stringify({ passwordFolderName }),
   });
 
   if (!response.ok) {
@@ -116,12 +116,12 @@ export const getAllPasswordFolders = async () => {
   return await response.json();
 };
 
-export const renamePasswordFolder = async (folderId, folderName) => {
-  const response = await fetch(`${BASE_FOLDER_URL}/${folderId}`, {
+export const renamePasswordFolder = async (passwordFolderId, folderName) => {
+  const response = await fetch(`${BASE_FOLDER_URL}/${passwordFolderId}`, {
     method: "PUT",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ folderName }),
+    body: JSON.stringify({ folderName }), 
   });
 
   if (!response.ok) {
@@ -131,8 +131,9 @@ export const renamePasswordFolder = async (folderId, folderName) => {
   return await response.text();
 };
 
-export const deletePasswordFolder = async (folderId) => {
-  const response = await fetch(`${BASE_FOLDER_URL}/${folderId}`, {
+
+export const deletePasswordFolder = async (passwordFolderId) => {
+  const response = await fetch(`${BASE_FOLDER_URL}/${passwordFolderId}`, {
     method: "DELETE",
     credentials: "include",
   });

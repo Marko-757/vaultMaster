@@ -1,0 +1,29 @@
+.navbar .dropdown-menu {
+    margin-top: 10px !important;
+    right: 0 !important;
+    left: auto !important;
+    min-width: 180px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar .dropdown-item:active {
+    background-color: #f1f1f1 !important;
+    color: #000 !important;
+    
+  }
+  
+  /* Profile dropdown styling fix */
+#profile-dropdown .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
+    margin-top: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  #profile-dropdown .dropdown-item:active {
+    background-color: #f1f1f1 !important;
+    color: #000 !important;
+  }
+  

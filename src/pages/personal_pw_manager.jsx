@@ -12,7 +12,7 @@ import NavbarVaultMaster from "../components/navbarVaultMaster";
 import AddFileForm from "../components/addFileForm";
 import AddFileFolderForm from "../components/addFileFolderForm";
 import * as personalFileService from "../api/personalFileService";
-import FileInformation from "../components/FileInformation";
+import FileInformation from "../components/fileInformation";
 import Toast from "bootstrap/js/dist/toast";
 import { FaEye, FaEyeSlash, FaRegCopy } from "react-icons/fa";
 
@@ -40,8 +40,12 @@ function PersonalPwManager() {
   const [expandedFileFolders, setExpandedFileFolders] = useState(false);
   const previewCount = 2;
 
-  const [isRenamingFolder, setIsRenamingFolder] = useState(false);
+  const [isRenamingPasswordFolder, setIsRenamingPasswordFolder] =
+    useState(false);
   const [folderBeingRenamed, setFolderBeingRenamed] = useState(null);
+
+  const [isRenamingFileFolder, setIsRenamingFileFolder] = useState(false);
+  const [fileFolderBeingRenamed, setFileFolderBeingRenamed] = useState(null);
 
   const [passwordToDelete, setPasswordToDelete] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -58,18 +62,15 @@ function PersonalPwManager() {
   const [isAddingFile, setIsAddingFile] = useState(false);
 
   const [showEditPassword, setShowEditPassword] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const filteredFiles = selectedFileFolder
-    ? files.filter(
-        (f) =>
-          f.folderId === selectedFileFolder.folderId ||
-          f.folderId === selectedFileFolder.id
-      )
+    ? files.filter((f) => f.folderId === selectedFileFolder.folderId)
     : files;
 
   const showToast = (message, delay = 2000) => {
     const toastId = `toast-${Date.now()}`;
-
     const toastHTML = `
         <div id="${toastId}" class="toast text-bg-primary fade" role="alert" aria-live="assertive" aria-atomic="true" style="min-width: 250px;">
           <div class="d-flex">
@@ -78,26 +79,23 @@ function PersonalPwManager() {
           </div>
         </div>
       `;
-
     const container = document.getElementById("toast-container");
     if (!container) return;
-
     container.insertAdjacentHTML("beforeend", toastHTML);
-
     const toastEl = document.getElementById(toastId);
-    const toast = new Toast(toastEl, {
-      delay: Number(delay),
-      autohide: true,
-    });
-
+    const toast = new Toast(toastEl, { delay: Number(delay), autohide: true });
     toast.show();
-
-    toastEl.addEventListener("hidden.bs.toast", () => {
-      toastEl.remove();
-    });
+    toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
   };
 
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/auth/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -112,32 +110,31 @@ function PersonalPwManager() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleCopy = (text) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => showToast("Password copied to clipboard!"))
+      .catch(() => showToast("Failed to copy password."));
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [fetchedPasswordFolders, fetchedPasswords, fetchedFiles] =
+        const [pwFolders, pwEntries, fileEntries, fileFolderList] =
           await Promise.all([
             personalPWService.getAllPasswordFolders(),
             personalPWService.getAllPasswords(),
             personalFileService.getAllFiles(),
+            personalFileService.getAllFileFolders(),
           ]);
-
-        setPasswordFolders(fetchedPasswordFolders);
-        setPasswords(fetchedPasswords);
-        setFiles(fetchedFiles);
-
-        try {
-          const fetchedFileFolders =
-            await personalFileService.getAllFileFolders();
-          setFileFolders(fetchedFileFolders);
-        } catch (err) {
-          console.warn("Failed to fetch file folders (optional):", err.message);
-        }
-      } catch (error) {
-        console.error("Error fetching password or file data:", error);
+        setPasswordFolders(pwFolders);
+        setPasswords(pwEntries);
+        setFiles(fileEntries);
+        setFileFolders(fileFolderList);
+      } catch (err) {
+        console.error("Failed to fetch data", err);
       }
     };
-
     fetchData();
   }, []);
 
@@ -145,14 +142,6 @@ function PersonalPwManager() {
     ? passwords.filter((p) => p.folderId === selectedPasswordFolder.folderId)
     : passwords;
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/auth/login");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
   const addPassword = async (entry) => {
     try {
       const created = await personalPWService.createPasswordEntry(entry);
@@ -169,9 +158,9 @@ function PersonalPwManager() {
     }
   };
 
-  const addPasswordFolder = async (folder) => {
+  const addPasswordFolder = async (passwordFolder) => {
     try {
-      setPasswordFolders((prev) => [...prev, folder]);
+      setPasswordFolders((prev) => [...prev, passwordFolder]);
       setIsAddingPasswordFolder(false);
       showToast("Password folder created!", 3000);
     } catch {
@@ -179,25 +168,30 @@ function PersonalPwManager() {
     }
   };
 
-  const deletePasswordFolder = async (folderId) => {
+  const deletePasswordFolder = async (passwordFolderId) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this folder?"
     );
     if (!confirmDelete) return;
 
     try {
-      await personalPWService.deletePasswordFolder(folderId);
+      await personalPWService.deletePasswordFolder(passwordFolderId);
       setPasswordFolders(
-        passwordFolders.filter((folder) => folder.folderId !== folderId)
+        passwordFolders.filter(
+          (passwordFolder) =>
+            passwordFolder.passwordFolderId !== passwordFolderId
+        )
       );
       setPasswords(
-        passwords.filter((password) => password.folderId !== folderId)
+        passwords.filter(
+          (password) => password.passwordFolderId !== passwordFolderId
+        )
       );
       showToast("Folder deleted successfully!");
 
       if (
         selectedPasswordFolder &&
-        selectedPasswordFolder.folderId === folderId
+        selectedPasswordFolder.passwordFolderId === passwordFolderId
       ) {
         setSelectedPasswordFolder(null);
       }
@@ -207,9 +201,13 @@ function PersonalPwManager() {
     }
   };
 
-  const renameFolder = (folder) => {
-    setIsRenamingFolder(true);
-    setFolderBeingRenamed(folder);
+  const renamePasswordFolder = (passwordFolder) => {
+    setIsRenamingPasswordFolder(true);
+    setFolderBeingRenamed({
+      ...passwordFolder,
+      passwordFolderId:
+        passwordFolder.passwordFolderId || passwordFolder.folderId,
+    });
     setIsAddingPassword(false);
     setIsAddingPasswordFolder(false);
     setSelectedPassword(null);
@@ -239,17 +237,10 @@ function PersonalPwManager() {
         setPasswordToDelete(null);
         showToast("Password deleted!", 3000);
       } catch (err) {
-        console.error("Failed to delete password:", err);
+        console.log("Failed to delete password:", err);
         showToast("Failed to delete password.", 3000);
       }
     }
-  };
-
-  const handleCopy = (text) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => showToast("Password copied to clipboard!", "success"))
-      .catch(() => showToast("Failed to copy password.", "danger"));
   };
 
   const startEditing = async () => {
@@ -266,12 +257,12 @@ function PersonalPwManager() {
         accountName: selectedPassword.accountName,
         username: selectedPassword.username,
         website: selectedPassword.website,
-        folderId: selectedPassword.folderId,
+        passwordFolderId: selectedPassword.passwordFolderId,
         passwordHash: decrypted,
       });
 
       console.log("Edit data set:", editData);
-      setIsEditing(true); // Ensure this is triggered.
+      setIsEditing(true);
     } catch (error) {
       console.error("Error decrypting password for editing:", error);
       showToast("Failed to decrypt password for editing.");
@@ -298,6 +289,17 @@ function PersonalPwManager() {
     }
   };
 
+  ////// Files///////
+  const addFileFolder = async (fileFolder) => {
+    try {
+      setFileFolders((prev) => [...prev, fileFolder]);
+      setIsAddingFileFolder(false);
+      showToast("File folder created!", 3000);
+    } catch {
+      showToast("Failed to create file folder.", 3000);
+    }
+  };
+
   const handleFileUpload = async (formData) => {
     try {
       await personalFileService.uploadFiles(
@@ -313,14 +315,47 @@ function PersonalPwManager() {
     }
   };
 
-  ////// Files///////
-  const addFileFolder = async (folder) => {
+  const renameFileFolder = (fileFolder) => {
+    const folderId =
+      fileFolder.fileFolderId || fileFolder.folderId || fileFolder.id;
+
+    if (!folderId) {
+      console.error("Missing file folder ID for renaming:", fileFolder);
+      showToast("Error: Invalid file folder selected.", "danger");
+      return;
+    }
+
+    setIsRenamingFileFolder(true);
+    setFileFolderBeingRenamed({ ...fileFolder, fileFolderId: folderId });
+    setIsAddingFileFolder(false);
+    setSelectedFileFolder(null);
+  };
+
+  const handleDeleteFileFolder = async (folderId) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this file folder?"
+    );
+    if (!confirmDelete) return;
+
     try {
-      setFileFolders((prev) => [...prev, folder]);
-      setIsAddingFileFolder(false);
-      showToast("File folder created!", 3000);
-    } catch {
-      showToast("Failed to create file folder.", 3000);
+      await personalFileService.deleteFileFolder(folderId);
+      setFileFolders((prev) =>
+        prev.filter(
+          (folder) =>
+            folder.fileFolderId !== folderId && folder.folderId !== folderId
+        )
+      );
+      if (
+        selectedFileFolder &&
+        (selectedFileFolder.fileFolderId === folderId ||
+          selectedFileFolder.folderId === folderId)
+      ) {
+        setSelectedFileFolder(null);
+      }
+      showToast("File folder deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting file folder:", err);
+      showToast("Failed to delete file folder.", "danger");
     }
   };
 
@@ -331,23 +366,6 @@ function PersonalPwManager() {
       </button>
       <NavbarVaultMaster onLogout={handleLogout} />
       <div className="three-column-container">
-        {/* Profile Icon */}
-        <div className="profile-container" ref={dropdownRef}>
-          <img
-            src={profileIcon}
-            alt="Profile"
-            className="profile-icon"
-            onClick={toggleDropdown}
-          />
-          {dropdownOpen && (
-            <div className="profile-dropdown">
-              <button onClick={() => navigate("/settings")}>
-                Profile Settings
-              </button>
-              <button onClick={handleLogout}>Log Out</button>
-            </div>
-          )}
-        </div>
         {/* left column */}
         <div className="left-column">
           <div className="sidebar-heading">
@@ -412,25 +430,25 @@ function PersonalPwManager() {
                     data-bs-parent="#foldersAccordion"
                   >
                     <div className="accordion-body">
-                      {passwordFolders.map((folder) => (
+                      {passwordFolders.map((passwordFolder) => (
                         <div
-                          key={folder.folderId}
+                          key={passwordFolder.passwordFolderId}
                           className="btn-group w-100 mb-2 folder-split-button"
                         >
                           <button
                             type="button"
                             className={`btn btn-primary flex-grow-1 ${
                               selectedPasswordFolder?.folderId ===
-                              folder.folderId
+                              passwordFolder.folderId
                                 ? "active-folder"
                                 : ""
                             }`}
                             onClick={() => {
-                              setSelectedPasswordFolder(folder);
+                              setSelectedPasswordFolder(passwordFolder);
                               setViewMode("passwords");
                             }}
                           >
-                            {folder.folderName}
+                            {passwordFolder.folderName}
                           </button>
 
                           <button
@@ -447,7 +465,9 @@ function PersonalPwManager() {
                             <li>
                               <button
                                 className="dropdown-item"
-                                onClick={() => renameFolder(folder)}
+                                onClick={() =>
+                                  renamePasswordFolder(passwordFolder)
+                                }
                               >
                                 Rename
                               </button>
@@ -456,7 +476,9 @@ function PersonalPwManager() {
                               <button
                                 className="dropdown-item"
                                 onClick={() =>
-                                  deletePasswordFolder(folder.folderId)
+                                  deletePasswordFolder(
+                                    passwordFolder.passwordFolderId
+                                  )
                                 }
                               >
                                 Delete
@@ -471,7 +493,7 @@ function PersonalPwManager() {
                           setIsAddingPasswordFolder(true);
                           setIsAddingFileFolder(false);
                           setIsAddingPassword(false);
-                          setIsRenamingFolder(false);
+                          setIsRenamingPasswordFolder(false);
                           setSelectedPassword(null);
                         }}
                       >
@@ -504,15 +526,15 @@ function PersonalPwManager() {
                     <div className="accordion-body">
                       {fileFolders.map((folder) => (
                         <div
-                          key={folder.folderId || folder.id}
-                          className="btn-group w-100 mb-2"
+                          key={folder.fileFolderId}
+                          className="btn-group w-100 mb-2 folder-split-button"
                         >
                           <button
                             type="button"
                             className={`btn btn-primary flex-grow-1 ${
-                              selectedFileFolder?.folderId ===
-                                folder.folderId ||
-                              selectedFileFolder?.id === folder.id
+                              (selectedFileFolder?.fileFolderId ||
+                                selectedFileFolder?.folderId) ===
+                              (folder.fileFolderId || folder.folderId)
                                 ? "active-folder"
                                 : ""
                             }`}
@@ -521,7 +543,7 @@ function PersonalPwManager() {
                               setViewMode("files");
                             }}
                           >
-                            {folder.folderName || folder.name}
+                            {folder.folderName}
                           </button>
 
                           <button
@@ -536,12 +558,67 @@ function PersonalPwManager() {
                           </button>
                           <ul className="dropdown-menu">
                             <li>
-                              <button className="dropdown-item" disabled>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  const folderId =
+                                    folder.fileFolderId ||
+                                    folder.folderId ||
+                                    folder.id;
+
+                                  if (!folderId) {
+                                    console.error(
+                                      "Missing file folder ID:",
+                                      folder
+                                    );
+                                    showToast(
+                                      "Error: Unable to rename folder.",
+                                      "danger"
+                                    );
+                                    return;
+                                  }
+
+                                  setIsRenamingFileFolder(true);
+                                  setFileFolderBeingRenamed({
+                                    ...folder,
+                                    fileFolderId: folderId,
+                                  });
+
+                                  setIsAddingFile(false);
+                                  setIsAddingFileFolder(false);
+                                  setIsAddingPassword(false);
+                                  setIsAddingPasswordFolder(false);
+                                  setIsRenamingPasswordFolder(false);
+                                  setSelectedFile(null);
+                                }}
+                              >
                                 Rename
                               </button>
                             </li>
                             <li>
-                              <button className="dropdown-item" disabled>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  const folderId =
+                                    folder.fileFolderId ||
+                                    folder.folderId ||
+                                    folder.id;
+
+                                  if (!folderId) {
+                                    console.error(
+                                      "Missing file folder ID:",
+                                      folder
+                                    );
+                                    showToast(
+                                      "Error: Unable to delete folder.",
+                                      "danger"
+                                    );
+                                    return;
+                                  }
+
+                                  handleDeleteFileFolder(folderId);
+                                }}
+                              >
                                 Delete
                               </button>
                             </li>
@@ -577,7 +654,7 @@ function PersonalPwManager() {
                   onClick={() => {
                     setIsAddingPassword(true);
                     setIsAddingPasswordFolder(false);
-                    setIsRenamingFolder(false);
+                    setIsRenamingPasswordFolder(false);
                     setIsAddingFile(false);
                     setIsAddingFileFolder(false);
                     setSelectedPassword(null);
@@ -633,7 +710,7 @@ function PersonalPwManager() {
                     setIsAddingFileFolder(false);
                     setIsAddingPassword(false);
                     setIsAddingPasswordFolder(false);
-                    setIsRenamingFolder(false);
+                    setIsRenamingPasswordFolder(false);
                     setSelectedPassword(null);
                     setSelectedFile(null);
                   }}
@@ -663,7 +740,7 @@ function PersonalPwManager() {
                           setIsAddingFileFolder(false);
                           setIsAddingPassword(false);
                           setIsAddingPasswordFolder(false);
-                          setIsRenamingFolder(false);
+                          setIsRenamingPasswordFolder(false);
                         }}
                       >
                         {file.originalFilename}
@@ -689,41 +766,36 @@ function PersonalPwManager() {
               onSave={addPasswordFolder}
               onCancel={() => setIsAddingPasswordFolder(false)}
             />
-          ) : isAddingFileFolder ? (
-            <AddFileFolderForm
-              onSave={(newFolder) => {
-                setFileFolders((prev) => [...prev, newFolder]);
-                setIsAddingFileFolder(false);
-              }}
-              onCancel={() => setIsAddingFileFolder(false)}
-            />
-          ) : isRenamingFolder ? (
+          ) : isRenamingPasswordFolder ? (
             <AddFolderForm
               formType="password"
               initialFolderName={folderBeingRenamed.folderName}
               onSave={async ({ folderName }) => {
                 try {
                   await personalPWService.renamePasswordFolder(
-                    folderBeingRenamed.folderId,
+                    folderBeingRenamed.passwordFolderId,
                     folderName
                   );
                   setPasswordFolders(
-                    passwordFolders.map((f) =>
-                      f.folderId === folderBeingRenamed.folderId
-                        ? { ...f, folderName }
-                        : f
-                    )
+                    passwordFolders.map((f) => {
+                      const id = f.passwordFolderId || f.folderId || f.id;
+                      const renamedId =
+                        folderBeingRenamed.passwordFolderId ||
+                        folderBeingRenamed.folderId ||
+                        folderBeingRenamed.id;
+                      return id === renamedId ? { ...f, folderName } : f;
+                    })
                   );
-                  setIsRenamingFolder(false);
+                  setIsRenamingPasswordFolder(false);
                   setFolderBeingRenamed(null);
-                  showToast("Folder renamed successfully!");
+                  showToast("Password folder renamed!");
                 } catch (error) {
                   console.error("Error renaming folder:", error);
                   showToast("Failed to rename folder.");
                 }
               }}
               onCancel={() => {
-                setIsRenamingFolder(false);
+                setIsRenamingPasswordFolder(false);
                 setFolderBeingRenamed(null);
               }}
             />
@@ -731,22 +803,46 @@ function PersonalPwManager() {
             <AddFileForm
               folders={fileFolders}
               selectedFolder={selectedFileFolder}
-              onSave={async (formData) => {
+              onSave={handleFileUpload}
+              onCancel={() => setIsAddingFile(false)}
+            />
+          ) : isAddingFileFolder ? (
+            <AddFolderForm
+              formType="file"
+              onSave={addFileFolder}
+              onCancel={() => setIsAddingFileFolder(false)}
+            />
+          ) : isRenamingFileFolder && fileFolderBeingRenamed ? (
+            <AddFolderForm
+              formType="file"
+              initialFolderName={fileFolderBeingRenamed.folderName}
+              onSave={async ({ folderName }) => {
                 try {
-                  await personalFileService.uploadFiles(
-                    formData.getAll("files"),
-                    formData.get("folderId") || null
+                  await personalFileService.renameFileFolder(
+                    fileFolderBeingRenamed.fileFolderId,
+                    folderName
                   );
-                  const updatedFiles = await personalFileService.getAllFiles();
-                  setFiles(updatedFiles);
-                  setIsAddingFile(false);
-                  showToast("File(s) uploaded successfully!");
+
+                  setFileFolders(
+                    fileFolders.map((f) =>
+                      f.folderId === fileFolderBeingRenamed.folderId
+                        ? { ...f, folderName }
+                        : f
+                    )
+                  );
+
+                  setIsRenamingFileFolder(false);
+                  setFileFolderBeingRenamed(null);
+                  showToast("Folder renamed successfully!");
                 } catch (error) {
-                  console.error("Failed to upload file(s):", error);
-                  showToast("Failed to upload file(s).");
+                  console.error("Error renaming folder:", error);
+                  showToast("Failed to rename folder.");
                 }
               }}
-              onCancel={() => setIsAddingFile(false)}
+              onCancel={() => {
+                setIsRenamingFileFolder(false);
+                setFileFolderBeingRenamed(null);
+              }}
             />
           ) : selectedPassword ? (
             isEditing ? (
@@ -818,7 +914,7 @@ function PersonalPwManager() {
                       </span>
                       <span
                         className="icon-button"
-                        onClick={() => handleCopy(editData.passwordHash)}
+                        onClick={handleCopy}
                         title="Copy password"
                       >
                         <FaRegCopy />
@@ -826,20 +922,20 @@ function PersonalPwManager() {
                     </div>
                   </div>
                   <div className="form-buttons">
-                  <button
-                    type="button"
-                    className="btn btn-success me-2"
-                    onClick={saveEditing}
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={cancelEditing}
-                  >
-                    Cancel
-                  </button>
+                    <button
+                      type="button"
+                      className="btn btn-success me-2"
+                      onClick={saveEditing}
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={cancelEditing}
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </form>
               </div>
@@ -886,6 +982,7 @@ function PersonalPwManager() {
                 );
                 setSelectedFile(null);
               }}
+              showToast={showToast} 
             />
           ) : viewMode === "files" ? (
             <div className="no-password-selected">No File Selected</div>

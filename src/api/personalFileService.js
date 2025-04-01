@@ -5,10 +5,10 @@ const BASE_FILE_URL = "http://localhost:8080/api/files";
 const BASE_FOLDER_URL = "http://localhost:8080/api/files/folders";
 
 // Upload one or more files (optional folderId)
-export const uploadFiles = async (files, folderId = null) => {
+export const uploadFiles = async (files, fileFolderId = null) => {
   const formData = new FormData();
   files.forEach((file) => formData.append("files", file));
-  if (folderId) formData.append("folderId", folderId);
+  if (fileFolderId) formData.append("folderId", fileFolderId);
 
   const response = await axios.post(`${BASE_FILE_URL}/upload`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -28,8 +28,8 @@ export const getAllFiles = async () => {
 };
 
 // Get files by folder ID
-export const getFilesByFolder = async (folderId) => {
-  const response = await axios.get(`${BASE_FILE_URL}/folder/${folderId}`, {
+export const getFilesByFolder = async (fileFolderId) => {
+  const response = await axios.get(`${BASE_FILE_URL}/folder/${fileFolderId}`, {
     withCredentials: true,
   });
   return response.data;
@@ -42,6 +42,24 @@ export const getFileById = async (fileId) => {
   });
   return response.data;
 };
+
+export const renameFileFolder = async (fileFolderId, folderName) => {
+  const response = await fetch(`${BASE_FOLDER_URL}/${fileFolderId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ folderName }), 
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to rename folder");
+  }
+
+  return await response.text();
+};
+
+
+
 
 // Download a file by its S3 key
 export const downloadFile = async (key) => {
@@ -61,10 +79,10 @@ export const deleteFile = async (fileId) => {
 };
 
 
-export const createFileFolder = async ({ folderName }) => {
+export const createFileFolder = async ({ fileFolderName }) => {
     const response = await axios.post(
       `${BASE_FOLDER_URL}`,
-      { folderName },
+      { fileFolderName },
       { withCredentials: true }
     );
     return response.data;
@@ -76,4 +94,12 @@ export const createFileFolder = async ({ folderName }) => {
     });
     return response.data;
   };
+
+  export const deleteFileFolder = async (fileFolderId) => {
+    const response = await axios.delete(`${BASE_FOLDER_URL}/${fileFolderId}`, {
+      withCredentials: true,
+    });
+    return response.data;
+  };
+  
   

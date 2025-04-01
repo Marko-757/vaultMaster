@@ -3,6 +3,7 @@ import { Navbar, Container, Nav, NavDropdown } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import vaultLogo from "../Assets/vaultmaster_logo.png";
 import profileIcon from "../Assets/defaultProfileImage.png";
+import "./navbarVaultMaster.css";
 
 const NavbarVaultMaster = ({ onLogout }) => {
   const navigate = useNavigate();
@@ -20,27 +21,35 @@ const NavbarVaultMaster = ({ onLogout }) => {
           />
           VaultMaster
         </Navbar.Brand>
-
-        <Nav className="ms-auto">
-          <NavDropdown
-            title={
-              <img
-                src={profileIcon}
-                alt="Profile"
-                width="32"
-                height="32"
-                style={{ borderRadius: "50%" }}
-              />
-            }
-            id="basic-nav-dropdown"
-            align="end"
-          >
-            <NavDropdown.Item onClick={() => navigate("/settings")}>
-              Profile Settings
-            </NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item onClick={onLogout}>Log Out</NavDropdown.Item>
-          </NavDropdown>
+        <Nav className="ms-auto ms-4">
+          <div style={{ position: "relative" }}>
+            <NavDropdown
+              title={
+                <img
+                  src={profileIcon}
+                  alt="Profile"
+                  width="40"
+                  height="40"
+                  style={{
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "1px solid #ccc",
+                    padding: "2px",
+                    backgroundColor: "#f8f9fa",
+                  }}
+                />
+              }
+              id="profile-dropdown"
+              align="end"
+              menuVariant="light"
+            >
+              <NavDropdown.Item onClick={() => navigate("/settings")}>
+                Profile Settings
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item onClick={onLogout}>Log Out</NavDropdown.Item>
+            </NavDropdown>
+          </div>
         </Nav>
       </Container>
     </Navbar>

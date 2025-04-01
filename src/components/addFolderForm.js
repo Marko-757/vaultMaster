@@ -17,10 +17,8 @@ function AddFolderForm({ formType, initialFolderName = "", onSave, onCancel }) {
 
     try {
       if (initialFolderName) {
-        // Renaming mode
         onSave({ folderName });
       } else {
-        // Creating mode
         const newFolder = await createPasswordFolder({ folderName });
         onSave(newFolder);
       }
