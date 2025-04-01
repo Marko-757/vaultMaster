@@ -65,6 +65,8 @@ function PersonalPwManager() {
   const [showTooltip, setShowTooltip] = useState(false);
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
+  const [searchTerm, setSearchTerm] = useState("");
+
   const filteredFiles = selectedFileFolder
     ? files.filter((f) => f.folderId === selectedFileFolder.folderId)
     : files;
@@ -139,8 +141,16 @@ function PersonalPwManager() {
   }, []);
 
   const filteredPasswords = selectedPasswordFolder
-    ? passwords.filter((p) => p.folderId === selectedPasswordFolder.folderId)
-    : passwords;
+  ? passwords.filter(
+      (p) =>
+        p.folderId === selectedPasswordFolder.folderId &&
+        p.accountName.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  : passwords.filter((p) =>
+      p.accountName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
 
   const addPassword = async (entry) => {
     try {
@@ -646,6 +656,18 @@ function PersonalPwManager() {
             </h2>
           </div>
 
+          {viewMode === "passwords" && (
+            <div className="search-bar-container compact-search">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search passwords..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          )}
+
           <div className="entry-list">
             {viewMode === "passwords" ? (
               <>
@@ -982,7 +1004,7 @@ function PersonalPwManager() {
                 );
                 setSelectedFile(null);
               }}
-              showToast={showToast} 
+              showToast={showToast}
             />
           ) : viewMode === "files" ? (
             <div className="no-password-selected">No File Selected</div>

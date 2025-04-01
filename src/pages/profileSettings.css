@@ -151,3 +151,16 @@
   margin-left: 10px;
 }
 
+.search-bar-container {
+  margin: 12px auto 16px auto;
+  width: 90%;
+}
+
+.search-bar-container input {
+  width: 100%;
+  display: block;
+}
+
+.compact-search {
+  margin-bottom: 10px; 
+}
