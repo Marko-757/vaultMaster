@@ -1,33 +1,42 @@
 package vaultmaster.com.vault.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
-import lombok.*;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Setter
-@Getter
-@Table("team_members")  // Map to your database table
 public class TeamMember {
+    private UUID id;
+    private UUID teamId;
+    private UUID userId;
+    private UUID roleId;
 
-    // Getters and Setters
-    @Id  // Indicates this is the primary key (composite key)
-    private TeamMemberId id;  // Composite primary key class
+    public UUID getId() {
+        return id;
+    }
 
-    private String role;
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    @Column("created_date")
-    private LocalDateTime createdDate;
+    public UUID getTeamId() {
+        return teamId;
+    }
 
-    @Column("modified_date")
-    private LocalDateTime modifiedDate;
+    public void setTeamId(UUID teamId) {
+        this.teamId = teamId;
+    }
 
-    @Column("created_by")
-    private String createdBy;
+    public UUID getUserId() {
+        return userId;
+    }
 
-    @Column("modified_by")
-    private String modifiedBy;
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
 
+    public UUID getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(UUID roleId) {
+        this.roleId = roleId;
+    }
 }

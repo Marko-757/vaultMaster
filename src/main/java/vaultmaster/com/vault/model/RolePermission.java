@@ -1,25 +1,33 @@
 package vaultmaster.com.vault.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.util.UUID;
 
-@Entity
-@Table(name = "role_permissions")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class RolePermission {
+    private UUID id;
+    private UUID roleId;
+    private Long permissionId;
 
-    @EmbeddedId
-    private RolePermissionId id;
+    public UUID getId() {
+        return id;
+    }
 
-    @ManyToOne
-    @MapsId("roleId")
-    @JoinColumn(name = "role_id")
-    private Role role;
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    @ManyToOne
-    @MapsId("permissionId")
-    @JoinColumn(name = "permission_id")
-    private Permission permission;
+    public UUID getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(UUID roleId) {
+        this.roleId = roleId;
+    }
+
+    public Long getPermissionId() {
+        return permissionId;
+    }
+
+    public void setPermissionId(Long permissionId) {
+        this.permissionId = permissionId;
+    }
 }

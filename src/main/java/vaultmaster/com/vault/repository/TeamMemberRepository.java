@@ -1,25 +1,45 @@
 package vaultmaster.com.vault.repository;
 
-import org.springframework.data.jdbc.repository.query.Modifying;
-import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import vaultmaster.com.vault.model.TeamMember;
-import vaultmaster.com.vault.model.TeamMemberId;
 
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 
-public interface TeamMemberRepository extends CrudRepository<TeamMember, TeamMemberId> {
+@Repository
+public class TeamMemberRepository {
 
-    @Query("SELECT * FROM team_members WHERE team_id = :teamId")
-    List<TeamMember> findByTeamId(UUID teamId);
+    private final JdbcTemplate jdbcTemplate;
 
-    @Query("SELECT * FROM team_members WHERE user_id = :userId")
-    List<TeamMember> findByUserId(UUID userId);
+    public TeamMemberRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
-    @Modifying
-    @Query("INSERT INTO team_members (team_id, user_id, role, created_date, modified_date, created_by, modified_by) " +
-            "VALUES (:#{#teamMember.id.teamId}, :#{#teamMember.id.userId}, :#{#teamMember.role}, " +
-            ":#{#teamMember.createdDate}, :#{#teamMember.modifiedDate}, :#{#teamMember.createdBy}, :#{#teamMember.modifiedBy})")
-    void insert(TeamMember teamMember);
+    private final RowMapper<TeamMember> rowMapper = (rs, rowNum) -> {
+        TeamMember member = new TeamMember();
+        member.setId(UUID.fromString(rs.getString("id")));
+        member.setTeamId(UUID.fromString(rs.getString("team_id")));
+        member.setUserId(UUID.fromString(rs.getString("user_id")));
+        String roleId = rs.getString("role_id");
+        member.setRoleId(roleId != null ? UUID.fromString(roleId) : null);
+        return member;
+    };
+
+    public Optional<TeamMember> findByTeamIdAndUserId(UUID teamId, UUID userId) {
+        String sql = "SELECT * FROM team_members WHERE team_id = ? AND user_id = ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, rowMapper, teamId.toString(), userId.toString()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    public void assignRole(UUID teamId, UUID userId, UUID roleId) {
+        String sql = "UPDATE team_members SET role_id = ? WHERE team_id = ? AND user_id = ?";
+        jdbcTemplate.update(sql, roleId.toString(), teamId.toString(), userId.toString());
+    }
 }
