@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class Permission {
-    private UUID id;
-    private String name;
+public class RoleTeamPasswordAccess {
+    private UUID roleId;
+    private int teamPasswordId;
 }

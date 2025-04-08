@@ -1,42 +1,19 @@
 package vaultmaster.com.vault.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Getter
+@Setter
 public class TeamMember {
-    private UUID id;
     private UUID teamId;
     private UUID userId;
     private UUID roleId;
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getTeamId() {
-        return teamId;
-    }
-
-    public void setTeamId(UUID teamId) {
-        this.teamId = teamId;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public UUID getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(UUID roleId) {
-        this.roleId = roleId;
-    }
+    private LocalDateTime createdDate;
+    private LocalDateTime modifiedDate;
+    private String createdBy;
+    private String modifiedBy;
 }

@@ -6,7 +6,6 @@ import vaultmaster.com.vault.model.User;
 import vaultmaster.com.vault.repository.UserRowMapper;
 
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

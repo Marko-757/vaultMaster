@@ -1,18 +1,17 @@
 package vaultmaster.com.vault.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class PersonalPWEntry {
-    private Long entryId;
+public class PasswordEntry {
+    private int entryId;
     private UUID userId;
     private String accountName;
     private String username;
@@ -24,11 +23,4 @@ public class PersonalPWEntry {
 
     private UUID createdBy;
     private UUID modifiedBy;
-
-    public void setTimestamps() {
-        if (this.createdAt == null) {
-            this.createdAt = LocalDateTime.now();
-        }
-        this.updatedAt = LocalDateTime.now();
-    }
 }

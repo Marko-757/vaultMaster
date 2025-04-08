@@ -6,10 +6,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import vaultmaster.com.vault.model.Permission;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class PermissionRepository {
@@ -22,13 +21,13 @@ public class PermissionRepository {
 
     private final RowMapper<Permission> permissionRowMapper = (rs, rowNum) -> {
         Permission p = new Permission();
-        p.setId(rs.getLong("id"));
-        p.setName(rs.getString("name"));
+        p.setId(UUID.fromString(rs.getString("permission_id")));
+        p.setName(rs.getString("permission_name"));
         return p;
     };
 
     public Optional<Permission> findByName(String name) {
-        String sql = "SELECT * FROM permissions WHERE name = ?";
+        String sql = "SELECT * FROM permissions WHERE permission_name = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, permissionRowMapper, name));
         } catch (EmptyResultDataAccessException e) {
@@ -37,6 +36,7 @@ public class PermissionRepository {
     }
 
     public List<Permission> findAll() {
-        return jdbcTemplate.query("SELECT * FROM permissions", permissionRowMapper);
+        String sql = "SELECT * FROM permissions";
+        return jdbcTemplate.query(sql, permissionRowMapper);
     }
 }

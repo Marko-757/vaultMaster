@@ -1,74 +1,51 @@
 package vaultmaster.com.vault.util;
 
 import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.util.Arrays;
+
 import java.util.Base64;
 
+
 public class AESUtil {
-    private static final String SECRET_KEY = "12345678901234567890123456789012"; // 32 bytes for AES-256
-    private static final byte[] keyBytes = SECRET_KEY.getBytes(StandardCharsets.UTF_8);
+    private static final String ALGORITHM = "AES";
+    private static final String AES_SECRET_KEY = System.getenv("AES_SECRET_KEY");
 
-    public static String encrypt(String data) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-
-        // Ensure the key is exactly 32 bytes (AES-256)
-        SecretKey secretKey = new SecretKeySpec(Arrays.copyOf(keyBytes, 32), "AES");
-
-        byte[] iv = new byte[16]; // AES IV must be 16 bytes
-        new SecureRandom().nextBytes(iv);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-        byte[] encryptedBytes = cipher.doFinal(data.getBytes());
-
-        // Store IV with encrypted data, separated by ":"
-        return Base64.getEncoder().encodeToString(iv) + ":" + Base64.getEncoder().encodeToString(encryptedBytes);
+    public static SecretKey getSecretKey() {
+        byte[] decodedKey = Base64.getDecoder().decode(AES_SECRET_KEY);
+        return new SecretKeySpec(decodedKey, ALGORITHM);
     }
 
+    public static String encrypt(String data) throws Exception {
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey());
+        byte[] encryptedData = cipher.doFinal(data.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedData);
+    }
 
     public static String decrypt(String encryptedData) throws Exception {
-        String[] parts = encryptedData.split(":");
-        if (parts.length != 2) {
-            throw new IllegalArgumentException("Invalid encrypted data format");
-        }
-
-        byte[] iv = Base64.getDecoder().decode(parts[0]); // Extract IV
-        byte[] encryptedBytes = Base64.getDecoder().decode(parts[1]); // Extract encrypted data
-
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-
-        // Ensure the key is exactly 32 bytes (AES-256)
-        SecretKey secretKey = new SecretKeySpec(Arrays.copyOf(keyBytes, 32), "AES");
-
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-
-        return new String(cipher.doFinal(encryptedBytes), StandardCharsets.UTF_8);
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, getSecretKey());
+        byte[] decryptedData = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
+        return new String(decryptedData);
     }
 
     public static boolean isValidEncryptedFormat(String encryptedData) {
-        if (encryptedData == null || !encryptedData.contains(":")) return false;
-
-        String[] parts = encryptedData.split(":");
-        if (parts.length != 2) return false;
-
         try {
-            // Try decoding both parts from Base64
-            Base64.getDecoder().decode(parts[0]);
-            Base64.getDecoder().decode(parts[1]);
-            return true;
+            // Decode the base64 string to get the byte array
+            byte[] decodedData = Base64.getDecoder().decode(encryptedData);
+
+            // Check if the byte array length is a multiple of AES block size (16 bytes)
+            if (decodedData.length % 16 != 0) {
+                return false;  // Invalid format, as AES requires data in block sizes of 16 bytes
+            }
+
+            return true;  // The data is in a valid format
         } catch (IllegalArgumentException e) {
-            // Base64 decoding failed
+            // If the base64 decoding fails, the format is invalid
             return false;
         }
     }
-
-
 }
+
 

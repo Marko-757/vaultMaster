@@ -1,14 +1,43 @@
 package vaultmaster.com.vault.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.CreatedDate;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.relational.core.mapping.Column;
 
+import lombok.*;
+
+@Setter
+@Getter
+@Table("roles")
 public class Role {
+
+    @Id
+    @Column("role_id")
     private UUID roleId;
-    private UUID teamId;
+
+    @Column("role_name")
+    @NotNull(message = "Role name cannot be null")
+    @Size(min = 3, max = 255, message = "Role name must be between 3 and 255 characters")
     private String roleName;
+
+    @Column("team_id")
+    private UUID teamId;
+
+    @CreatedDate
+    @Column("created_at")
+    private LocalDateTime createdAt;
+
+    @Column("created_by")
     private UUID createdBy;
-    private Date createdAt;
+
+}
+
+ /*   private String roleName;
 
     public UUID getRoleId() {
         return roleId;
@@ -50,3 +79,4 @@ public class Role {
         this.createdAt = createdAt;
     }
 }
+  */

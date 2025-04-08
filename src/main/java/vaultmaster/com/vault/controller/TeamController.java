@@ -47,7 +47,6 @@ public class TeamController {
         }
     }
 
-
     @GetMapping
     public ResponseEntity<List<Team>> getAllTeams() {
         List<Team> teams = teamService.getAllTeams();

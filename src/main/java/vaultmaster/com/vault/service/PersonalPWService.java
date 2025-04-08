@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Service
 public class PersonalPWService {
+
     private final PersonalPWRepository repository;
 
     public PersonalPWService(PersonalPWRepository repository) {
@@ -19,9 +20,14 @@ public class PersonalPWService {
     }
 
     public PersonalPWEntry addPassword(PersonalPWEntry entry) {
-        return repository.insertPassword(entry);
+        try {
+            String encryptedPassword = AESUtil.encrypt(entry.getPasswordHash());
+            entry.setPasswordHash(encryptedPassword);
+            return repository.insertPassword(entry);
+        } catch (Exception e) {
+            throw new RuntimeException("Encryption failed", e);
+        }
     }
-
 
     public List<PersonalPWEntry> getUserPasswords(UUID userId) {
         if (!repository.userExists(userId)) {
@@ -46,6 +52,13 @@ public class PersonalPWService {
     }
 
     public void updatePassword(PersonalPWEntry entry) {
+        try {
+            String encrypted = AESUtil.encrypt(entry.getPasswordHash());
+            entry.setPasswordHash(encrypted);
+        } catch (Exception e) {
+            throw new RuntimeException("Encryption failed", e);
+        }
+
         int rowsAffected = repository.updatePassword(entry);
         if (rowsAffected == 0) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Password entry not found or user unauthorized.");
@@ -60,21 +73,12 @@ public class PersonalPWService {
 
         String encryptedPassword = entry.getPasswordHash();
 
-        // 🐞 Debug log to check what’s being decrypted
-        System.out.println("🔐 Encrypted password from DB: " + encryptedPassword);
-
-        // 🔍 Validate format before decrypting
         if (!AESUtil.isValidEncryptedFormat(encryptedPassword)) {
-            throw new IllegalArgumentException("Encrypted password format is invalid (missing IV or delimiter).");
+            throw new IllegalArgumentException("Encrypted password format is invalid.");
         }
 
-        String decrypted = AESUtil.decrypt(encryptedPassword);
-        System.out.println("🔓 Decrypted password: " + decrypted); // 👀 Optional second debug
-
-        return decrypted;
+        return AESUtil.decrypt(encryptedPassword);
     }
-
-
 
     public List<UUID> getUserFolders(UUID userId) {
         if (!repository.userExists(userId)) {

@@ -6,85 +6,54 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWEntry;
+import vaultmaster.com.vault.service.PasswordEntryService;
 import vaultmaster.com.vault.service.PersonalPWService;
-import vaultmaster.com.vault.util.AESUtil;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/passwords/personal")
 public class PersonalPWController {
 
     private final PersonalPWService service;
+    private final PasswordEntryService passwordEntryService;  // Inject PasswordEntryService
 
-    public PersonalPWController(PersonalPWService service) {
+    public PersonalPWController(PersonalPWService service, PasswordEntryService passwordEntryService) {
         this.service = service;
+        this.passwordEntryService = passwordEntryService;  // Initialize PasswordEntryService
     }
 
-
     @PostMapping
-    public ResponseEntity<PersonalPWEntry> addPassword(@RequestBody PersonalPWEntry entry, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<?> addPassword(@RequestBody PersonalPWEntry entry, Authentication auth) {
+        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = UUID.fromString(auth.getName());
         entry.setUserId(userId);
+        entry.setCreatedAt(LocalDateTime.now());
+        entry.setUpdatedAt(LocalDateTime.now());
 
-        String missingFields = validateEntry(entry);
-        if (!missingFields.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+        String missing = validateEntry(entry);
+        if (!missing.isEmpty()) {
+            return ResponseEntity.badRequest().body("Missing fields: " + missing);
         }
 
         try {
-            // Set timestamps 🕒
-            entry.setCreatedAt(LocalDateTime.now());
-            entry.setUpdatedAt(LocalDateTime.now());
-            System.out.println("[DEBUG] Raw password (from request): " + entry.getPasswordHash());
+            passwordEntryService.createPasswordEntry(userId, entry);
 
-            // Encrypt the password before storing 🔐
-            String original = entry.getPasswordHash();
-            System.out.println("[DEBUG] Incoming password value: " + original);
-
-            if (!AESUtil.isValidEncryptedFormat(original)) {
-                String encrypted = AESUtil.encrypt(original);
-                System.out.println("[DEBUG] Password was plaintext. Encrypted to: " + encrypted);
-                entry.setPasswordHash(encrypted);
-            } else {
-                System.out.println("[DEBUG] Password is already encrypted. Skipping encryption.");
-            }
-
-
-            PersonalPWEntry savedEntry = service.addPassword(entry);
-            return ResponseEntity.ok(savedEntry);
+            return ResponseEntity.ok(service.addPassword(entry));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving password.");
         }
     }
 
-    //Validate user on entry request
-    private String validateEntry(PersonalPWEntry entry) {
-        List<String> missingFields = new ArrayList<>();
-        if (entry.getAccountName() == null || entry.getAccountName().trim().isEmpty()) missingFields.add("accountName");
-        if (entry.getUsername() == null || entry.getUsername().trim().isEmpty()) missingFields.add("username");
-        if (entry.getPasswordHash() == null || entry.getPasswordHash().trim().isEmpty()) missingFields.add("passwordHash");
-        return String.join(", ", missingFields);
-    }
 
-    //Get all user passwords
     @GetMapping("/me/passwords")
-    public ResponseEntity<List<PersonalPWEntry>> getAllUserPasswords(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<?> getUserPasswords(Authentication auth) {
+        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        UUID userId = UUID.fromString(authentication.getName());
-        List<PersonalPWEntry> entries = service.getUserPasswords(userId);
-        return ResponseEntity.ok(entries);
+        UUID userId = UUID.fromString(auth.getName());
+        return ResponseEntity.ok(service.getUserPasswords(userId));
     }
 
     @GetMapping("/entry/{entryId}")
@@ -95,42 +64,32 @@ public class PersonalPWController {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         }
     }
-    // Update Password
+
     @PutMapping("/entry/{entryId}")
-    public ResponseEntity<String> updatePassword(@PathVariable Long entryId, @RequestBody PersonalPWEntry entry, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
-        }
+    public ResponseEntity<String> updatePassword(@PathVariable Long entryId, @RequestBody PersonalPWEntry entry, Authentication auth) {
+        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
 
         try {
-            UUID userId = UUID.fromString(authentication.getName());
-            entry.setUserId(userId);
-
-            String encrypted = AESUtil.encrypt(entry.getPasswordHash());
-            entry.setPasswordHash(encrypted);
+            entry.setUserId(UUID.fromString(auth.getName()));
             entry.setEntryId(entryId);
-
             service.updatePassword(entry);
             return ResponseEntity.ok("Password updated successfully!");
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body("Error: " + e.getReason());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Encryption error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update error: " + e.getMessage());
         }
     }
 
     @GetMapping("/entry/{entryId}/decrypt")
-    public ResponseEntity<String> getDecryptedPassword(@PathVariable Long entryId, Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
-        }
+    public ResponseEntity<String> decryptPassword(@PathVariable Long entryId, Authentication auth) {
+        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
 
         try {
-            UUID userId = UUID.fromString(authentication.getName());
-            String decrypted = service.decryptPasswordById(entryId, userId);
-            return ResponseEntity.ok(decrypted);
+            UUID userId = UUID.fromString(auth.getName());
+            return ResponseEntity.ok(service.decryptPasswordById(entryId, userId));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error decrypting password: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Decryption error: " + e.getMessage());
         }
     }
 
@@ -151,5 +110,13 @@ public class PersonalPWController {
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
         }
+    }
+
+    private String validateEntry(PersonalPWEntry entry) {
+        List<String> missing = new ArrayList<>();
+        if (entry.getAccountName() == null || entry.getAccountName().isBlank()) missing.add("accountName");
+        if (entry.getUsername() == null || entry.getUsername().isBlank()) missing.add("username");
+        if (entry.getPasswordHash() == null || entry.getPasswordHash().isBlank()) missing.add("passwordHash");
+        return String.join(", ", missing);
     }
 }
