@@ -66,18 +66,25 @@ public class PasswordEntryRepository {
     }
 
     public List<PasswordEntry> findByUserId(UUID userId) {
-        String sql = "SELECT * FROM password_entries WHERE user_id = ?";
+        String sql = """
+        SELECT * FROM password_entries pe
+        WHERE pe.user_id = ?
+        AND NOT EXISTS (
+            SELECT 1 FROM team_passwords tp WHERE tp.entry_id = pe.entry_id
+        )
+    """;
         return jdbcTemplate.query(sql, rowMapper, userId);
     }
 
     public List<PasswordEntry> findByTeamId(UUID teamId) {
         String sql = """
-            SELECT pe.* FROM password_entries pe
-            JOIN team_passwords tp ON tp.entry_id = pe.entry_id
-            WHERE tp.team_id = ?
-        """;
+        SELECT pe.* FROM password_entries pe
+        INNER JOIN team_passwords tp ON tp.entry_id = pe.entry_id
+        WHERE tp.team_id = ?
+    """;
         return jdbcTemplate.query(sql, rowMapper, teamId);
     }
+
 
     public void update(int entryId, PasswordEntry entry) {
         String sql = """

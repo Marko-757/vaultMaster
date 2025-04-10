@@ -46,13 +46,11 @@ public class PersonalPWRepository {
     }
 
 
-    // ✅ Delete a password entry
     public int deletePassword(Long entryId) {
         String sql = "DELETE FROM password_entries WHERE entry_id = ?";
         return jdbcTemplate.update(sql, entryId);
     }
 
-    // ✅ Update a password entry
     public int updatePassword(PersonalPWEntry entry) {
         String sql = """
             UPDATE password_entries
@@ -70,7 +68,6 @@ public class PersonalPWRepository {
         );
     }
 
-    // ✅ Get a password entry by ID
     public PersonalPWEntry getPasswordById(Long entryId) {
         String sql = "SELECT * FROM password_entries WHERE entry_id = ?";
         try {
@@ -80,26 +77,27 @@ public class PersonalPWRepository {
         }
     }
 
-    // ✅ Get all passwords by user
     public List<PersonalPWEntry> getPasswordsByUser(UUID userId) {
-        String sql = "SELECT * FROM password_entries WHERE user_id = ?";
+        String sql = """
+        SELECT * FROM password_entries 
+        WHERE user_id = ? 
+        AND entry_id NOT IN (SELECT entry_id FROM team_passwords)
+    """;
         return jdbcTemplate.query(sql, new PersonalPWRowMapper(), userId);
     }
 
-    // ✅ Get passwords by folder ID
+
     public List<PersonalPWEntry> getPasswordsByFolder(UUID folderId) {
         String sql = "SELECT * FROM password_entries WHERE folder_id = ?";
         return jdbcTemplate.query(sql, new PersonalPWRowMapper(), folderId);
     }
 
-    // ✅ Check if a user exists
     public boolean userExists(UUID userId) {
         String sql = "SELECT COUNT(*) FROM users WHERE user_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, userId);
         return count != null && count > 0;
     }
 
-    // ✅ Get all folder IDs for a user
     public List<UUID> getUserFolderIds(UUID userId) {
         String sql = """
             SELECT DISTINCT folder_id 

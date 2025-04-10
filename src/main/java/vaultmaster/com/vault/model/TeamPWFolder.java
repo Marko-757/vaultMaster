@@ -1,9 +1,9 @@
 package vaultmaster.com.vault.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,21 +11,14 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamPassword {
-    private int teamPasswordId;
+@Builder
+public class TeamPWFolder {
+    private UUID folderId;
     private UUID teamId;
-    private int entryId;
+    private String folderName;
     private UUID createdBy;
     private LocalDateTime createdAt;
     private UUID modifiedBy;
     private LocalDateTime modifiedAt;
-    private UUID folderId;
-
-    private String accountName;
-    private String username;
-    private String website;
-    private String plaintextPassword;
-
-    @JsonIgnore
-    private String encryptedPassword;
 }
+

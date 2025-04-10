@@ -7,6 +7,7 @@ import vaultmaster.com.vault.model.PersonalPWEntry;
 import vaultmaster.com.vault.repository.PersonalPWRepository;
 import vaultmaster.com.vault.util.AESUtil;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,6 +65,22 @@ public class PersonalPWService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Password entry not found or user unauthorized.");
         }
     }
+
+    public void movePasswordToFolder(Long entryId, UUID userId, UUID newFolderId) {
+        PersonalPWEntry entry = repository.getPasswordById(entryId);
+        if (entry == null || !entry.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized or password not found.");
+        }
+
+        entry.setFolderId(newFolderId);  // null is allowed for removing folder
+        entry.setUpdatedAt(LocalDateTime.now());
+
+        int rowsAffected = repository.updatePassword(entry);
+        if (rowsAffected == 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Failed to update folder.");
+        }
+    }
+
 
     public String decryptPasswordById(Long entryId, UUID userId) throws Exception {
         PersonalPWEntry entry = repository.getPasswordById(entryId);

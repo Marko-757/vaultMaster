@@ -42,10 +42,9 @@ public class RolePermissionRepository {
         SELECT COUNT(*)
         FROM role_permissions rp
         JOIN permissions p ON rp.permission_id = p.permission_id
-        WHERE rp.role_id = ? AND p.name = ?
+        WHERE rp.role_id = ? AND p.permission_name = ?
     """;
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, roleId, permissionName);
         return count != null && count > 0;
     }
-
 }

@@ -6,8 +6,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWEntry;
-import vaultmaster.com.vault.service.PasswordEntryService;
+import vaultmaster.com.vault.model.PasswordEntry;  // Add this import
 import vaultmaster.com.vault.service.PersonalPWService;
+import vaultmaster.com.vault.service.PasswordEntryService;  // Add this import
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -17,11 +18,11 @@ import java.util.*;
 public class PersonalPWController {
 
     private final PersonalPWService service;
-    private final PasswordEntryService passwordEntryService;  // Inject PasswordEntryService
+    private final PasswordEntryService passwordEntryService;
 
     public PersonalPWController(PersonalPWService service, PasswordEntryService passwordEntryService) {
         this.service = service;
-        this.passwordEntryService = passwordEntryService;  // Initialize PasswordEntryService
+        this.passwordEntryService = passwordEntryService;
     }
 
     @PostMapping
@@ -39,14 +40,11 @@ public class PersonalPWController {
         }
 
         try {
-            passwordEntryService.createPasswordEntry(userId, entry);
-
             return ResponseEntity.ok(service.addPassword(entry));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving password.");
         }
     }
-
 
     @GetMapping("/me/passwords")
     public ResponseEntity<?> getUserPasswords(Authentication auth) {
@@ -80,6 +78,25 @@ public class PersonalPWController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Update error: " + e.getMessage());
         }
     }
+
+    @PutMapping("/entry/{entryId}/move-folder")
+    public ResponseEntity<?> movePasswordToFolder(@PathVariable Long entryId,
+                                                  @RequestParam(required = false) UUID newFolderId,
+                                                  Authentication auth) {
+        if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        UUID userId = UUID.fromString(auth.getName());
+
+        try {
+            service.movePasswordToFolder(entryId, userId, newFolderId);
+            return ResponseEntity.ok("Folder updated successfully!");
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to move folder.");
+        }
+    }
+
 
     @GetMapping("/entry/{entryId}/decrypt")
     public ResponseEntity<String> decryptPassword(@PathVariable Long entryId, Authentication auth) {
@@ -118,5 +135,18 @@ public class PersonalPWController {
         if (entry.getUsername() == null || entry.getUsername().isBlank()) missing.add("username");
         if (entry.getPasswordHash() == null || entry.getPasswordHash().isBlank()) missing.add("passwordHash");
         return String.join(", ", missing);
+    }
+
+    private PasswordEntry convertToPasswordEntry(PersonalPWEntry entry) {
+        PasswordEntry passwordEntry = new PasswordEntry();
+        passwordEntry.setUserId(entry.getUserId());
+        passwordEntry.setAccountName(entry.getAccountName());
+        passwordEntry.setUsername(entry.getUsername());
+        passwordEntry.setPasswordHash(entry.getPasswordHash());
+        passwordEntry.setWebsite(entry.getWebsite());
+        passwordEntry.setFolderId(entry.getFolderId());
+        passwordEntry.setCreatedAt(entry.getCreatedAt());
+        passwordEntry.setUpdatedAt(entry.getUpdatedAt());
+        return passwordEntry;
     }
 }
