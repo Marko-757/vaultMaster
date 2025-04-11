@@ -1,0 +1,32 @@
+.manage-roles-container {
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.roles-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.role-item {
+  padding: 10px 15px;
+  background: #f1f1f1;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.role-item.selected {
+  background: #007bff;
+  color: white;
+}
+
+.access-section {
+  margin-top: 20px;
+}
+
+.access-section label {
+  display: block;
+  margin-bottom: 5px;
+}
