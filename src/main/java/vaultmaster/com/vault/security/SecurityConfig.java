@@ -46,8 +46,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/2fa/**").permitAll()
-                        .requestMatchers("/api/passwords/personal/**").authenticated()
-                        .requestMatchers("/api/files/**").authenticated()
+                        .requestMatchers("/api/passwords/personal/**").permitAll()
+                        .requestMatchers("/api/files/**").permitAll()
+                        .requestMatchers("/api/teams/**").permitAll()
+                        .requestMatchers("/api/team-files/**").permitAll()
+                        .requestMatchers("/api/team-file-folders/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

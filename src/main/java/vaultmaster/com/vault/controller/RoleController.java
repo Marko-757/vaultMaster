@@ -53,15 +53,13 @@ public class RoleController {
                 return ResponseEntity.badRequest().body("No permissions provided.");
             }
 
-            roleService.assignPermissionsToRole(roleId, permissions); // 👈 SWITCHED TO RoleService
+            roleService.assignPermissionsToRole(roleId, permissions);
             return ResponseEntity.ok("Permissions assigned to role successfully.");
         } catch (Exception e) {
             logger.error("Error assigning permissions to role:", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error assigning permissions.");
         }
     }
-
-
 
     @GetMapping("/{roleId}/permissions")
     public ResponseEntity<List<Permission>> getPermissionsForRole(@PathVariable UUID roleId) {
@@ -106,3 +104,4 @@ public class RoleController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }
+
