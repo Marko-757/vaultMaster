@@ -31,7 +31,6 @@ const TeamPwManager = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState(null);
 
-  // Toggle dropdown
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const handleLogout = () => {
@@ -53,7 +52,6 @@ const TeamPwManager = () => {
     fetchTeams();
   }, []);
 
-  // Show and hide the team creation modal
   const openTeamCreationModal = () => {
     setShowTeamCreationModal(true);
   };
@@ -62,7 +60,6 @@ const TeamPwManager = () => {
     setShowTeamCreationModal(false);
   };
 
-  // Handle team creation
   const handleCreateTeam = async (teamName) => {
     try {
       const newTeam = await createTeam(teamName);
@@ -73,7 +70,6 @@ const TeamPwManager = () => {
     }
   };
 
-  // Handle renaming a team
   const openRenameModal = (team) => {
     setTeamToRename(team);
     setNewTeamName(team.teamName);
@@ -104,7 +100,6 @@ const TeamPwManager = () => {
     }
   };
 
-  // Handle deleting a team
   const openDeleteModal = (team) => {
     setTeamToDelete(team);
     setIsDeleteModalOpen(true);
@@ -124,7 +119,6 @@ const TeamPwManager = () => {
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -142,7 +136,6 @@ const TeamPwManager = () => {
       </button>
       <NavbarVaultMaster onLogout={handleLogout} />
       <div className="three-column-container">
-        {/* Profile Icon */}
         <div className="profile-container" ref={dropdownRef}>
           <img
             src={profileIcon}
@@ -160,7 +153,6 @@ const TeamPwManager = () => {
           )}
         </div>
         <div className="teams-container d-flex">
-          {/* Left Sidebar with Accordion */}
           <div className="left-column">
             <div className="sidebar-heading">
               <div className="sidebar-heading-top">Teams</div>
@@ -168,7 +160,6 @@ const TeamPwManager = () => {
             </div>
             <hr className="divider" />
 
-            {/* Teams Accordion */}
             <div className="accordion-wrapper">
               <div className="accordion" id="teamsAccordion">
                 <div className="accordion-item">
@@ -255,7 +246,6 @@ const TeamPwManager = () => {
               </div>
             </div>
 
-            {/* Memberships Accordion */}
             <div className="accordion-wrapper">
               <div className="accordion" id="membershipsAccordion">
                 <div className="accordion-item">
@@ -286,7 +276,7 @@ const TeamPwManager = () => {
             </div>
           </div>
 
-          {/* Main Content Area */}
+          {/*  Main content logic */}
           <div className="main-content">
             {selectedOption === "members" ? (
               <MyMembers
@@ -295,7 +285,7 @@ const TeamPwManager = () => {
               />
             ) : selectedOption === "roles" ? (
               <ManageRoles
-                selectedTeam={selectedTeam}
+                selectedTeamId={selectedTeam?.teamId} 
                 onBack={() => setSelectedOption(null)}
               />
             ) : selectedOption === "password" ? (
@@ -332,14 +322,12 @@ const TeamPwManager = () => {
             )}
           </div>
 
-          {/* Team Creation Form */}
           <TeamCreationForm
             isVisible={showTeamCreationModal}
             onClose={closeTeamCreationModal}
             onCreateTeam={handleCreateTeam}
           />
 
-          {/* Rename Team Modal */}
           {isRenameModalOpen && (
             <div className="overlay">
               <div className="modal">
@@ -379,7 +367,6 @@ const TeamPwManager = () => {
             </div>
           )}
 
-          {/* Delete Team Confirmation Modal */}
           {isDeleteModalOpen && (
             <div className="overlay">
               <div className="modal">

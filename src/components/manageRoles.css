@@ -1,32 +1,96 @@
-.manage-roles-container {
+.manage-roles {
   padding: 20px;
-  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  font-family: Arial, sans-serif;
 }
 
-.roles-list {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin: 10px 0;
+.manage-roles h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
 }
 
 .role-item {
-  padding: 10px 15px;
-  background: #f1f1f1;
-  border-radius: 6px;
+  background-color: #a6c8ff;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.role-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  font-size: 20px;
+  font-weight: bold;
   cursor: pointer;
 }
 
-.role-item.selected {
-  background: #007bff;
-  color: white;
+.role-header:hover {
+  background-color: #8bb7f0;
 }
 
-.access-section {
-  margin-top: 20px;
+.role-permissions {
+  background-color: #f3f3f3;
+  padding: 20px;
 }
 
-.access-section label {
+.role-permissions strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.permissions-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.permissions-section > div {
+  width: 45%;
+}
+
+.permissions-section p {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.permissions-section label {
   display: block;
   margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.add-role-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  gap: 10px;
+}
+
+.add-role-container input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 250px;
+  font-size: 16px;
+}
+
+.add-role-btn {
+  padding: 10px 20px;
+  background-color: #0b51c5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-role-btn:hover {
+  background-color: #083da0;
 }

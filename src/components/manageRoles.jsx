@@ -49,6 +49,7 @@ const ManageRoles = ({ selectedTeamId }) => {
     if (!newRoleName.trim()) return;
 
     try {
+      console.log("Creating role with:", selectedTeamId, newRoleName); // DEBUG LOG
       await createRole(selectedTeamId, newRoleName);
       setNewRoleName("");
       await loadRoles();
