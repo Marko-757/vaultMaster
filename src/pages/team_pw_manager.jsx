@@ -136,22 +136,7 @@ const TeamPwManager = () => {
       </button>
       <NavbarVaultMaster onLogout={handleLogout} />
       <div className="three-column-container">
-        <div className="profile-container" ref={dropdownRef}>
-          <img
-            src={profileIcon}
-            alt="Profile"
-            className="profile-icon"
-            onClick={toggleDropdown}
-          />
-          {dropdownOpen && (
-            <div className="profile-dropdown">
-              <button onClick={() => navigate("/settings")}>
-                Profile Settings
-              </button>
-              <button onClick={handleLogout}>Log Out</button>
-            </div>
-          )}
-        </div>
+
         <div className="teams-container d-flex">
           <div className="left-column">
             <div className="sidebar-heading">
