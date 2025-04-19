@@ -27,24 +27,20 @@ public class UserService {
         this.jwtService = jwtService;
     }
 
-    /**
-     * Registers a new user.
-     * @param email the user's email.
-     * @param passwordHash the already hashed password from frontend.
-     * @param fullName the user's full name.
-     * @param phoneNumber the user's phone number.
-     */
-    public void registerUser(String email, String passwordHash, String fullName, String phoneNumber) {
+    public void registerUser(String email, String rawPassword, String fullName, String phoneNumber) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("User with this email already exists.");
         }
 
+        String hashedPassword = rawPassword.startsWith("$2a$") ? rawPassword : passwordEncoder.encode(rawPassword);
+
         User newUser = new User();
         newUser.setUserId(UUID.randomUUID());
         newUser.setEmail(email);
-        newUser.setPasswordHash(passwordHash); // Already hashed in frontend
+        newUser.setPassword(hashedPassword);
         newUser.setFullName(fullName);
         newUser.setPhoneNumber(phoneNumber);
+
         Date now = new Date();
         newUser.setCreatedDate(now);
         newUser.setModifiedDate(now);
@@ -55,6 +51,8 @@ public class UserService {
         userRepository.save(newUser);
     }
 
+
+
     public AuthResponse login(String email, String plaintextPassword) {
         Optional<User> userOptional = userRepository.findByEmail(email);
         if (userOptional.isEmpty()) {
@@ -62,7 +60,7 @@ public class UserService {
         }
 
         User user = userOptional.get();
-        String storedHash = user.getPasswordHash();
+        String storedHash = user.getPassword();
 
         logger.info("Checking login for email: {}", email);
         logger.info("Stored Hash: {}", storedHash);

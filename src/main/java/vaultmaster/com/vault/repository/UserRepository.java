@@ -57,7 +57,7 @@ public class UserRepository {
 
         jdbcTemplate.update(sql,
                 user.getUserId(),
-                user.getPasswordHash(),
+                user.getPassword(),
                 user.getFullName(),
                 user.getPhoneNumber(),
                 user.getEmail(),

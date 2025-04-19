@@ -33,7 +33,6 @@ public class TeamPasswordService {
 
     public TeamPassword createPassword(TeamPassword pw) {
         try {
-            // Create the password entry
             PasswordEntry entry = new PasswordEntry();
             entry.setUserId(pw.getCreatedBy());
             entry.setAccountName(pw.getAccountName());
@@ -56,13 +55,11 @@ public class TeamPasswordService {
 
             PasswordEntry createdEntry = passwordEntryRepository.save(entry);
 
-            // Create the team password and associate with the password entry
             pw.setEntryId(createdEntry.getEntryId());
             pw.setCreatedAt(now);
             pw.setModifiedAt(now);
             pw.setModifiedBy(pw.getCreatedBy());
 
-            // Save the team password in the team_passwords table
             return repo.save(pw);
         } catch (Exception e) {
             throw new RuntimeException("Encryption failed", e);
@@ -70,22 +67,18 @@ public class TeamPasswordService {
     }
 
     public void updatePassword(TeamPassword updated) {
-        // 1. Fetch the entry
         Optional<PasswordEntry> optional = passwordEntryRepository.findById(updated.getEntryId());
         if (optional.isEmpty()) {
             throw new RuntimeException("Password entry not found.");
         }
 
         PasswordEntry entry = optional.get();
-
-        // 2. Update fields
         entry.setAccountName(updated.getAccountName());
         entry.setUsername(updated.getUsername());
         entry.setWebsite(updated.getWebsite());
         entry.setFolderId(updated.getFolderId());
         entry.setUpdatedAt(LocalDateTime.now());
 
-        // 3. Handle password change
         if (updated.getPlaintextPassword() != null && !updated.getPlaintextPassword().isBlank()) {
             try {
                 String encrypted = AESUtil.encrypt(updated.getPlaintextPassword());
@@ -94,23 +87,21 @@ public class TeamPasswordService {
                 throw new RuntimeException("Failed to encrypt updated password", e);
             }
         }
+
         passwordEntryRepository.update(entry.getEntryId(), entry);
         repo.updateModifiedAt(updated.getTeamPasswordId());
-
     }
 
-
-    public TeamPassword getPasswordById(int id) {
+    public TeamPassword getPasswordById(UUID id) {
         return repo.findById(id).map(password -> {
             try {
                 String encrypted = password.getEncryptedPassword();
-
                 if (!AESUtil.isValidEncryptedFormat(encrypted)) {
                     throw new IllegalArgumentException("Invalid encrypted password format.");
                 }
 
                 String decrypted = AESUtil.decrypt(encrypted);
-                password.setEncryptedPassword(decrypted); // Still using encryptedPassword field for decrypted output
+                password.setEncryptedPassword(decrypted); // Overwrite for response use
                 return password;
             } catch (Exception e) {
                 throw new RuntimeException("Decryption failed", e);
@@ -122,14 +113,14 @@ public class TeamPasswordService {
         return repo.findByTeamId(teamId);
     }
 
-    public void deletePassword(int id) {
-        TeamPassword teamPassword = repo.findById(id).orElseThrow(() -> new RuntimeException("Password not found"));
+    public void deletePassword(UUID id) {
+        TeamPassword teamPassword = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Password not found"));
         passwordEntryRepository.delete(teamPassword.getEntryId());
-
         repo.delete(id);
     }
 
-    public boolean movePasswordToFolder(int teamPasswordId, UUID folderId) {
+    public boolean movePasswordToFolder(UUID teamPasswordId, UUID folderId) {
         return repo.updateFolder(folderId, teamPasswordId) > 0;
     }
 
@@ -147,7 +138,4 @@ public class TeamPasswordService {
         return repo.findTeamIdByEntryId(entryId)
                 .orElseThrow(() -> new RuntimeException("Team ID not found for entry ID: " + entryId));
     }
-
-
-
 }

@@ -12,7 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TeamPassword {
-    private int teamPasswordId;
+    private UUID teamPasswordId;
     private UUID teamId;
     private int entryId;
     private UUID createdBy;

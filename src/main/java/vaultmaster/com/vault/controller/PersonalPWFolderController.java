@@ -1,11 +1,13 @@
 package vaultmaster.com.vault.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWFolder;
+import vaultmaster.com.vault.security.JwtService;
 import vaultmaster.com.vault.service.PersonalPWFolderService;
 
 import java.util.List;
@@ -17,18 +19,20 @@ import java.util.UUID;
 public class PersonalPWFolderController {
 
     private final PersonalPWFolderService folderService;
+    private final JwtService jwtService;
 
-    public PersonalPWFolderController(PersonalPWFolderService folderService) {
+    public PersonalPWFolderController(PersonalPWFolderService folderService, JwtService jwtService) {
         this.folderService = folderService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping
-    public ResponseEntity<PersonalPWFolder> createFolder(@RequestBody PersonalPWFolder folder, Authentication authentication) {
+    public ResponseEntity<PersonalPWFolder> createFolder(@RequestBody PersonalPWFolder folder, Authentication authentication, HttpServletRequest request) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         folder.setUserId(userId);
 
         folderService.createFolder(folder);
@@ -36,12 +40,12 @@ public class PersonalPWFolderController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<PersonalPWFolder>> getUserFolders(Authentication authentication) {
+    public ResponseEntity<List<PersonalPWFolder>> getUserFolders(Authentication authentication, HttpServletRequest request) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        UUID userId = UUID.fromString(authentication.getName());
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         List<PersonalPWFolder> folders = folderService.getUserFolders(userId);
         return ResponseEntity.ok(folders);
     }

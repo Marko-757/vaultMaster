@@ -53,21 +53,28 @@ public class TeamPasswordController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePassword(
-            @PathVariable int id,
-            @RequestBody TeamPassword updated,
-            HttpServletRequest request
+            @PathVariable UUID id,
+            @RequestBody TeamPassword updated
     ) {
         UUID userId = permissionChecker.getCurrentUserId();
-
         TeamPassword existing = passwordService.getPasswordById(id);
-        if (!permissionChecker.userHasPermission(userId, existing.getTeamId(), "MANAGE_TEAM_PASSWORDS")) {
+
+        boolean allowed = permissionChecker.hasEffectivePermission(
+                userId,
+                existing.getTeamId(),
+                existing.getEntryId(), // ✅ Correct: entryId is int
+                existing.getFolderId(),
+                "password",
+                "MANAGE_TEAM_PASSWORDS"
+        );
+
+        if (!allowed) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
         }
 
         try {
             updated.setTeamPasswordId(id);
             updated.setModifiedBy(userId);
-
             passwordService.updatePassword(updated);
             return ResponseEntity.ok("Password updated successfully.");
         } catch (Exception e) {
@@ -76,11 +83,20 @@ public class TeamPasswordController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePassword(@PathVariable int id) {
+    public ResponseEntity<?> deletePassword(@PathVariable UUID id) {
         UUID userId = permissionChecker.getCurrentUserId();
         TeamPassword password = passwordService.getPasswordById(id);
 
-        if (!permissionChecker.userHasPermission(userId, password.getTeamId(), "MANAGE_TEAM_PASSWORDS")) {
+        boolean allowed = permissionChecker.hasEffectivePermission(
+                userId,
+                password.getTeamId(),
+                password.getEntryId(), // ✅ Fixed
+                password.getFolderId(),
+                "password",
+                "MANAGE_TEAM_PASSWORDS"
+        );
+
+        if (!allowed) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
         }
 
@@ -110,41 +126,62 @@ public class TeamPasswordController {
 
     @PutMapping("/{teamPasswordId}/move")
     public ResponseEntity<?> movePassword(
-            @PathVariable int teamPasswordId,
-            @RequestBody Map<String, String> body) {
-
+            @PathVariable UUID teamPasswordId,
+            @RequestBody Map<String, String> body
+    ) {
         UUID userId = permissionChecker.getCurrentUserId();
-        UUID folderId = UUID.fromString(body.get("folderId"));
+        TeamPassword password = passwordService.getPasswordById(teamPasswordId);
 
+        boolean allowed = permissionChecker.hasEffectivePermission(
+                userId,
+                password.getTeamId(),
+                password.getEntryId(), // ✅ Fixed
+                password.getFolderId(),
+                "password",
+                "MANAGE_TEAM_PASSWORDS"
+        );
+
+        if (!allowed) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
+        }
+
+        UUID folderId = UUID.fromString(body.get("folderId"));
         boolean moved = passwordService.movePasswordToFolder(teamPasswordId, folderId);
         return moved ? ResponseEntity.ok("Password moved.") : ResponseEntity.status(404).body("Password not found.");
     }
 
-    @GetMapping("/entry/{entryId}/decrypt")
-    public ResponseEntity<?> decryptTeamPassword(@PathVariable int entryId, Authentication auth) {
+    @GetMapping("/{teamPasswordId}/decrypt")
+    public ResponseEntity<?> decryptTeamPassword(@PathVariable UUID teamPasswordId, Authentication auth) {
         UUID userId = UUID.fromString(auth.getName());
+        TeamPassword password = passwordService.getPasswordById(teamPasswordId);
 
-        // Get the teamId for the given entryId (or the team password record)
-        UUID teamId = passwordService.getTeamIdByEntryId(entryId);
-        if (!permissionChecker.userHasPermission(userId, teamId, "PASSWORD_VIEW")) {
+        boolean allowed = permissionChecker.hasEffectivePermission(
+                userId,
+                password.getTeamId(),
+                password.getEntryId(), // ✅ Fixed
+                password.getFolderId(),
+                "password",
+                "PASSWORD_VIEW"
+        );
+
+        if (!allowed) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
         }
 
         try {
-            String decrypted = passwordService.decryptPasswordByEntryId(entryId);
+            String decrypted = passwordService.decryptPasswordByEntryId(password.getEntryId());
             return ResponseEntity.ok(decrypted);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Decryption error: " + e.getMessage());
         }
     }
 
-
     @GetMapping("/folder/{folderId}")
     public ResponseEntity<?> getPasswordsInFolder(@PathVariable UUID folderId) {
         UUID userId = permissionChecker.getCurrentUserId();
-
         UUID teamId = teamPWFolderRepository.getTeamIdByFolderId(folderId);
-        if (!permissionChecker.userHasPermission(userId, teamId, "PASSWORD_VIEW")) {
+
+        if (!permissionChecker.userHasFolderPermission(userId, teamId, folderId, "PASSWORD_VIEW", false)) {
             return ResponseEntity.status(403).body("Access denied.");
         }
 

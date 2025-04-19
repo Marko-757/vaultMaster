@@ -24,7 +24,7 @@ public class PasswordEntryService {
         try {
             String encrypted = AESUtil.encrypt(entry.getPasswordHash());
             entry.setPasswordHash(encrypted);
-            entry.setUserId(userId); // ✅ this sets the creator of the password
+            entry.setUserId(userId);
             entry.setCreatedAt(LocalDateTime.now());
             entry.setUpdatedAt(LocalDateTime.now());
             return repository.save(entry);

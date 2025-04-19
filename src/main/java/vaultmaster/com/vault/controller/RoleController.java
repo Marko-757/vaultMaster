@@ -14,7 +14,9 @@ import vaultmaster.com.vault.security.JwtService;
 import vaultmaster.com.vault.service.RolePermissionService;
 import vaultmaster.com.vault.service.RoleService;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -36,8 +38,15 @@ public class RoleController {
     public ResponseEntity<Role> createRole(@Valid @RequestBody RoleRequest roleRequest, HttpServletRequest request) {
         try {
             UUID createdBy = UUID.fromString(jwtService.getAuthenticatedUserId(request));
-            Role role = roleService.createRole(roleRequest.getTeamId(), roleRequest.getRoleName(), createdBy);
-            return ResponseEntity.status(HttpStatus.CREATED).body(role);
+            Role role = new Role();
+            role.setRoleId(UUID.randomUUID());
+            role.setTeamId(roleRequest.getTeamId());
+            role.setRoleName(roleRequest.getRoleName());
+            role.setCreatedBy(createdBy);
+            role.setCreatedAt(LocalDateTime.now());
+
+            Role saved = roleService.createRole(role);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (Exception e) {
             logger.error("Error creating role:", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
@@ -53,15 +62,13 @@ public class RoleController {
                 return ResponseEntity.badRequest().body("No permissions provided.");
             }
 
-            roleService.assignPermissionsToRole(roleId, permissions); // 👈 SWITCHED TO RoleService
+            roleService.assignPermissionsToRole(roleId, permissions);
             return ResponseEntity.ok("Permissions assigned to role successfully.");
         } catch (Exception e) {
             logger.error("Error assigning permissions to role:", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error assigning permissions.");
         }
     }
-
-
 
     @GetMapping("/{roleId}/permissions")
     public ResponseEntity<List<Permission>> getPermissionsForRole(@PathVariable UUID roleId) {
@@ -76,7 +83,7 @@ public class RoleController {
     @GetMapping("/team/{teamId}")
     public ResponseEntity<List<Role>> getRolesForTeam(@PathVariable UUID teamId) {
         try {
-            List<Role> roles = roleService.getRolesForTeam(teamId);
+            List<Role> roles = roleService.getRolesByTeamId(teamId);
             return ResponseEntity.ok(roles);
         } catch (Exception e) {
             logger.error("Error retrieving roles for team:", e);
@@ -104,5 +111,48 @@ public class RoleController {
         return roleService.getRoleById(roleId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/exists/{roleId}")
+    public ResponseEntity<Boolean> roleExists(@PathVariable UUID roleId) {
+        return ResponseEntity.ok(roleService.roleExists(roleId));
+    }
+
+    @GetMapping("/find")
+    public ResponseEntity<Role> findByNameAndTeam(
+            @RequestParam String roleName,
+            @RequestParam UUID teamId
+    ) {
+        Optional<Role> role = roleService.findByNameAndTeamId(roleName, teamId);
+        return role.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PutMapping("/{roleId}/rename")
+    public ResponseEntity<?> renameRole(
+            @PathVariable UUID roleId,
+            @RequestParam String newName
+    ) {
+        try {
+            roleService.renameRole(roleId, newName);
+            return ResponseEntity.ok("Role renamed successfully.");
+        } catch (Exception e) {
+            logger.error("Error renaming role:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to rename role.");
+        }
+    }
+
+    @PutMapping("/remove")
+    public ResponseEntity<String> removeRoleFromUser(
+            @RequestParam UUID teamId,
+            @RequestParam UUID userId
+    ) {
+        try {
+            roleService.removeRoleFromUser(teamId, userId);
+            return ResponseEntity.ok("Role removed from user");
+        } catch (Exception e) {
+            logger.error("Error removing role from user:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error removing role from user");
+        }
     }
 }

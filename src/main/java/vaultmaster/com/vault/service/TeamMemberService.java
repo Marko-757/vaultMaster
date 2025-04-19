@@ -8,6 +8,7 @@ import vaultmaster.com.vault.repository.TeamMemberRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -65,4 +66,9 @@ public class TeamMemberService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null ? auth.getName() : "system"; // fallback if something weird happens
     }
+
+    public List<Map<String, Object>> getRolesByUserId(UUID userId) {
+        return teamMemberRepository.findRolesByUserId(userId);
+    }
+
 }

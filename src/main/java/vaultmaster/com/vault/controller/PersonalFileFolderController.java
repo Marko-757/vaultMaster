@@ -23,14 +23,14 @@ public class PersonalFileFolderController {
     @PostMapping
     public ResponseEntity<Map<String, String>> createFolder(@RequestBody Map<String, String> requestBody, HttpServletRequest request) {
         String folderName = requestBody.get("folderName");
-        UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         folderService.createFolder(userId, folderName);
         return ResponseEntity.ok(Map.of("message", "Folder created successfully"));
     }
 
     @GetMapping
     public ResponseEntity<List<PersonalFileFolder>> getFoldersForUser(HttpServletRequest request) {
-        UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         List<PersonalFileFolder> folders = folderService.getFoldersByUser(userId);
         return ResponseEntity.ok(folders);
     }

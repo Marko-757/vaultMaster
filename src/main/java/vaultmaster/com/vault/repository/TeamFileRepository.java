@@ -13,10 +13,10 @@ import java.util.UUID;
 @Repository
 public class TeamFileRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbc;
 
-    public TeamFileRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public TeamFileRepository(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
     }
 
     private final RowMapper<TeamFile> rowMapper = (rs, rowNum) -> {
@@ -41,7 +41,7 @@ public class TeamFileRepository {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
-        jdbcTemplate.update(sql,
+        jdbc.update(sql,
                 file.getFileId(),
                 file.getTeamId(),
                 file.getFolderId(),
@@ -57,7 +57,7 @@ public class TeamFileRepository {
     public Optional<TeamFile> findById(UUID fileId) {
         String sql = "SELECT * FROM team_files WHERE file_id = ?";
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, rowMapper, fileId));
+            return Optional.ofNullable(jdbc.queryForObject(sql, rowMapper, fileId));
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -65,16 +65,42 @@ public class TeamFileRepository {
 
     public List<TeamFile> findByTeamId(UUID teamId) {
         String sql = "SELECT * FROM team_files WHERE team_id = ?";
-        return jdbcTemplate.query(sql, rowMapper, teamId);
+        return jdbc.query(sql, rowMapper, teamId);
     }
 
     public List<TeamFile> findByFolderId(UUID folderId) {
         String sql = "SELECT * FROM team_files WHERE folder_id = ?";
-        return jdbcTemplate.query(sql, rowMapper, folderId);
+        return jdbc.query(sql, rowMapper, folderId);
     }
 
     public void deleteById(UUID fileId) {
         String sql = "DELETE FROM team_files WHERE file_id = ?";
-        jdbcTemplate.update(sql, fileId);
+        jdbc.update(sql, fileId);
+    }
+
+    public int moveFileToFolder(UUID fileId, UUID folderId) {
+        String sql = "UPDATE team_files SET folder_id = ? WHERE file_id = ?";
+        return jdbc.update(sql, folderId, fileId);
+    }
+
+    public int updateFileFolder(UUID fileId, UUID folderId) {
+        String sql = "UPDATE team_files SET folder_id = ? WHERE file_id = ?";
+        return jdbc.update(sql, folderId, fileId);
+    }
+
+    public List<UUID> findFileIdsByFolder(UUID folderId) {
+        String sql = "SELECT file_id FROM team_files WHERE folder_id = ?";
+        return jdbc.query(sql, (rs, rowNum) -> UUID.fromString(rs.getString("file_id")), folderId);
+    }
+
+    public void nullifyFolderId(UUID folderId) {
+        String sql = "UPDATE team_files SET folder_id = NULL WHERE folder_id = ?";
+        jdbc.update(sql, folderId);
+    }
+
+    // delete folder and all files in it
+    public void deleteByFolderId(UUID folderId) {
+        String sql = "DELETE FROM team_files WHERE folder_id = ?";
+        jdbc.update(sql, folderId);
     }
 }

@@ -21,12 +21,14 @@ public class TeamPasswordRepository {
     public TeamPassword save(TeamPassword pw) {
         String sql = """
             INSERT INTO team_passwords
-            (team_id, entry_id, folder_id, created_by, created_at, modified_by, modified_at)
-            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
-            RETURNING team_password_id
+            (team_password_id, team_id, entry_id, folder_id, created_by, created_at, modified_by, modified_at)
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
         """;
 
-        int id = jdbc.queryForObject(sql, Integer.class,
+        UUID newId = UUID.randomUUID();
+
+        jdbc.update(sql,
+                newId,
                 pw.getTeamId(),
                 pw.getEntryId(),
                 pw.getFolderId(),
@@ -35,11 +37,11 @@ public class TeamPasswordRepository {
                 Timestamp.valueOf(pw.getModifiedAt())
         );
 
-        pw.setTeamPasswordId(id);
+        pw.setTeamPasswordId(newId);
         return pw;
     }
 
-    public Optional<TeamPassword> findById(int id) {
+    public Optional<TeamPassword> findById(UUID id) {
         String sql = """
             SELECT tp.team_password_id, tp.team_id, tp.entry_id, tp.folder_id,
                    tp.created_by, tp.created_at, tp.modified_by, tp.modified_at,
@@ -52,7 +54,7 @@ public class TeamPasswordRepository {
         return jdbc.query(sql, rs -> {
             if (rs.next()) {
                 TeamPassword pw = new TeamPassword();
-                pw.setTeamPasswordId(rs.getInt("team_password_id"));
+                pw.setTeamPasswordId(UUID.fromString(rs.getString("team_password_id")));
                 pw.setTeamId(UUID.fromString(rs.getString("team_id")));
                 pw.setEntryId(rs.getInt("entry_id"));
                 pw.setFolderId(rs.getObject("folder_id", UUID.class));
@@ -74,7 +76,7 @@ public class TeamPasswordRepository {
         String sql = """
             SELECT tp.team_password_id, tp.team_id, tp.entry_id, tp.folder_id,
                    tp.created_by, tp.created_at, tp.modified_by, tp.modified_at,
-                   pe.password_hash
+                   pe.account_name, pe.username, pe.url, pe.password_hash
             FROM team_passwords tp
             JOIN password_entries pe ON tp.entry_id = pe.entry_id
             WHERE tp.team_id = ?
@@ -82,7 +84,7 @@ public class TeamPasswordRepository {
 
         return jdbc.query(sql, (rs, rowNum) -> {
             TeamPassword pw = new TeamPassword();
-            pw.setTeamPasswordId(rs.getInt("team_password_id"));
+            pw.setTeamPasswordId(UUID.fromString(rs.getString("team_password_id")));
             pw.setTeamId(UUID.fromString(rs.getString("team_id")));
             pw.setEntryId(rs.getInt("entry_id"));
             pw.setFolderId(rs.getObject("folder_id", UUID.class));
@@ -92,39 +94,42 @@ public class TeamPasswordRepository {
             pw.setModifiedAt(rs.getTimestamp("modified_at") != null
                     ? rs.getTimestamp("modified_at").toLocalDateTime()
                     : null);
+            pw.setAccountName(rs.getString("account_name"));
+            pw.setUsername(rs.getString("username"));
+            pw.setWebsite(rs.getString("url"));
             pw.setEncryptedPassword(rs.getString("password_hash"));
             return pw;
         }, teamId);
     }
 
-    public void updateModifiedAt(int teamPasswordId) {
+    public void updateModifiedAt(UUID teamPasswordId) {
         String sql = "UPDATE team_passwords SET modified_at = CURRENT_TIMESTAMP WHERE team_password_id = ?";
         jdbc.update(sql, teamPasswordId);
     }
 
-    public void delete(int id) {
-        jdbc.update("DELETE FROM team_passwords WHERE team_password_id = ?", id);
+    public void delete(UUID teamPasswordId) {
+        jdbc.update("DELETE FROM team_passwords WHERE team_password_id = ?", teamPasswordId);
     }
 
-    public int updateFolder(UUID folderId, int teamPasswordId) {
+    public int updateFolder(UUID folderId, UUID teamPasswordId) {
         String sql = "UPDATE team_passwords SET folder_id = ?, modified_at = CURRENT_TIMESTAMP WHERE team_password_id = ?";
         return jdbc.update(sql, folderId, teamPasswordId);
     }
 
     public List<TeamPassword> findByFolderId(UUID folderId) {
         String sql = """
-        SELECT tp.team_password_id, tp.team_id, tp.entry_id, tp.folder_id,
-               tp.created_by, tp.created_at, tp.modified_at,
-               pe.account_name, pe.username, pe.url, pe.password_hash
-        FROM team_passwords tp
-        JOIN password_entries pe ON tp.entry_id = pe.entry_id
-        WHERE tp.folder_id = ?
-        ORDER BY pe.account_name
-    """;
+            SELECT tp.team_password_id, tp.team_id, tp.entry_id, tp.folder_id,
+                   tp.created_by, tp.created_at, tp.modified_at,
+                   pe.account_name, pe.username, pe.url, pe.password_hash
+            FROM team_passwords tp
+            JOIN password_entries pe ON tp.entry_id = pe.entry_id
+            WHERE tp.folder_id = ?
+            ORDER BY pe.account_name
+        """;
 
         return jdbc.query(sql, (rs, rowNum) -> {
             TeamPassword pw = new TeamPassword();
-            pw.setTeamPasswordId(rs.getInt("team_password_id"));
+            pw.setTeamPasswordId(UUID.fromString(rs.getString("team_password_id")));
             pw.setTeamId(UUID.fromString(rs.getString("team_id")));
             pw.setEntryId(rs.getInt("entry_id"));
             pw.setFolderId(folderId);
@@ -151,6 +156,20 @@ public class TeamPasswordRepository {
         }
     }
 
+    public List<Integer> findEntryIdsByFolder(UUID folderId) {
+        String sql = "SELECT entry_id FROM password_entries WHERE folder_id = ?";
+        return jdbc.query(sql, (rs, rowNum) -> rs.getInt("entry_id"), folderId);
+    }
+
+    public void nullifyFolderId(UUID folderId) {
+        String sql = "UPDATE password_entries SET folder_id = NULL WHERE folder_id = ?";
+        jdbc.update(sql, folderId);
+    }
+
+    public void deleteByFolderId(UUID folderId) {
+        String sql = "DELETE FROM password_entries WHERE folder_id = ?";
+        jdbc.update(sql, folderId);
+    }
 
 
 }

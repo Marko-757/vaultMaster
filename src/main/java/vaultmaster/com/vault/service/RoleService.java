@@ -1,83 +1,125 @@
 package vaultmaster.com.vault.service;
 
 import org.springframework.stereotype.Service;
-import vaultmaster.com.vault.exception.DuplicateResourceException;
-import vaultmaster.com.vault.exception.NotFoundException;
 import vaultmaster.com.vault.model.Permission;
 import vaultmaster.com.vault.model.Role;
+import vaultmaster.com.vault.model.TeamMember;
 import vaultmaster.com.vault.repository.PermissionRepository;
 import vaultmaster.com.vault.repository.RolePermissionRepository;
 import vaultmaster.com.vault.repository.RoleRepository;
 import vaultmaster.com.vault.repository.TeamMemberRepository;
-import vaultmaster.com.vault.repository.TeamRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class RoleService {
 
-    private final RoleRepository roleRepo;
-    private final PermissionRepository permissionRepo;
-    private final RolePermissionRepository rolePermissionRepo;
-    private final TeamMemberRepository teamMemberRepo;
-    private final TeamRepository teamRepo;
+    private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
+    private final RolePermissionRepository rolePermissionRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
-    public RoleService(RoleRepository roleRepo, PermissionRepository permissionRepo,
-                       RolePermissionRepository rolePermissionRepo,
-                       TeamMemberRepository teamMemberRepo,
-                       TeamRepository teamRepo) {
-        this.roleRepo = roleRepo;
-        this.permissionRepo = permissionRepo;
-        this.rolePermissionRepo = rolePermissionRepo;
-        this.teamMemberRepo = teamMemberRepo;
-        this.teamRepo = teamRepo;
+    public RoleService(
+            RoleRepository roleRepository,
+            PermissionRepository permissionRepository,
+            RolePermissionRepository rolePermissionRepository,
+            TeamMemberRepository teamMemberRepository
+    ) {
+        this.roleRepository = roleRepository;
+        this.permissionRepository = permissionRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.teamMemberRepository = teamMemberRepository;
     }
 
+    public Role getOrCreateAdminRoleForTeam(UUID teamId, UUID createdBy) {
+        String adminRoleName = "Admin";
+        return roleRepository.findByNameAndTeamId(adminRoleName, teamId)
+                .orElseGet(() -> {
+                    Role role = new Role();
+                    role.setRoleId(UUID.randomUUID());
+                    role.setTeamId(teamId);
+                    role.setRoleName(adminRoleName);
+                    role.setCreatedBy(createdBy);
+                    role.setCreatedAt(LocalDateTime.now());
 
-    public Role createRole(UUID teamId, String roleName, UUID creatorId) {
-        if (!teamRepo.teamExists(teamId)) {
-            throw new NotFoundException("Team with ID " + teamId + " not found.");
-        }
+                    roleRepository.save(role);
 
-        if (roleRepo.existsByTeamIdAndRoleName(teamId, roleName)) {
-            throw new DuplicateResourceException("Role '" + roleName + "' already exists for this team.");
-        }
+                    List<Permission> allPermissions = permissionRepository.findAll();
+                    for (Permission permission : allPermissions) {
+                        rolePermissionRepository.assignPermissionToRole(role.getRoleId(), permission.getId());
+                    }
 
-        Role role = new Role();
-        role.setRoleId(UUID.randomUUID());
-        role.setTeamId(teamId);
-        role.setRoleName(roleName);
-        role.setCreatedBy(creatorId);
-        role.setCreatedAt(LocalDateTime.now());
-        roleRepo.save(role);
-        return role;
+                    return role;
+                });
+    }
+
+    public Role createRole(Role role) {
+        return roleRepository.save(role);
+    }
+
+    public List<Role> getRolesByTeamId(UUID teamId) {
+        return roleRepository.findByTeamId(teamId);
+    }
+
+    public Optional<Role> getRoleById(UUID roleId) {
+        return roleRepository.findById(roleId);
+    }
+
+    public void deleteRole(UUID roleId) {
+        roleRepository.delete(roleId);
     }
 
     public void assignPermissionsToRole(UUID roleId, List<String> permissionNames) {
-        for (String permissionName : permissionNames) {
-            Permission permission = permissionRepo.findByName(permissionName)
-                    .orElseThrow(() -> new NotFoundException("Permission not found: " + permissionName));
-            rolePermissionRepo.assignPermissionToRole(roleId, permission.getId());
+        UUID teamId = roleRepository.findTeamIdByRoleId(roleId);
+        if (!roleRepository.existsByIdAndTeamId(roleId, teamId)) {
+            throw new IllegalArgumentException("Role does not belong to the specified team.");
+        }
+
+        for (String name : permissionNames) {
+            permissionRepository.findByName(name).ifPresent(permission ->
+                    rolePermissionRepository.assignPermissionToRole(roleId, permission.getId())
+            );
         }
     }
 
     public void assignRoleToUser(UUID teamId, UUID userId, UUID roleId) {
-        if (!teamRepo.teamExists(teamId)) {
-            throw new NotFoundException("Team with ID " + teamId + " not found.");
+        UUID roleTeamId = roleRepository.findTeamIdByRoleId(roleId);
+        if (!roleTeamId.equals(teamId)) {
+            throw new IllegalArgumentException("Role does not belong to the specified team.");
         }
-        teamMemberRepo.assignRole(teamId, userId, roleId);
+
+        TeamMember member = teamMemberRepository.findByTeamIdAndUserId(teamId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("User is not a member of the team"));
+
+        member.setRoleId(roleId);
+        teamMemberRepository.assignRoleWithAudit(teamId, userId, roleId, userId);
     }
 
-    public List<Role> getRolesForTeam(UUID teamId) {
-        if (!teamRepo.teamExists(teamId)) {
-            throw new NotFoundException("Team with ID " + teamId + " not found.");
-        }
-        return roleRepo.findByTeamId(teamId);
+
+    // 🔹 New Methods
+
+    public boolean roleExists(UUID roleId) {
+        return roleRepository.findById(roleId).isPresent();
     }
 
-    public java.util.Optional<Role> getRoleById(UUID roleId) {
-        return roleRepo.findById(roleId);
+    public Optional<Role> findByNameAndTeamId(String roleName, UUID teamId) {
+        return roleRepository.findByNameAndTeamId(roleName, teamId);
     }
+
+    public boolean renameRole(UUID roleId, String newName) {
+        roleRepository.renameRole(roleId, newName);
+        return true;
+    }
+
+    public void removeRoleFromUser(UUID teamId, UUID userId) {
+        TeamMember member = teamMemberRepository.findByTeamIdAndUserId(teamId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("User is not a member of the team"));
+
+        member.setRoleId(null);
+        teamMemberRepository.assignRoleWithAudit(teamId, userId, null, userId);
+    }
+
 }

@@ -16,7 +16,7 @@ public class User {
     @GeneratedValue
     private UUID userId;
 
-    private String passwordHash;
+    private String password;
     private String fullName;
     private String phoneNumber;
     private String email;

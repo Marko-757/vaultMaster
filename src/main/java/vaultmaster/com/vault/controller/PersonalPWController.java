@@ -1,5 +1,6 @@
 package vaultmaster.com.vault.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import vaultmaster.com.vault.model.PersonalPWEntry;
 import vaultmaster.com.vault.model.PasswordEntry;  // Add this import
+import vaultmaster.com.vault.security.JwtService;
 import vaultmaster.com.vault.service.PersonalPWService;
 import vaultmaster.com.vault.service.PasswordEntryService;  // Add this import
 
@@ -19,17 +21,19 @@ public class PersonalPWController {
 
     private final PersonalPWService service;
     private final PasswordEntryService passwordEntryService;
+    private final JwtService jwtService;
 
-    public PersonalPWController(PersonalPWService service, PasswordEntryService passwordEntryService) {
+    public PersonalPWController(PersonalPWService service, PasswordEntryService passwordEntryService, JwtService jwtService) {
         this.service = service;
         this.passwordEntryService = passwordEntryService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping
-    public ResponseEntity<?> addPassword(@RequestBody PersonalPWEntry entry, Authentication auth) {
+    public ResponseEntity<?> addPassword(@RequestBody PersonalPWEntry entry, Authentication auth, HttpServletRequest request) {
         if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         entry.setUserId(userId);
         entry.setCreatedAt(LocalDateTime.now());
         entry.setUpdatedAt(LocalDateTime.now());
@@ -82,10 +86,10 @@ public class PersonalPWController {
     @PutMapping("/entry/{entryId}/move-folder")
     public ResponseEntity<?> movePasswordToFolder(@PathVariable Long entryId,
                                                   @RequestParam(required = false) UUID newFolderId,
-                                                  Authentication auth) {
+                                                  Authentication auth, HttpServletRequest request) {
         if (auth == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
 
         try {
             service.movePasswordToFolder(entryId, userId, newFolderId);

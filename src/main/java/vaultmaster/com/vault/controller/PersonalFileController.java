@@ -41,7 +41,7 @@ public class PersonalFileController {
         final long maxSize = 10 * 1024 * 1024; // 10MB
         final int maxFiles = 10;
 
-        UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
 
         if (files.size() > maxFiles) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -122,7 +122,7 @@ public class PersonalFileController {
 
     @GetMapping("/all")
     public ResponseEntity<List<PersonalFile>> getAllFilesForUser(HttpServletRequest request) {
-        UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         List<PersonalFile> files = personalFileService.getFilesByUser(userId);
         return ResponseEntity.ok(files);
     }

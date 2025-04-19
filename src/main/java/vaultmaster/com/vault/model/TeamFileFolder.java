@@ -10,10 +10,9 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
-    private UUID roleId;
-    private String roleName;
+public class TeamFileFolder {
+    private UUID folderId;
     private UUID teamId;
-    private UUID createdBy;
+    private String folderName;
     private LocalDateTime createdAt;
 }

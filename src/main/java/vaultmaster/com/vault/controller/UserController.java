@@ -37,12 +37,12 @@ public class UserController {
     public ResponseEntity<String> register(@RequestBody User user) {
         System.out.println("Received Registration Request: " + user.toString());
 
-        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
             System.out.println("Error: Password is NULL or empty!");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Password is NULL or empty!");
         }
 
-        userService.registerUser(user.getEmail(), user.getPasswordHash(), user.getFullName(), user.getPhoneNumber());
+        userService.registerUser(user.getEmail(), user.getPassword(), user.getFullName(), user.getPhoneNumber());
         return ResponseEntity.ok("User registered successfully!");
     }
 

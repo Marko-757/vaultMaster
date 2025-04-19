@@ -4,22 +4,24 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import vaultmaster.com.vault.model.TeamMember;
+import vaultmaster.com.vault.model.User;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class TeamMemberRepository {
 
-    private final JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbc;
+    private final UserRowMapper userRowMapper;
 
-    public TeamMemberRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public TeamMemberRepository(JdbcTemplate jdbc, UserRowMapper userRowMapper) {
+        this.jdbc = jdbc;
+        this.userRowMapper = userRowMapper;
     }
+
 
     private final RowMapper<TeamMember> rowMapper = (rs, rowNum) -> {
         TeamMember member = new TeamMember();
@@ -41,7 +43,7 @@ public class TeamMemberRepository {
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """;
 
-        jdbcTemplate.update(sql,
+        jdbc.update(sql,
                 member.getTeamId(),
                 member.getUserId(),
                 member.getRoleId(),
@@ -55,7 +57,7 @@ public class TeamMemberRepository {
     public Optional<TeamMember> findByTeamIdAndUserId(UUID teamId, UUID userId) {
         String sql = "SELECT * FROM team_members WHERE team_id = ? AND user_id = ?";
         try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, rowMapper, teamId, userId));
+            return Optional.ofNullable(jdbc.queryForObject(sql, rowMapper, teamId, userId));
         } catch (Exception e) {
             return Optional.empty();
         }
@@ -63,32 +65,64 @@ public class TeamMemberRepository {
 
     public List<TeamMember> findByTeamId(UUID teamId) {
         String sql = "SELECT * FROM team_members WHERE team_id = ?";
-        return jdbcTemplate.query(sql, rowMapper, teamId);
+        return jdbc.query(sql, rowMapper, teamId);
     }
 
     public List<TeamMember> findByUserId(UUID userId) {
         String sql = "SELECT * FROM team_members WHERE user_id = ?";
-        return jdbcTemplate.query(sql, rowMapper, userId);
+        return jdbc.query(sql, rowMapper, userId);
     }
 
     public void deleteByTeamIdAndUserId(UUID teamId, UUID userId) {
         String sql = "DELETE FROM team_members WHERE team_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, teamId, userId);
+        jdbc.update(sql, teamId, userId);
     }
 
     public boolean existsByTeamIdAndUserId(UUID teamId, UUID userId) {
         String sql = "SELECT COUNT(*) FROM team_members WHERE team_id = ? AND user_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, teamId, userId);
+        Integer count = jdbc.queryForObject(sql, Integer.class, teamId, userId);
         return count != null && count > 0;
     }
 
     public void updateModifiedInfo(UUID teamId, UUID userId, String modifiedBy, LocalDateTime modifiedDate) {
         String sql = "UPDATE team_members SET modified_by = ?, modified_date = ? WHERE team_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, modifiedBy, modifiedDate, teamId, userId);
+        jdbc.update(sql, modifiedBy, modifiedDate, teamId, userId);
     }
 
     public void assignRole(UUID teamId, UUID userId, UUID roleId) {
         String sql = "UPDATE team_members SET role_id = ? WHERE team_id = ? AND user_id = ?";
-        jdbcTemplate.update(sql, roleId, teamId, userId);
+        jdbc.update(sql, roleId, teamId, userId);
+    }
+
+    public List<Map<String, Object>> findRolesByUserId(UUID userId) {
+        String sql = """
+        SELECT 
+            r.role_id, 
+            r.role_name,
+            t.team_id,
+            t.team_name
+        FROM team_members tm
+        JOIN roles r ON tm.role_id = r.role_id
+        JOIN teams t ON tm.team_id = t.team_id
+        WHERE tm.user_id = ?
+    """;
+
+        return jdbc.query(sql, (rs, rowNum) -> {
+            Map<String, Object> role = new HashMap<>();
+            role.put("roleId", rs.getObject("role_id"));
+            role.put("roleName", rs.getString("role_name"));
+            role.put("teamId", rs.getObject("team_id"));
+            role.put("teamName", rs.getString("team_name"));
+            return role;
+        }, userId);
+    }
+    public void assignRoleWithAudit(UUID teamId, UUID userId, UUID roleId, UUID modifiedBy) {
+        assignRole(teamId, userId, roleId);
+        updateModifiedInfo(teamId, userId, modifiedBy.toString(), LocalDateTime.now());
+    }
+
+    public void removeUserFromTeam(UUID teamId, UUID userId) {
+        String sql = "DELETE FROM team_members WHERE team_id = ? AND user_id = ?";
+        jdbc.update(sql, teamId, userId);
     }
 }

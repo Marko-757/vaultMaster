@@ -18,7 +18,7 @@ public class PersonalPWFolderService {
 
     public int createFolder(PersonalPWFolder folder) {
         if (folder.getFolderId() == null) {
-            folder.setFolderId(UUID.randomUUID()); // ✅ Assign UUID if missing
+            folder.setFolderId(UUID.randomUUID());
         }
         return repository.createFolder(folder);
     }

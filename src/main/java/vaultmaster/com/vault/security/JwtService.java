@@ -87,7 +87,7 @@ public class JwtService {
                 .getSubject();  // Extracts the user ID from token
     }
 
-    // New method to get the authenticated userId directly
+    // method to get the authenticated userId directly
     public String getAuthenticatedUserId(HttpServletRequest request) {
         String token = extractTokenFromRequest(request);
         if (token != null && isTokenValid(token)) {
@@ -109,4 +109,19 @@ public class JwtService {
             throw new IllegalArgumentException("Invalid or expired token", e);
         }
     }
+
+    public UUID getAuthenticatedUserIdAsUUID(HttpServletRequest request) {
+        String userIdStr = getAuthenticatedUserId(request);
+        return UUID.fromString(userIdStr);
+    }
+
+    public String getAuthenticatedEmail(HttpServletRequest request) {
+        String token = extractTokenFromRequest(request);
+        if (token != null && isTokenValid(token)) {
+            return extractEmail(token); // Reuse your existing method
+        }
+        throw new IllegalArgumentException("Token is invalid or missing");
+    }
+
+
 }

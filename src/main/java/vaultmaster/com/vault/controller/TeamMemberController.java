@@ -8,6 +8,7 @@ import vaultmaster.com.vault.model.TeamMember;
 import vaultmaster.com.vault.service.TeamMemberService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -129,4 +130,15 @@ public class TeamMemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
+
+    @GetMapping("/user/{userId}/roles")
+    public ResponseEntity<List<Map<String, Object>>> getUserRoles(@PathVariable UUID userId) {
+        try {
+            List<Map<String, Object>> roles = teamMemberService.getRolesByUserId(userId);
+            return ResponseEntity.ok(roles);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

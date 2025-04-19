@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vaultmaster.com.vault.dto.TeamRequest;
 import vaultmaster.com.vault.model.Team;
+import vaultmaster.com.vault.model.User;
 import vaultmaster.com.vault.service.TeamService;
 import vaultmaster.com.vault.security.JwtService;
 import org.slf4j.Logger;
@@ -39,13 +40,44 @@ public class TeamController {
     @GetMapping("/user")
     public ResponseEntity<List<Team>> getAllTeamsForUser(HttpServletRequest request) {
         try {
-            UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+            UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
             List<Team> teams = teamService.getTeamsByUser(userId);
             return ResponseEntity.ok(teams);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @DeleteMapping("/{teamId}/members/{userId}")
+    public ResponseEntity<String> removeUserFromTeam(
+            @PathVariable UUID teamId,
+            @PathVariable UUID userId,
+            HttpServletRequest request) {
+
+        UUID actingUserId = jwtService.getAuthenticatedUserIdAsUUID(request);
+        Team team = teamService.getTeamById(teamId).orElse(null);
+
+        if (team == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team not found.");
+        }
+
+        if (!team.getCreatedBy().equals(actingUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only the team creator can remove users.");
+        }
+
+        if (userId.equals(team.getCreatedBy())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Team creator cannot remove themselves.");
+        }
+
+        try {
+            teamService.removeUserFromTeam(teamId, userId);
+            return ResponseEntity.ok("User removed from team.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to remove user.");
+        }
+    }
+
+
 
     @GetMapping
     public ResponseEntity<List<Team>> getAllTeams() {
@@ -64,7 +96,7 @@ public class TeamController {
 
     @PutMapping("/{teamId}")
     public ResponseEntity<Team> updateTeamName(@PathVariable UUID teamId, @RequestBody TeamRequest teamRequest, HttpServletRequest request) {
-        UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         Team team = teamService.getTeamById(teamId).orElse(null);
         if (team != null && team.getCreatedBy().equals(userId)) {
             team.setTeamName(teamRequest.getTeamName());
@@ -77,7 +109,7 @@ public class TeamController {
 
     @DeleteMapping("/{teamId}")
     public ResponseEntity<String> deleteTeam(@PathVariable UUID teamId, HttpServletRequest request) {
-        UUID userId = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         Team team = teamService.getTeamById(teamId).orElse(null);
         if (team != null && team.getCreatedBy().equals(userId)) {
             teamService.deleteTeam(teamId);
