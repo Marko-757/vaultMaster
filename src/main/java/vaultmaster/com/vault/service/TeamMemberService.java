@@ -71,4 +71,11 @@ public class TeamMemberService {
         return teamMemberRepository.findRolesByUserId(userId);
     }
 
+    public void addUserToTeam(UUID teamId, UUID userId) {
+        TeamMember member = new TeamMember();
+        member.setTeamId(teamId);
+        member.setUserId(userId);
+        addTeamMember(member);
+    }
+
 }

@@ -39,10 +39,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         if (path.startsWith("/api/auth/") || path.startsWith("/api/2fa/")) {
             filterChain.doFilter(request, response);
-            return;  // Skip JWT validation for 2FA and authentication routes
+            return;
         }
 
-        // 🔒 Continue with token validation for protected routes
         String token = jwtService.extractTokenFromRequest(request);
 
         if (token != null && jwtService.isTokenValid(token)) {

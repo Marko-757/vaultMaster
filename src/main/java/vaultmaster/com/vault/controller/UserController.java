@@ -55,7 +55,7 @@ public class UserController {
             twoFactorAuthService.generateAndSendOTP(authResponse.getUserId(), authResponse.getEmail());
 
             // Generate a JWT with otpVerified = false
-            String jwtWithOtpFlag = jwtService.generateTokenWithOtpFlag(authResponse.getUserId(), false);
+            String jwtWithOtpFlag = jwtService.generateTokenWithOtpFlag(authResponse.getUserId(), authResponse.getEmail(), false);
 
             // Create HTTP-only JWT cookie
             ResponseCookie jwtCookie = ResponseCookie.from("jwtToken", jwtWithOtpFlag)

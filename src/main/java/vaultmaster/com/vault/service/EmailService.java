@@ -21,7 +21,7 @@ public class EmailService {
         message.setTo(toEmail);
         message.setSubject(subject);
         message.setText(body);
-        message.setFrom("vaultmaster25@gmail.com"); // Match your app email
+        message.setFrom("vaultmaster25@gmail.com");
 
         mailSender.send(message);
         System.out.println("Email sent to " + toEmail);

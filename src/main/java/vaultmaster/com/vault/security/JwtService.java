@@ -4,13 +4,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import java.security.Key;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import vaultmaster.com.vault.model.User;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.UUID;
 
@@ -20,20 +19,21 @@ public class JwtService {
 
     public String generateToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getUserId().toString())  // Store user ID in token
-                .claim("email", user.getEmail())  // Optional: Store user email
-                .setIssuedAt(new Date())  // Token issue time
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))  // 24-hour expiration
+                .setSubject(user.getUserId().toString())
+                .claim("email", user.getEmail())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24)) // 24 hours
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateTokenWithOtpFlag(UUID userId, boolean otpVerified) {
+    public String generateTokenWithOtpFlag(UUID userId, String email, boolean otpVerified) {
         return Jwts.builder()
                 .setSubject(userId.toString())
+                .claim("email", email)  // ✅ include email for post-OTP flow
                 .claim("otpVerified", otpVerified)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24)) // 24 hours
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))
                 .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -45,11 +45,10 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
-            return claims.get("otpVerified", Boolean.class) != null
-                    && claims.get("otpVerified", Boolean.class);
+            return claims.get("otpVerified", Boolean.class) != null &&
+                    claims.get("otpVerified", Boolean.class);
         } catch (Exception e) {
-            return false; // Treat invalid or missing claim as "not verified"
+            return false;
         }
     }
 
@@ -58,23 +57,22 @@ public class JwtService {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("jwtToken".equals(cookie.getName())) {
-                    return cookie.getValue();  // Found token in cookie
+                    return cookie.getValue();
                 }
             }
         }
-        return null;  // Token not found
+        return null;
     }
 
     public boolean isTokenValid(String token) {
         try {
-            // Try parsing and verifying the token
             Jwts.parserBuilder()
                     .setSigningKey(SECRET_KEY)
                     .build()
-                    .parseClaimsJws(token);  // Throws exception if token is invalid
+                    .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            return false;  // Token is invalid or expired
+            return false;
         }
     }
 
@@ -84,14 +82,13 @@ public class JwtService {
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();  // Extracts the user ID from token
+                .getSubject();
     }
 
-    // method to get the authenticated userId directly
     public String getAuthenticatedUserId(HttpServletRequest request) {
         String token = extractTokenFromRequest(request);
         if (token != null && isTokenValid(token)) {
-            return extractUserId(token);  // Extract the user ID from the token
+            return extractUserId(token);
         }
         throw new IllegalArgumentException("Token is invalid or missing");
     }
@@ -103,25 +100,21 @@ public class JwtService {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
-            return claims.get("email", String.class);  // Extract email from claims
+            return claims.get("email", String.class);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid or expired token", e);
         }
     }
 
     public UUID getAuthenticatedUserIdAsUUID(HttpServletRequest request) {
-        String userIdStr = getAuthenticatedUserId(request);
-        return UUID.fromString(userIdStr);
+        return UUID.fromString(getAuthenticatedUserId(request));
     }
 
     public String getAuthenticatedEmail(HttpServletRequest request) {
         String token = extractTokenFromRequest(request);
         if (token != null && isTokenValid(token)) {
-            return extractEmail(token); // Reuse your existing method
+            return extractEmail(token);
         }
         throw new IllegalArgumentException("Token is invalid or missing");
     }
-
-
 }

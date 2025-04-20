@@ -45,7 +45,7 @@ public class PermissionChecker {
     public boolean hasEffectivePermission(
             UUID userId,
             UUID teamId,
-            Object itemId, // Accepts Integer or UUID
+            Object itemId,
             UUID folderId,
             String itemType,
             String permission
@@ -89,7 +89,6 @@ public class PermissionChecker {
         return rolePermissionRepository.roleHasPermission(roleId, permission);
     }
 
-    // For item_id stored as int (e.g., passwords)
     public boolean userHasItemPermission(UUID userId, UUID teamId, int itemId, String itemType, String permission) {
         return hasEffectivePermission(userId, teamId, itemId, null, itemType, permission);
     }
