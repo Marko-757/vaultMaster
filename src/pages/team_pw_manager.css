@@ -1,272 +1,103 @@
-.pw-manager-container {
+/* Main Layout */
+.team-pw-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden; 
-  font-family: Arial, sans-serif;
+  width: 100vw;
+  overflow: hidden;
 }
 
-/* Teams Container Layout */
-.teams-container {
+.three-column-container {
   display: flex;
-  height: 100vh;
-  font-family: Arial, sans-serif;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
 
-/* Left Sidebar with Off-White Background */
-.sidebar {
-  width: 20%;
-  background-color: #f7f7f7;
+.left-column {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: #f8f9fa;
   padding: 15px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
 }
 
-/* Top Sidebar Heading */
+.main-content {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.main-content-default {
+  width: 100%;
+  padding: 20px;
+}
+
+/* Teams List Styling */
 .sidebar-heading {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
+
 .sidebar-heading-top {
   font-size: 28px;
   font-weight: bold;
 }
+
 .sidebar-heading-bottom {
   font-size: 20px;
   font-weight: bold;
 }
 
-/* Divider between Top Header and Sections */
 .divider {
-  width: 90%;
+  width: 100%;
   border: 1px solid #ccc;
-  margin: 8px 0;
+  margin: 15px 0;
 }
 
-/* Section Header with Add Button (using Flexbox) */
-.section-header {
-  width: 250px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 8px;
-  position: relative;
+.accordion-wrapper {
+  margin-bottom: 20px;
 }
-.section-header h2 {
-  font-size: 20px;
-  margin: 0;
-  text-align: center;
-  flex-grow: 1;
-}
-.section-add-button {
-  background: transparent;
-  border: none;
-  font-size: 26px;
+
+.accordion-button {
   font-weight: bold;
-  color: #007bff;
-  cursor: pointer;
-  margin-left: 10px;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: color 0.3s ease, background-color 0.3s ease;
-}
-.section-add-button:hover {
-  color: #0056b3;
-  background-color: rgba(0, 123, 255, 0.1);
 }
 
-/* Sidebar Section */
-.sidebar-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-}
-
-/* Container for Each Entry (Team/ Membership) */
-.team-item {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 0 auto;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* Containers for Lists with Gap */
-.teams-list-container,
-.memberships-list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;  /* Center the content */
-}
-
-/* Scrollable List When Expanded */
-.scrollable {
-  max-height: 200px; /* Adjust as needed */
+.scrollable-accordion {
+  max-height: 300px;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  padding: 10px;
 }
 
-.btn-group {
-  display: flex;
-  width: 100%; 
-  justify-content: center; 
-  align-items: center; 
+.team-item {
+  margin-bottom: 10px;
 }
 
 .btn-primary {
   background-color: #336dbf;
-  color: white;
-  border-radius: 0.25rem;
-  border-top-left-radius: 0.25rem;
-  border-bottom-left-radius: 0.25rem;
-}
-
-.dropdown-toggle-split {
-  background-color: #336dbf;
   border-color: #336dbf;
-  border-top-right-radius: 0.25rem;
-  border-bottom-right-radius: 0.25rem;
-  width: 40px; /* Make the dropdown button smaller */
-}
-.dropdown-toggle-split {
-  margin-left: -1px; /* Removes the gap between buttons */
 }
 
-.dropdown-menu {
-  min-width: 200px;
-  left: 50%;
-  transform: translateX(-50%); /* Center the dropdown */
-}
-
-/* Dropdown Styling */
-.dropdown-item {
-  padding: 10px 20px;
-  font-size: 14px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.dropdown-item:hover {
-  background-color: #f2f2f2;
-}
-
-/* Add Input Fields for Adding/Editing */
-.team-input,
-.membership-input {
-  width: 190px;
-  height: 45px;
-  padding: 12px 8px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  background-color: #fff;
-  color: #000;
-  display: block;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-.team-input:focus,
-.membership-input:focus {
-  border-color: #5a9bd4;
-  box-shadow: 0 0 5px rgba(90, 155, 212, 0.5);
-}
-
-/* Add Button Container & Button (if needed) */
-.add-button-container {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 8px;
-}
-.add-button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  font-size: 20px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-}
-.add-button:hover {
-  background-color: #0056b3;
-}
-.add-button:active {
-  transform: scale(0.95);
-}
-
-/* See More / See Less Button */
-.see-toggle-button {
-  background: transparent;
-  border: none;
-  color: #004aad;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 5px;
-  transition: color 0.3s ease;
-}
-.see-toggle-button:hover {
-  color: #00338d;
-}
-
-/* Section Banner for Right-Side Menus */
-.section-banner {
-  display: flex;
-  align-items: center;
-  background-color: #333;
-  color: #fff;
-  padding: 10px;
-  height: 35px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-.back-button {
-  background: transparent;
-  border: none;
-  font-size: 24px;
-  color: #fff;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-/* Main Content Area */
-.main-content {
-  flex: 1;
-  padding: 20px;
-  text-align: center;
-  background-color: #fff;
-}
-.main-content h1 {
+/* Main Content Styling */
+.banner {
   font-size: 28px;
   font-weight: bold;
-  background-color: #333; /* Darker gray instead of black */
+  background-color: #333;
   color: white;
   padding: 20px;
   border-radius: 5px;
-  width: 80%;
-  margin: 0 auto 40px;
+  margin-bottom: 30px;
 }
 
-/* Options Container for Main Content Buttons */
 .options-container {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 30px;
+  flex-wrap: wrap;
 }
+
 .option-button {
   background-color: #004aad;
   color: white;
@@ -282,135 +113,102 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s ease, transform 0.1s ease;
+  transition: all 0.3s ease;
 }
+
 .option-button:hover {
   background-color: #00338d;
-}
-.option-button:active {
-  transform: scale(0.98);
+  transform: translateY(-2px);
 }
 
-/* Roles View (unchanged apart from banner) */
-.roles-view {
-  padding: 20px;
-  text-align: center;
-}
-
-/* Profile container for dropdown */
-.profile-container {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  align-items: center;
-}
-
-/* Profile icon styling */
-.profile-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.profile-icon:hover {
-  transform: scale(1.1);
-}
-
-/* Dropdown menu */
-.profile-dropdown {
-  position: absolute;
-  top: 50px;
+/* Modal Styling */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  flex-direction: column;
-  min-width: 150px;
-  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Dropdown menu buttons */
-.profile-dropdown button {
-  background: none;
-  border: none;
-  padding: 10px 15px;
-  text-align: left;
-  font-size: 14px;
-  cursor: pointer;
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   width: 100%;
-  transition: background 0.2s ease;
 }
 
-.profile-dropdown button:hover {
-  background: #f2f2f2;
+.modal-content {
+  padding: 25px;
 }
 
-/* Home button styling */
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.confirm-button {
+  background-color: #004aad;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Home Button */
 .home-button {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 10px 10px;
+  top: 15px;
+  left: 15px;
+  padding: 8px 15px;
   font-size: 16px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 100px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  width: auto;
-  min-width: 80px;
+  z-index: 100;
 }
 
 .home-button:hover {
   background-color: #0056b3;
 }
 
-.left-column {
-  width: 250px; /* Adjust width as needed */
-  background-color: #f8f9fa;
-  padding: 10px;
-  overflow-y: auto;
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-.main-content {
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #ffffff;
-  overflow-y: auto;
-}
-
-/* Accordion Body for scrollable behavior */
-.scrollable-accordion {
-  max-height: 300px; /* Adjust height based on the number of items you expect */
-  overflow-y: auto;
-  scrollbar-gutter: stable;
-}
-
-/* Optional: For smoother transitions */
-.accordion-button {
-  transition: all 0.3s ease-in-out;
-}
-
-.accordion-body {
-  transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out; 
-}
-
-/* Custom scrollbar (if needed) */
-.scrollable-accordion::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scrollable-accordion::-webkit-scrollbar-thumb {
-  background-color: #007bff;
-  border-radius: 10px;
-}
-
-.scrollable-accordion::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

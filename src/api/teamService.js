@@ -2,7 +2,6 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:8080/api/teams";
 
-// Helper function to get the token
 const getAuthToken = () => {
   return localStorage.getItem("jwtToken");
 };
@@ -116,3 +115,20 @@ export const deleteTeam = async (teamId) => {
     throw error;
   }
 };
+
+export const getMembershipsForUser = async () => {
+  try {
+    const token = getAuthToken();
+    const response = await axios.get(`${BASE_URL}/memberships`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching memberships:", error);
+    throw error;
+  }
+};
+
