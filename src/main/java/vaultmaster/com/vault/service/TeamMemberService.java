@@ -3,6 +3,7 @@ package vaultmaster.com.vault.service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import vaultmaster.com.vault.dto.TeamMemberProfile;
 import vaultmaster.com.vault.model.TeamMember;
 import vaultmaster.com.vault.repository.TeamMemberRepository;
 
@@ -77,5 +78,10 @@ public class TeamMemberService {
         member.setUserId(userId);
         addTeamMember(member);
     }
+
+    public List<TeamMemberProfile> getTeamMemberProfiles(UUID teamId) {
+        return teamMemberRepository.findTeamMemberProfilesByTeamId(teamId);
+    }
+
 
 }

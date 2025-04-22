@@ -38,6 +38,13 @@ public class RoleController {
     public ResponseEntity<Role> createRole(@Valid @RequestBody RoleRequest roleRequest, HttpServletRequest request) {
         try {
             UUID createdBy = UUID.fromString(jwtService.getAuthenticatedUserId(request));
+
+            // Check for duplicates
+            Optional<Role> existing = roleService.findByNameAndTeamId(roleRequest.getRoleName(), roleRequest.getTeamId());
+            if (existing.isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+            }
+
             Role role = new Role();
             role.setRoleId(UUID.randomUUID());
             role.setTeamId(roleRequest.getTeamId());
@@ -46,6 +53,7 @@ public class RoleController {
             role.setCreatedAt(LocalDateTime.now());
 
             Role saved = roleService.createRole(role);
+            logger.info("Role {} created in team {}", role.getRoleName(), role.getTeamId());
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (Exception e) {
             logger.error("Error creating role:", e);
@@ -63,6 +71,7 @@ public class RoleController {
             }
 
             roleService.assignPermissionsToRole(roleId, permissions);
+            logger.info("Permissions assigned to role {}", roleId);
             return ResponseEntity.ok("Permissions assigned to role successfully.");
         } catch (Exception e) {
             logger.error("Error assigning permissions to role:", e);
@@ -76,18 +85,18 @@ public class RoleController {
             return ResponseEntity.ok(rolePermissionService.getPermissionsForRole(roleId));
         } catch (Exception e) {
             logger.error("Error retrieving permissions for role:", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.internalServerError().body(null);
         }
     }
 
     @GetMapping("/team/{teamId}")
     public ResponseEntity<List<Role>> getRolesForTeam(@PathVariable UUID teamId) {
         try {
-            List<Role> roles = roleService.getRolesByTeamId(teamId);
-            return ResponseEntity.ok(roles);
+            List<Role> rolesWithPermissions = roleService.getRolesWithPermissionsByTeamId(teamId);
+            return ResponseEntity.ok(rolesWithPermissions);
         } catch (Exception e) {
             logger.error("Error retrieving roles for team:", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.internalServerError().body(null);
         }
     }
 
@@ -99,10 +108,11 @@ public class RoleController {
     ) {
         try {
             roleService.assignRoleToUser(teamId, userId, roleId);
+            logger.info("Assigned role {} to user {} in team {}", roleId, userId, teamId);
             return ResponseEntity.ok("Role assigned to user");
         } catch (Exception e) {
             logger.error("Error assigning role to user:", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error assigning role to user");
+            return ResponseEntity.internalServerError().body("Error assigning role to user");
         }
     }
 
@@ -135,6 +145,7 @@ public class RoleController {
     ) {
         try {
             roleService.renameRole(roleId, newName);
+            logger.info("Renamed role {} to {}", roleId, newName);
             return ResponseEntity.ok("Role renamed successfully.");
         } catch (Exception e) {
             logger.error("Error renaming role:", e);
@@ -149,10 +160,11 @@ public class RoleController {
     ) {
         try {
             roleService.removeRoleFromUser(teamId, userId);
+            logger.info("Removed role from user {} in team {}", userId, teamId);
             return ResponseEntity.ok("Role removed from user");
         } catch (Exception e) {
             logger.error("Error removing role from user:", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error removing role from user");
+            return ResponseEntity.internalServerError().body("Error removing role from user");
         }
     }
 }

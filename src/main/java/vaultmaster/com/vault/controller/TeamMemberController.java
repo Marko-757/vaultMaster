@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vaultmaster.com.vault.dto.TeamMemberProfile;
 import vaultmaster.com.vault.model.TeamMember;
 import vaultmaster.com.vault.service.TeamMemberService;
 
@@ -22,12 +23,6 @@ public class TeamMemberController {
         this.teamMemberService = teamMemberService;
     }
 
-    /**
-     * Add a new team member.
-     *
-     * @param teamMember The team member object.
-     * @return ResponseEntity with the created TeamMember.
-     */
     @PostMapping
     public ResponseEntity<TeamMember> addTeamMember(@Valid @RequestBody TeamMember teamMember) {
         try {
@@ -140,5 +135,16 @@ public class TeamMemberController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/team/{teamId}/profiles")
+    public ResponseEntity<List<TeamMemberProfile>> getTeamMemberProfiles(@PathVariable UUID teamId) {
+        try {
+            List<TeamMemberProfile> profiles = teamMemberService.getTeamMemberProfiles(teamId);
+            return ResponseEntity.ok(profiles);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 }

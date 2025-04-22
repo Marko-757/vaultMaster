@@ -3,10 +3,9 @@ package vaultmaster.com.vault.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import vaultmaster.com.vault.dto.TeamMemberProfile;
 import vaultmaster.com.vault.model.TeamMember;
-import vaultmaster.com.vault.model.User;
 
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -22,7 +21,6 @@ public class TeamMemberRepository {
         this.userRowMapper = userRowMapper;
     }
 
-
     private final RowMapper<TeamMember> rowMapper = (rs, rowNum) -> {
         TeamMember member = new TeamMember();
         member.setTeamId(UUID.fromString(rs.getString("team_id")));
@@ -36,6 +34,7 @@ public class TeamMemberRepository {
         return member;
     };
 
+    // CRUD operations
     public void insert(TeamMember member) {
         String sql = """
             INSERT INTO team_members (
@@ -94,18 +93,24 @@ public class TeamMemberRepository {
         jdbc.update(sql, roleId, teamId, userId);
     }
 
+    public void assignRoleWithAudit(UUID teamId, UUID userId, UUID roleId, UUID modifiedBy) {
+        assignRole(teamId, userId, roleId);
+        updateModifiedInfo(teamId, userId, modifiedBy.toString(), LocalDateTime.now());
+    }
+
+    public void removeUserFromTeam(UUID teamId, UUID userId) {
+        String sql = "DELETE FROM team_members WHERE team_id = ? AND user_id = ?";
+        jdbc.update(sql, teamId, userId);
+    }
+
     public List<Map<String, Object>> findRolesByUserId(UUID userId) {
         String sql = """
-        SELECT 
-            r.role_id, 
-            r.role_name,
-            t.team_id,
-            t.team_name
-        FROM team_members tm
-        JOIN roles r ON tm.role_id = r.role_id
-        JOIN teams t ON tm.team_id = t.team_id
-        WHERE tm.user_id = ?
-    """;
+            SELECT r.role_id, r.role_name, t.team_id, t.team_name
+            FROM team_members tm
+            JOIN roles r ON tm.role_id = r.role_id
+            JOIN teams t ON tm.team_id = t.team_id
+            WHERE tm.user_id = ?
+        """;
 
         return jdbc.query(sql, (rs, rowNum) -> {
             Map<String, Object> role = new HashMap<>();
@@ -116,13 +121,37 @@ public class TeamMemberRepository {
             return role;
         }, userId);
     }
-    public void assignRoleWithAudit(UUID teamId, UUID userId, UUID roleId, UUID modifiedBy) {
-        assignRole(teamId, userId, roleId);
-        updateModifiedInfo(teamId, userId, modifiedBy.toString(), LocalDateTime.now());
+
+    public List<TeamMemberProfile> findTeamMemberProfilesByTeamId(UUID teamId) {
+        String sql = """
+            SELECT u.full_name, u.email, u.phone_number, r.role_name
+            FROM team_members tm
+            JOIN users u ON tm.user_id = u.user_id
+            LEFT JOIN roles r ON tm.role_id = r.role_id
+            WHERE tm.team_id = ?
+        """;
+
+        return jdbc.query(sql, (rs, rowNum) -> new TeamMemberProfile(
+                rs.getString("full_name"),
+                rs.getString("email"),
+                rs.getString("phone_number"),
+                rs.getString("role_name") != null ? rs.getString("role_name") : "Member"
+        ), teamId);
     }
 
-    public void removeUserFromTeam(UUID teamId, UUID userId) {
-        String sql = "DELETE FROM team_members WHERE team_id = ? AND user_id = ?";
-        jdbc.update(sql, teamId, userId);
+    // 🔹 New logic for invite section: Get memberships that user is in but doesn't own
+    public List<Map<String, Object>> findMembershipsExcludingOwned(UUID userId) {
+        String sql = """
+            SELECT t.team_id, t.team_name
+            FROM team_members tm
+            JOIN teams t ON tm.team_id = t.team_id
+            WHERE tm.user_id = ? AND t.created_by != ?
+        """;
+        return jdbc.query(sql, (rs, rowNum) -> {
+            Map<String, Object> team = new HashMap<>();
+            team.put("teamId", UUID.fromString(rs.getString("team_id")));
+            team.put("teamName", rs.getString("team_name"));
+            return team;
+        }, userId, userId);
     }
 }

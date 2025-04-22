@@ -10,4 +10,6 @@ import java.util.UUID;
 public class Permission {
     private UUID id;
     private String name;
+    private String displayName;
+    private String description;
 }

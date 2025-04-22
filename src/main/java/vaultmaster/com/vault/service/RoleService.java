@@ -56,6 +56,21 @@ public class RoleService {
                 });
     }
 
+    public Role createPendingRoleForTeam(UUID teamId, UUID createdBy) {
+        String pendingRoleName = "Pending";
+        return roleRepository.findByNameAndTeamId(pendingRoleName, teamId)
+                .orElseGet(() -> {
+                    Role pendingRole = new Role();
+                    pendingRole.setRoleId(UUID.randomUUID());
+                    pendingRole.setTeamId(teamId);
+                    pendingRole.setRoleName(pendingRoleName);
+                    pendingRole.setCreatedBy(createdBy);
+                    pendingRole.setCreatedAt(LocalDateTime.now());
+
+                    return roleRepository.save(pendingRole);
+                });
+    }
+
     public Role createRole(Role role) {
         return roleRepository.save(role);
     }
@@ -120,6 +135,15 @@ public class RoleService {
 
         member.setRoleId(null);
         teamMemberRepository.assignRoleWithAudit(teamId, userId, null, userId);
+    }
+
+    public List<Role> getRolesWithPermissionsByTeamId(UUID teamId) {
+        List<Role> roles = roleRepository.findByTeamId(teamId);
+        for (Role role : roles) {
+            List<Permission> permissions = rolePermissionRepository.findPermissionsByRoleId(role.getRoleId());
+            role.setPermissions(permissions);
+        }
+        return roles;
     }
 
 }

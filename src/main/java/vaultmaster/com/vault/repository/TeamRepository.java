@@ -74,9 +74,20 @@ public class TeamRepository {
         String sql = "SELECT * FROM teams";
         return jdbcTemplate.query(sql, teamRowMapper);
     }
+    public List<Team> findMembershipsByUser(UUID userId) {
+        String sql = """
+        SELECT t.* 
+        FROM teams t
+        JOIN team_members tm ON t.team_id = tm.team_id
+        WHERE tm.user_id = ? AND t.created_by <> ?
+    """;
+        return jdbcTemplate.query(sql, teamRowMapper, userId, userId);
+    }
 
     public void deleteById(UUID teamId) {
         String sql = "DELETE FROM teams WHERE team_id = ?";
         jdbcTemplate.update(sql, teamId);
     }
+
+
 }

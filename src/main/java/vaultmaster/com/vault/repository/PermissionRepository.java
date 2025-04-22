@@ -23,11 +23,17 @@ public class PermissionRepository {
         Permission p = new Permission();
         p.setId(UUID.fromString(rs.getString("permission_id")));
         p.setName(rs.getString("permission_name"));
+        p.setDisplayName(rs.getString("display_name"));
+        p.setDescription(rs.getString("description"));
         return p;
     };
 
     public Optional<Permission> findByName(String name) {
-        String sql = "SELECT * FROM permissions WHERE permission_name = ?";
+        String sql = """
+            SELECT permission_id, permission_name, display_name, description
+            FROM permissions
+            WHERE permission_name = ?
+        """;
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sql, permissionRowMapper, name));
         } catch (EmptyResultDataAccessException e) {
@@ -36,7 +42,11 @@ public class PermissionRepository {
     }
 
     public List<Permission> findAll() {
-        String sql = "SELECT * FROM permissions";
+        String sql = """
+            SELECT permission_id, permission_name, display_name, description
+            FROM permissions
+        """;
+
         return jdbcTemplate.query(sql, permissionRowMapper);
     }
 }

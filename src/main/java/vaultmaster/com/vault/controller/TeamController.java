@@ -44,7 +44,8 @@ public class TeamController {
             List<Team> teams = teamService.getTeamsByUser(userId);
             return ResponseEntity.ok(teams);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            logger.error("Failed to fetch teams for user", e);
+            return ResponseEntity.internalServerError().body(null);
         }
     }
 
@@ -66,18 +67,18 @@ public class TeamController {
         }
 
         if (userId.equals(team.getCreatedBy())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Team creator cannot remove themselves.");
+            return ResponseEntity.badRequest().body("Team creator cannot remove themselves.");
         }
 
         try {
             teamService.removeUserFromTeam(teamId, userId);
+            logger.info("Removed user {} from team {}", userId, teamId);
             return ResponseEntity.ok("User removed from team.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to remove user.");
+            logger.error("Failed to remove user from team", e);
+            return ResponseEntity.internalServerError().body("Failed to remove user.");
         }
     }
-
-
 
     @GetMapping
     public ResponseEntity<List<Team>> getAllTeams() {
@@ -87,35 +88,57 @@ public class TeamController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Team> getTeamById(@PathVariable UUID id) {
-        Team team = teamService.getTeamById(id).orElse(null);
-        if (team == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        return teamService.getTeamById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @GetMapping("/memberships")
+    public ResponseEntity<List<Team>> getMemberships(HttpServletRequest request) {
+        try {
+            UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
+            List<Team> memberships = teamService.getMembershipsForUser(userId);
+            return ResponseEntity.ok(memberships);
+        } catch (Exception e) {
+            logger.error("Failed to fetch team memberships", e);
+            return ResponseEntity.internalServerError().body(List.of()); // better for frontend handling
         }
-        return ResponseEntity.ok(team);
     }
 
     @PutMapping("/{teamId}")
     public ResponseEntity<Team> updateTeamName(@PathVariable UUID teamId, @RequestBody TeamRequest teamRequest, HttpServletRequest request) {
         UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         Team team = teamService.getTeamById(teamId).orElse(null);
-        if (team != null && team.getCreatedBy().equals(userId)) {
-            team.setTeamName(teamRequest.getTeamName());
-            teamService.updateTeam(team);
-            return ResponseEntity.ok(team);
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+
+        if (team == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
+        if (!team.getCreatedBy().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        team.setTeamName(teamRequest.getTeamName());
+        teamService.updateTeam(team);
+        logger.info("Team {} renamed by {}", teamId, userId);
+        return ResponseEntity.ok(team);
     }
 
     @DeleteMapping("/{teamId}")
     public ResponseEntity<String> deleteTeam(@PathVariable UUID teamId, HttpServletRequest request) {
         UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
         Team team = teamService.getTeamById(teamId).orElse(null);
-        if (team != null && team.getCreatedBy().equals(userId)) {
-            teamService.deleteTeam(teamId);
-            return ResponseEntity.ok("Team deleted successfully.");
-        } else {
+
+        if (team == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Team not found.");
+        }
+
+        if (!team.getCreatedBy().equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to delete this team.");
         }
+
+        teamService.deleteTeam(teamId);
+        logger.info("Team {} deleted by {}", teamId, userId);
+        return ResponseEntity.ok("Team deleted successfully.");
     }
 }

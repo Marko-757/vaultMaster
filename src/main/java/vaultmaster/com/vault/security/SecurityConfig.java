@@ -2,6 +2,7 @@ package vaultmaster.com.vault.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -46,11 +47,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/2fa/**").permitAll()
+                        .requestMatchers("/api/team-invitations/**").authenticated()
                         .requestMatchers("/api/passwords/personal/**").authenticated()
                         .requestMatchers("/api/files/**").authenticated()
-                        //.requestMatchers("/api/teams/**").permitAll()
-                        //.requestMatchers("/api/team-files/").permitAll()
-                        //.requestMatchers("/api/team-file-folders/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

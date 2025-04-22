@@ -41,6 +41,7 @@ public class TeamService {
         team.setCreatedAt(LocalDateTime.now());
         Team createdTeam = teamRepository.save(team);
 
+        // Admin role for the team creator
         Role adminRole = roleService.getOrCreateAdminRoleForTeam(createdTeam.getTeamId(), createdBy);
 
         TeamMember teamMember = new TeamMember();
@@ -51,8 +52,10 @@ public class TeamService {
         teamMember.setModifiedBy(createdBy.toString());
         teamMember.setCreatedDate(LocalDateTime.now());
         teamMember.setModifiedDate(LocalDateTime.now());
-
         teamMemberService.addTeamMember(teamMember);
+
+        // Pending role with no permissions
+        roleService.createPendingRoleForTeam(createdTeam.getTeamId(), createdBy);
 
         return createdTeam;
     }
@@ -80,4 +83,9 @@ public class TeamService {
     public void removeUserFromTeam(UUID teamId, UUID userId) {
         teamMemberRepository.removeUserFromTeam(teamId, userId);
     }
+
+    public List<Team> getMembershipsForUser(UUID userId) {
+        return teamRepository.findMembershipsByUser(userId);
+    }
+
 }
