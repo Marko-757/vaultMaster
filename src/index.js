@@ -1,26 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import reportWebVitals from "./reportWebVitals";
 import {
   createBrowserRouter,
   RouterProvider,
   Route,
   Navigate,
-} from 'react-router-dom';
-import AuthLayout from './pages/authLayout'; // Shared layout for Login/Signup
-import Login from './pages/login';
-import Signup from './pages/signup';
-import ForgotPassword from './pages/forgotPassword';
-import TwoFA from './pages/2fa';
-import PersonalPwManager from './pages/personal_pw_manager';
-import Home from './pages/home';
-import App from './App';
-import TeamPwManager from './pages/team_pw_manager';
-import ProfileSettings from './pages/profileSettings';
+} from "react-router-dom";
+import AuthLayout from "./pages/authLayout"; // Shared layout for Login/Signup
+import Login from "./pages/login";
+import Signup from "./pages/signup";
+import ForgotPassword from "./pages/forgotPassword";
+import TwoFA from "./pages/2fa";
+import PersonalPwManager from "./pages/personal_pw_manager";
+import Home from "./pages/home";
+import App from "./App";
+import TeamPwManager from "./pages/team_pw_manager";
+import ProfileSettings from "./pages/profileSettings";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
-
 
 // Define the router with correct paths
 const router = createBrowserRouter([
@@ -66,7 +65,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <RouterProvider router={router} />

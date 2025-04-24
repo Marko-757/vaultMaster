@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import FileList from "../components/fileList";
 import PasswordInformation from "../components/passwordInformation";
 import AddPasswordForm from "../components/addPasswordForm";
 import AddFolderForm from "../components/addFolderForm";

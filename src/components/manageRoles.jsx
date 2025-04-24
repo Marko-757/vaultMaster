@@ -8,12 +8,7 @@ import {
 import "./manageRoles.css";
 
 const permissionCategories = {
-  "Team Management": [
-    "TEAM_MANAGE",
-    "MANAGE_TEAM_ROLES",
-    "INVITE_TEAM_MEMBER",
-    "VIEW_TEAM_MEMBERS",
-  ],
+  "Team Management": ["TEAM_MANAGE", "MANAGE_TEAM_ROLES", "INVITE_TEAM_MEMBER", "VIEW_TEAM_MEMBERS"],
   "Password Management": [
     "MANAGE_TEAM_PASSWORDS",
     "PASSWORD_VIEW",
@@ -41,6 +36,7 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toggleLoading, setToggleLoading] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     if (selectedTeamId) {
@@ -75,6 +71,7 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
       setLoading(true);
       await createRole(selectedTeamId, newRoleName);
       setNewRoleName("");
+      setShowAddModal(false);
       await loadRoles();
     } catch (err) {
       console.error("Failed to create role", err);
@@ -88,9 +85,7 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
 
     try {
       setToggleLoading(true);
-
-      const currentPermissions =
-        selectedRole.permissions?.map((p) => p.name) || [];
+      const currentPermissions = selectedRole.permissions?.map((p) => p.name) || [];
       const updatedPermissionNames = isEnabled
         ? [...new Set([...currentPermissions, permissionName])]
         : currentPermissions.filter((name) => name !== permissionName);
@@ -100,9 +95,7 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
       const updatedRoles = updatedRolesRes.data;
       setRoles(updatedRoles);
 
-      const refreshedRole = updatedRoles.find(
-        (r) => r.roleId === selectedRole.roleId
-      );
+      const refreshedRole = updatedRoles.find((r) => r.roleId === selectedRole.roleId);
       setSelectedRole(refreshedRole);
     } catch (err) {
       console.error("Failed to update permissions", err);
@@ -112,20 +105,14 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
   };
 
   const renderPermissionSection = (sectionTitle, permissionNames) => {
-    const sectionPermissions = permissions.filter((p) =>
-      permissionNames.includes(p.name)
-    );
-
+    const sectionPermissions = permissions.filter((p) => permissionNames.includes(p.name));
     if (sectionPermissions.length === 0) return null;
 
     return (
       <div className="permission-section" key={sectionTitle}>
         <h4 className="permission-category">{sectionTitle}</h4>
         {sectionPermissions.map((permission) => {
-          const isEnabled = selectedRole.permissions?.some(
-            (p) => p.name === permission.name
-          );
-
+          const isEnabled = selectedRole.permissions?.some((p) => p.name === permission.name);
           return (
             <div key={permission.permissionId} className="permission-item">
               <div className="permission-info">
@@ -136,9 +123,7 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
                 <input
                   type="checkbox"
                   checked={isEnabled}
-                  onChange={(e) =>
-                    handlePermissionToggle(permission.name, e.target.checked)
-                  }
+                  onChange={(e) => handlePermissionToggle(permission.name, e.target.checked)}
                   disabled={toggleLoading}
                 />
                 <span className="slider"></span>
@@ -152,65 +137,88 @@ const ManageRoles = ({ selectedTeamId, onBack }) => {
   };
 
   return (
-    <div className="manage-roles-container">
-      <div className="roles-list-column">
-        <div className="roles-header">
-          <button className="back-button" onClick={onBack}>
-            ←
-          </button>
-          <h2>Roles</h2>
-        </div>
-
-        <div className="roles-scroll-container">
-          {roles.map((role) => (
-            <div
-              key={role.roleId}
-              className={`role-item ${
-                selectedRole?.roleId === role.roleId ? "selected" : ""
-              }`}
-              onClick={() => setSelectedRole(role)}
-            >
-              <div className="role-name">{role.roleName}</div>
-              {role.isOwner && <span className="owner-badge">Owner</span>}
-            </div>
-          ))}
-        </div>
-
-        <div className="add-role-container">
-          <input
-            type="text"
-            placeholder="New role name"
-            value={newRoleName}
-            onChange={(e) => setNewRoleName(e.target.value)}
-            disabled={loading}
-          />
-          <button
-            className="add-role-btn"
-            onClick={handleAddRole}
-            disabled={loading || !newRoleName.trim()}
-          >
-            {loading ? "Adding..." : "Add Role"}
-          </button>
-        </div>
-      </div>
-
-      <div className="permissions-column">
-        {selectedRole ? (
-          <>
-            <h3>Global Permissions for {selectedRole.roleName}</h3>
-            <div className="permissions-scroll-container">
-              {Object.entries(permissionCategories).map(([category, perms]) =>
-                renderPermissionSection(category, perms)
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="no-role-selected">
-            <p>Select a role to view and edit permissions</p>
+    <>
+      <div className="manage-roles-container">
+        <div className="roles-list-column">
+          <div className="roles-header">
+            <button className="back-button" onClick={onBack}>
+              ←
+            </button>
+            <h2>Roles</h2>
           </div>
-        )}
+
+          <div className="roles-scroll-container">
+            {roles.map((role) => (
+              <div
+                key={role.roleId}
+                className={`role-item ${selectedRole?.roleId === role.roleId ? "selected" : ""}`}
+                onClick={() => setSelectedRole(role)}
+              >
+                <div className="role-name">{role.roleName}</div>
+                {role.isOwner && <span className="owner-badge">Owner</span>}
+              </div>
+            ))}
+          </div>
+
+          <div className="add-role-container">
+            <button className="add-role-btn" onClick={() => setShowAddModal(true)}>
+              + Add Role
+            </button>
+          </div>
+        </div>
+
+        <div className="permissions-column">
+          {selectedRole ? (
+            <>
+              <h3>Global Permissions for {selectedRole.roleName}</h3>
+              <div className="permissions-scroll-container">
+                {Object.entries(permissionCategories).map(([category, perms]) =>
+                  renderPermissionSection(category, perms)
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="no-role-selected">
+              <p>Select a role to view and edit permissions</p>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+
+      {showAddModal && (
+        <div className="roles-modal-overlay">
+          <div className="roles-modal-content">
+            <h3>Create New Role</h3>
+            <input
+              type="text"
+              placeholder="Enter role name"
+              value={newRoleName}
+              onChange={(e) => setNewRoleName(e.target.value)}
+              disabled={loading}
+            />
+            <div className="roles-modal-actions">
+              <button
+                className="add-role-btn"
+                onClick={handleAddRole}
+                disabled={loading || !newRoleName.trim()}
+              >
+                {loading ? "Adding..." : "Create"}
+              </button>
+              <button
+                className="cancel-role-btn"
+                onClick={() => {
+                  setShowAddModal(false);
+                  setNewRoleName("");
+                }}
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -5,7 +5,7 @@ const FileList = ({ passwords, onSelectPassword }) => {
   return (
     <div className="password-name-list">
       {passwords.length === 0 ? (
-        <div className="no-passwords">No Passwords Found</div>
+        <div className="no-passwords">No Files Found</div>
       ) : (
         passwords.map((password) => (
           <button 

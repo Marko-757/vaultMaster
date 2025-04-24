@@ -1,83 +1,70 @@
-/* Overlay Background */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  /* Modal Content Styling */
-  .modal {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
-    text-align: center;
-  }
-  
-  /* Modal Title */
-  .modal-content h2 {
-    margin-bottom: 15px;
-    font-size: 24px;
-    color: #333;
-  }
-  
-  /* Input Container */
-  .input-container {
-    margin-bottom: 20px;
-  }
-  
-  /* Team Name Input */
-  .team-input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-  }
-  
-  /* Modal Buttons Section */
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  /* Confirm and Cancel Buttons Styling */
-  .modal-buttons .confirm-button,
-  .modal-buttons .cancel-button {
-    width: 45%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  /* Confirm Button (Create Team) */
-  .modal-buttons .confirm-button {
-    background-color: #28a745;
-    color: white;
-  }
-  
-  .modal-buttons .confirm-button:hover {
-    background-color: #218838;
-  }
-  
-  /* Cancel Button */
-  .modal-buttons .cancel-button {
-    background-color: #dc3545;
-    color: white;
-  }
-  
-  .modal-buttons .cancel-button:hover {
-    background-color: #c82333;
-  }
-  
+/* Form content container */
+
+.modal {
+  border: 2px dashed red;
+}
+
+.modal-content {
+  padding: 25px;
+  width: 100%;
+}
+
+/* Form title */
+.modal-content h2 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Input container */
+.input-container {
+  margin-bottom: 20px;
+}
+
+/* Text input */
+.team-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Buttons container */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Confirm button */
+.confirm-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.confirm-button:hover {
+  background-color: #218838;
+}
+
+/* Cancel button */
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.cancel-button:hover {
+  background-color: #c82333;
+}

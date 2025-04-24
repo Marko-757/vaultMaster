@@ -4,7 +4,7 @@ import "./team_pw_manager.css";
 import profileIcon from "../Assets/defaultProfileImage.png";
 import MyMembers from "../components/myMembers";
 import ManageRoles from "../components/manageRoles";
-import PasswordAndFileManagement from "../components/passwordAndFileManagement";
+import TeamPasswordFileManager from "../components/passwordAndFileManagement";
 import TeamCreationForm from "../components/teamCreationForm";
 import NavbarVaultMaster from "../components/navbarVaultMaster";
 import { acceptInvitation } from "../api/teamInvitationService";
@@ -242,7 +242,10 @@ const TeamPwManager = () => {
                     )}
                     <button
                       className="btn btn-success w-100"
-                      onClick={openTeamCreationModal}
+                      onClick={() => {
+                        console.log("Opening Add Team Modal");
+                        openTeamCreationModal();
+                      }}
                     >
                       + Add Team
                     </button>
@@ -294,7 +297,10 @@ const TeamPwManager = () => {
                       )}
                       <button
                         className="btn btn-primary w-100 mt-2"
-                        onClick={() => setShowJoinModal(true)}
+                        onClick={() => {
+                          console.log("Opening Join Team Modal");
+                          setShowJoinModal(true);
+                        }}
                       >
                         + Join Team
                       </button>
@@ -317,8 +323,8 @@ const TeamPwManager = () => {
               onBack={() => setSelectedOption(null)}
             />
           ) : selectedOption === "password" ? (
-            <PasswordAndFileManagement
-              selectedTeam={selectedTeam}
+            <TeamPasswordFileManager
+              selectedTeamId={selectedTeam?.teamId}
               onBack={() => setSelectedOption(null)}
             />
           ) : (
@@ -351,11 +357,16 @@ const TeamPwManager = () => {
         </div>
       </div>
 
-      <TeamCreationForm
-        isVisible={showTeamCreationModal}
-        onClose={closeTeamCreationModal}
-        onCreateTeam={handleCreateTeam}
-      />
+      {showTeamCreationModal && (
+        <div className="overlay" onClick={closeTeamCreationModal}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <TeamCreationForm
+              onClose={closeTeamCreationModal}
+              onCreateTeam={handleCreateTeam}
+            />
+          </div>
+        </div>
+      )}
 
       {isRenameModalOpen && (
         <div className="overlay">

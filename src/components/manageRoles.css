@@ -3,7 +3,6 @@
   height: 100%;
   width: 100%;
   min-width: 0;
-  overflow: hidden;
   background-color: #f8f9fa;
 }
 
@@ -202,8 +201,6 @@ input:checked + .slider:before {
 .add-role-container {
   padding: 15px;
   border-top: 1px solid #e0e0e0;
-  display: flex;
-  gap: 10px;
   background-color: #fff;
 }
 
@@ -216,6 +213,7 @@ input:checked + .slider:before {
 }
 
 .add-role-btn {
+  width: 100%; 
   padding: 10px 15px;
   background-color: #1976d2;
   color: white;
@@ -273,4 +271,63 @@ input:checked + .slider:before {
   border: none;
   border-top: 1px solid #ddd;
   margin-bottom: 15px;
+}
+
+.cancel-role-btn {
+  padding: 10px 15px;
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.2s;
+}
+
+.cancel-role-btn:hover {
+  background-color: #d5d5d5;
+}
+
+.roles-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.roles-modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  width: 350px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+}
+
+.roles-modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.roles-modal-content input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 15px;
+}
+
+.roles-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }

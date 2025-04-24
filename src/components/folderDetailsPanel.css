@@ -1,0 +1,140 @@
+.folder-details-panel {
+    background-color: #f5f7fa;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px 30px;
+    width: 95%;
+    margin: 20px auto;
+    overflow-y: auto;
+    max-height: 85%;
+  }
+  
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .panel-header h3 {
+    font-size: 1.2rem;
+    color: #222;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #999;
+    cursor: pointer;
+  }
+  
+  .close-button:hover {
+    color: #333;
+  }
+  
+  .panel-section {
+    margin-bottom: 20px;
+  }
+  
+  .section-label {
+    font-weight: bold;
+    color: #444;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .rename-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .rename-toggle-button {
+    background-color: #004aad;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .rename-toggle-button:hover {
+    background-color: #00338d;
+  }
+  
+  .rename-controls {
+    display: flex;
+    align-items: stretch; 
+    gap: 10px;
+  }
+  
+  .rename-input {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    height: 40px; 
+    box-sizing: border-box;
+  }
+  
+  .delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  
+  .delete-button:hover {
+    background-color: #bb2d3b;
+  }
+  
+
+  .rename-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  
+
+  .rename-save-button,
+  .rename-cancel-button {
+    height: 40px; 
+    padding: 0 12px; 
+    font-size: 0.85rem;
+    width: 75px;
+    min-width: unset;
+    max-width: 100px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+  
+  
+  .rename-save-button {
+    background-color: #004aad;
+    color: white;
+  }
+  
+  .rename-save-button:hover {
+    background-color: #00338d;
+  }
+  
+  .rename-cancel-button {
+    background-color: #e0e0e0;
+    color: #333;
+  }
+  
+  .rename-cancel-button:hover {
+    background-color: #ccc;
+  }
+  
+  
