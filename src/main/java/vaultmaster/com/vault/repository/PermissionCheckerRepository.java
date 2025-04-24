@@ -29,22 +29,13 @@ public class PermissionCheckerRepository {
         return count != null && count > 0;
     }
 
-    public boolean roleHasItemPermission(UUID roleId, int itemId, String itemType, String permissionName) {
+    public boolean roleHasItemPermission(UUID roleId, UUID itemId, String itemType, String permissionName) {
         String sql = """
         SELECT COUNT(*) FROM item_permissions
         WHERE role_id = ? AND item_id = ? AND item_type = ? AND permission_name = ?
     """;
 
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, roleId, itemId, itemType, permissionName);
-        return count != null && count > 0;
-    }
-
-    public boolean roleHasItemPermission(UUID roleId, UUID itemId, String itemType, String permissionName) {
-        String sql = """
-        SELECT COUNT(*) FROM item_permissions
-        WHERE role_id = ? AND item_id = ? AND item_type = ? AND permission_name = ?
-    """;
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, roleId, itemId.toString(), itemType, permissionName);
         return count != null && count > 0;
     }
 

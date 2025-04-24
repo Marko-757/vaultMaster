@@ -44,6 +44,10 @@ public class RolePermissionService {
         return rolePermissionRepository.findPermissionsByRoleId(roleId);
     }
 
+    public List<Permission> getItemPermissionsForRole(UUID roleId, UUID itemId, String itemType) {
+        return rolePermissionRepository.findPermissionsByItem(roleId, itemId, itemType);
+    }
+
     public void removePermissionFromFolder(UUID roleId, UUID folderId, String folderType, String permissionName) {
         rolePermissionRepository.removePermissionFromFolder(roleId, folderId, folderType, permissionName);
     }
@@ -65,5 +69,9 @@ public class RolePermissionService {
         if (!actualTeamId.equals(teamId)) {
             throw new IllegalArgumentException("Role does not belong to the specified team.");
         }
+    }
+
+    public List<Permission> getFolderPermissionsForRole(UUID roleId, UUID folderId, String folderType) {
+        return rolePermissionRepository.findPermissionsByFolder(roleId, folderId, folderType);
     }
 }

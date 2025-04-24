@@ -69,11 +69,6 @@ public class PermissionChecker {
                     logger.debug("UUID item match for {} {}", itemType, itemId);
                     return true;
                 }
-            } else if (itemId instanceof Integer intId) {
-                if (permissionCheckerRepository.roleHasItemPermission(roleId, intId, itemType, permission)) {
-                    logger.debug("Integer item match for {} {}", itemType, itemId);
-                    return true;
-                }
             }
         }
 

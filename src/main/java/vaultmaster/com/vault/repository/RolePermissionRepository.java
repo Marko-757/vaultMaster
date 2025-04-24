@@ -52,6 +52,23 @@ public class RolePermissionRepository {
         jdbc.update(sql, roleId, itemId, itemType, permissionName);
     }
 
+    public List<Permission> findPermissionsByItem(UUID roleId, UUID itemId, String itemType) {
+        String sql = """
+        SELECT p.permission_id, p.permission_name
+        FROM item_permissions ip
+        JOIN permissions p ON ip.permission_name = p.permission_name
+        WHERE ip.role_id = ? AND ip.item_id = ? AND ip.item_type = ?
+    """;
+
+        return jdbc.query(sql, (rs, rowNum) -> {
+            Permission p = new Permission();
+            p.setId(UUID.fromString(rs.getString("permission_id")));
+            p.setName(rs.getString("permission_name"));
+            return p;
+        }, roleId, itemId, itemType);
+    }
+
+
     public void removePermissionFromItem(UUID roleId, UUID itemId, String itemType, String permissionName) {
         String sql = """
         DELETE FROM item_permissions
@@ -104,6 +121,24 @@ public class RolePermissionRepository {
         )
     """;
         jdbc.update(sql, roleId, permissionName);
+    }
+
+    public List<Permission> findPermissionsByFolder(UUID roleId, UUID folderId, String folderType) {
+        String table = folderType.equalsIgnoreCase("file") ? "file_folder_permissions" : "password_folder_permissions";
+
+        String sql = String.format("""
+        SELECT p.permission_id, p.permission_name
+        FROM %s fp
+        JOIN permissions p ON p.permission_name = fp.permission_name
+        WHERE fp.role_id = ? AND fp.folder_id = ?
+    """, table);
+
+        return jdbc.query(sql, (rs, rowNum) -> {
+            Permission p = new Permission();
+            p.setId(UUID.fromString(rs.getString("permission_id")));
+            p.setName(rs.getString("permission_name"));
+            return p;
+        }, roleId, folderId);
     }
 
 }

@@ -158,7 +158,7 @@ public class TeamPasswordController {
         boolean allowed = permissionChecker.hasEffectivePermission(
                 userId,
                 password.getTeamId(),
-                password.getEntryId(), // ✅ Fixed
+                password.getTeamPasswordId(),
                 password.getFolderId(),
                 "password",
                 "PASSWORD_VIEW"
@@ -170,11 +170,14 @@ public class TeamPasswordController {
 
         try {
             String decrypted = passwordService.decryptPasswordByEntryId(password.getEntryId());
-            return ResponseEntity.ok(decrypted);
+            return ResponseEntity.ok(Map.of("decryptedPassword", decrypted));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Decryption error: " + e.getMessage());
+            e.printStackTrace(); // 🔍 Helps during local debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Decryption error: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/folder/{folderId}")
     public ResponseEntity<?> getPasswordsInFolder(@PathVariable UUID folderId) {

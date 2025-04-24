@@ -139,4 +139,25 @@ public class PermissionController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/item")
+    public ResponseEntity<List<Permission>> getItemPermissions(
+            @RequestParam UUID roleId,
+            @RequestParam UUID itemId,
+            @RequestParam String itemType
+    ) {
+        List<Permission> permissions = rolePermissionService.getItemPermissionsForRole(roleId, itemId, itemType);
+        return ResponseEntity.ok(permissions);
+    }
+
+    @GetMapping("/folder")
+    public ResponseEntity<List<Permission>> getFolderPermissions(
+            @RequestParam UUID roleId,
+            @RequestParam UUID folderId,
+            @RequestParam String folderType
+    ) {
+        List<Permission> permissions = rolePermissionService.getFolderPermissionsForRole(roleId, folderId, folderType);
+        return ResponseEntity.ok(permissions);
+    }
+
 }

@@ -48,7 +48,9 @@ public class RoleService {
                     roleRepository.save(role);
 
                     List<Permission> allPermissions = permissionRepository.findAll();
+                    System.out.println("🛠 Total permissions found: " + allPermissions.size());
                     for (Permission permission : allPermissions) {
+                        System.out.println("→ Assigning: " + permission.getName() + " to admin role");
                         rolePermissionRepository.assignPermissionToRole(role.getRoleId(), permission.getId());
                     }
 
@@ -144,6 +146,10 @@ public class RoleService {
             role.setPermissions(permissions);
         }
         return roles;
+    }
+
+    public Optional<Role> findRoleForUserInTeam(UUID userId, UUID teamId) {
+        return roleRepository.findRoleForUserInTeam(userId, teamId);
     }
 
 }

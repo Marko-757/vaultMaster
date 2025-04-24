@@ -167,4 +167,14 @@ public class RoleController {
             return ResponseEntity.internalServerError().body("Error removing role from user");
         }
     }
+
+    @GetMapping("/team/{teamId}/my-role")
+    public ResponseEntity<Role> getMyRoleForTeam(@PathVariable UUID teamId, HttpServletRequest request) {
+        UUID userId = jwtService.getAuthenticatedUserIdAsUUID(request);
+        return roleService.findRoleForUserInTeam(userId, teamId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
 }
+

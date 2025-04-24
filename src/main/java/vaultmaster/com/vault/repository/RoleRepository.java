@@ -110,4 +110,19 @@ public class RoleRepository {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, roleId, teamId);
         return count != null && count > 0;
     }
+
+    public Optional<Role> findRoleForUserInTeam(UUID userId, UUID teamId) {
+        String sql = """
+        SELECT r.* FROM team_members tm
+        JOIN roles r ON tm.role_id = r.role_id
+        WHERE tm.user_id = ? AND tm.team_id = ?
+    """;
+
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, roleRowMapper, userId, teamId));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
 }

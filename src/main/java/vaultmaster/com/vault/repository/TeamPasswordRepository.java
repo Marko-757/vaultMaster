@@ -43,16 +43,22 @@ public class TeamPasswordRepository {
 
     public Optional<TeamPassword> findById(UUID id) {
         String sql = """
-            SELECT tp.team_password_id, tp.team_id, tp.entry_id, tp.folder_id,
-                   tp.created_by, tp.created_at, tp.modified_by, tp.modified_at,
-                   pe.password_hash
-            FROM team_passwords tp
-            JOIN password_entries pe ON tp.entry_id = pe.entry_id
-            WHERE tp.team_password_id = ?
-        """;
+        SELECT tp.team_password_id, tp.team_id, tp.entry_id, tp.folder_id,
+               tp.created_by, tp.created_at, tp.modified_by, tp.modified_at,
+               pe.password_hash
+        FROM team_passwords tp
+        JOIN password_entries pe ON tp.entry_id = pe.entry_id
+        WHERE tp.team_password_id = ?
+    """;
+
+        System.out.println("[DEBUG] Looking up TeamPassword by ID: " + id);
 
         return jdbc.query(sql, rs -> {
             if (rs.next()) {
+                String encrypted = rs.getString("password_hash");
+                System.out.println("[DEBUG] Found entry_id: " + rs.getInt("entry_id"));
+                System.out.println("[DEBUG] Encrypted password hash: " + encrypted);
+
                 TeamPassword pw = new TeamPassword();
                 pw.setTeamPasswordId(UUID.fromString(rs.getString("team_password_id")));
                 pw.setTeamId(UUID.fromString(rs.getString("team_id")));
@@ -64,13 +70,15 @@ public class TeamPasswordRepository {
                 pw.setModifiedAt(rs.getTimestamp("modified_at") != null
                         ? rs.getTimestamp("modified_at").toLocalDateTime()
                         : null);
-                pw.setEncryptedPassword(rs.getString("password_hash"));
+                pw.setEncryptedPassword(encrypted);
                 return Optional.of(pw);
             } else {
+                System.out.println("[DEBUG] No result found for ID: " + id);
                 return Optional.empty();
             }
         }, id);
     }
+
 
     public List<TeamPassword> findByTeamId(UUID teamId) {
         String sql = """

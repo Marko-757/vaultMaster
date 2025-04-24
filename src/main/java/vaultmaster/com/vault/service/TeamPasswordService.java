@@ -129,10 +129,30 @@ public class TeamPasswordService {
     }
 
     public String decryptPasswordByEntryId(int entryId) throws Exception {
+        System.out.println("[DEBUG] Decrypting password for entryId: " + entryId);
+
         PasswordEntry entry = passwordEntryRepository.findById(entryId)
-                .orElseThrow(() -> new RuntimeException("Entry not found"));
-        return AESUtil.decrypt(entry.getPasswordHash());
+                .orElseThrow(() -> new RuntimeException("Entry not found for ID: " + entryId));
+
+        String encrypted = entry.getPasswordHash();
+
+        if (encrypted == null || encrypted.isBlank()) {
+            throw new RuntimeException("Encrypted password is null or blank for entryId: " + entryId);
+        }
+
+        if (!AESUtil.isValidEncryptedFormat(encrypted)) {
+            throw new RuntimeException("Invalid encrypted format for entryId: " + entryId);
+        }
+
+        System.out.println("[DEBUG] Encrypted value: " + encrypted);
+
+        String decrypted = AESUtil.decrypt(encrypted);
+
+        System.out.println("[DEBUG] Decrypted value (masked): " + (decrypted.length() > 4 ? decrypted.substring(0, 2) + "••••" : "••••"));
+
+        return decrypted;
     }
+
 
     public UUID getTeamIdByEntryId(int entryId) {
         return repo.findTeamIdByEntryId(entryId)
