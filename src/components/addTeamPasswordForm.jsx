@@ -1,78 +1,111 @@
-import React, { useState } from "react";
-import { createTeamPassword } from "../api/teamPWFileService";
+import React, { useEffect, useState } from "react";
+import { createTeamPassword, getTeamPasswordFolders } from "../api/teamPWFileService";
 import "./addTeamPasswordForm.css";
 
-const AddTeamPasswordForm = ({ teamId, folderId, onSuccess }) => {
+const AddTeamPasswordForm = ({ teamId, folderId: initialFolderId, onSuccess }) => {
   const [accountName, setAccountName] = useState("");
   const [username, setUsername] = useState("");
-  const [passwordValue, setPasswordValue] = useState("");
-  const [url, setUrl] = useState("");
+  const [password, setPassword] = useState("");
+  const [website, setWebsite] = useState("");
+  const [selectedFolderId, setSelectedFolderId] = useState(initialFolderId || "");
+  const [passwordFolders, setPasswordFolders] = useState([]);
+
+  useEffect(() => {
+    async function fetchFolders() {
+      try {
+        const res = await getTeamPasswordFolders(teamId);
+        setPasswordFolders(res.data);
+      } catch (err) {
+        console.error("Failed to load folders:", err);
+      }
+    }
+    fetchFolders();
+  }, [teamId]);
+
+  const generateStrongPassword = () => {
+    const strongPassword = Math.random().toString(36).slice(-10) + "!A1";
+    setPassword(strongPassword);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await createTeamPassword({
         teamId,
-        folderId,
+        folderId: selectedFolderId || null,
         accountName,
         username,
-        password: passwordValue,
-        url,
+        plaintextPassword: password, // ✅ IMPORTANT
+        website,
       });
-      alert("Password saved successfully!");
-      setAccountName("");
-      setUsername("");
-      setPasswordValue("");
-      setUrl("");
-      if (onSuccess) onSuccess();
+      onSuccess();
     } catch (err) {
-      console.error("Failed to save password", err);
-      alert("Failed to save password. Please try again.");
+      console.error("Failed to save password:", err);
+      alert("Failed to save password");
     }
   };
 
   return (
-    <div className="add-password-form">
-      <h2>Add New Password</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Account Name:</label>
+    <div className="add-password-form-container">
+      <h2 className="form-title">Add New Password</h2>
+      <form className="add-password-form" onSubmit={handleSubmit}>
         <input
           type="text"
+          placeholder="Account Name (e.g., GitHub)"
           value={accountName}
           onChange={(e) => setAccountName(e.target.value)}
-          placeholder="Enter account name"
           required
         />
-
-        <label>Username:</label>
         <input
           type="text"
+          placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Enter username"
           required
         />
-
-        <label>Password:</label>
         <input
           type="text"
-          value={passwordValue}
-          onChange={(e) => setPasswordValue(e.target.value)}
-          placeholder="Enter password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
-
-        <label>URL (optional):</label>
-        <input
-          type="text"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="Enter website URL"
-        />
-
-        <button type="submit" className="save-password-button">
-          Save Password
+        <button
+          type="button"
+          className="generate-password-button"
+          onClick={generateStrongPassword}
+        >
+          Generate Strong Password
         </button>
+        <input
+          type="text"
+          placeholder="Website (optional)"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+        <select
+          value={selectedFolderId}
+          onChange={(e) => setSelectedFolderId(e.target.value)}
+        >
+          <option value="">No Folder</option>
+          {passwordFolders.map((folder) => (
+            <option key={folder.folderId} value={folder.folderId}>
+              {folder.folderName}
+            </option>
+          ))}
+        </select>
+        <div className="form-buttons">
+          <button type="submit" className="save-button">
+            Save Password
+          </button>
+          <button
+            type="button"
+            className="cancel-button"
+            onClick={() => onSuccess()}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );

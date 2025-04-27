@@ -106,6 +106,7 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
     setSelectedFolder(folder);
     setItems([]);
     setSelectedItem(null);
+    setDecryptedPassword(null);
     try {
       if (folderType === "password") {
         const [pwRes, perms] = await Promise.all([
@@ -188,7 +189,6 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
   };
 
   const foldersToDisplay = folderType === "password" ? passwordFolders : fileFolders;
-
   const showAddPasswordButton = folderType === "password";
 
   return (
@@ -249,16 +249,12 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
       {/* Items Column */}
       <div className="team-manager-column item-column">
         <div className="item-column-header">
-          <h2>{selectedFolder ? `${selectedFolder.folderName} Contents` : "Select a Folder"}</h2>
+          <h2>{selectedFolder ? `${selectedFolder.folderName} Contents` : "Passwords / Files"}</h2>
           <div className="header-actions">
             {showAddPasswordButton && (
               <button
                 className="add-password-button"
                 onClick={() => {
-                  if (!selectedFolder) {
-                    alert("Please select a folder before adding a password.");
-                    return;
-                  }
                   setSelectedItem(null);
                   setShowFolderDetails(false);
                   setShowAddPasswordForm(true);
@@ -267,7 +263,6 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
                 + Add Password
               </button>
             )}
-
             {selectedFolder && (
               <button
                 className="folder-details-button"
@@ -302,7 +297,7 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
               ))
             )
           ) : (
-            <div className="manager-empty">Select a folder to view items.</div>
+            <div className="manager-empty">Select a folder or add a new password.</div>
           )}
         </div>
       </div>
@@ -339,12 +334,14 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
               />
             </>
           )
-        ) : showAddPasswordForm && selectedFolder ? (
+        ) : showAddPasswordForm ? (
           <AddTeamPasswordForm
             teamId={selectedTeamId}
-            folderId={selectedFolder.folderId}
+            folderId={selectedFolder?.folderId || ""}
             onSuccess={() => {
-              loadItems(selectedFolder);
+              if (selectedFolder) {
+                loadItems(selectedFolder);
+              }
               setShowAddPasswordForm(false);
             }}
           />
