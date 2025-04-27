@@ -1,0 +1,243 @@
+/* Main Layout */
+.team-pw-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.three-column-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.left-column {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: #f8f9fa;
+  padding: 15px;
+  overflow-y: auto;
+  border-right: 1px solid #ddd;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.main-content-default {
+  width: 100%;
+  padding: 20px;
+}
+
+/* Teams List Styling */
+.sidebar-heading {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.sidebar-heading-top {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.sidebar-heading-bottom {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.divider {
+  width: 100%;
+  border: 1px solid #ccc;
+  margin: 15px 0;
+}
+
+.accordion-wrapper {
+  margin-bottom: 20px;
+}
+
+.accordion-button {
+  font-weight: bold;
+}
+
+.scrollable-accordion {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.team-item {
+  margin-bottom: 10px;
+}
+
+.btn-primary {
+  background-color: #336dbf;
+  border-color: #336dbf;
+}
+
+/* Main Content Styling */
+.banner {
+  font-size: 28px;
+  font-weight: bold;
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 30px;
+}
+
+.options-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.option-button {
+  background-color: #004aad;
+  color: white;
+  border: none;
+  padding: 30px;
+  font-size: 20px;
+  border-radius: 20px;
+  width: 275px;
+  height: 150px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.option-button:hover {
+  background-color: #00338d;
+  transform: translateY(-2px);
+}
+
+/* Overlay Background */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+}
+
+/* Modal Box */
+.modal {
+  display: flex !important; /* Fix modal not showing */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  z-index: 1060;
+  text-align: center;
+}
+
+.modal-content {
+  width: 100%;
+}
+
+.modal h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Input & Buttons */
+.input-container {
+  margin-bottom: 20px;
+}
+
+.team-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.confirm-button, .cancel-button {
+  flex: 1;
+  padding: 12px 20px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.confirm-button {
+  background-color: #004aad;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #00338d;
+}
+
+.cancel-button {
+  background-color: #ccc;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background-color: #bbb;
+}
+
+/* Home Button */
+.home-button {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding: 8px 15px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.home-button:hover {
+  background-color: #0056b3;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -1,0 +1,344 @@
+.members-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  /* Header Section */
+  .members-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 20px 0;
+  }
+  
+  .members-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+  }
+  
+  .back-button {
+    position: absolute;
+    left: 20px;
+    background: none;
+    border: none;
+    color: #004aad;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  
+  .back-button:hover {
+    background-color: rgba(0, 74, 173, 0.1);
+  }
+  
+  /* Roster Section */
+  .members-roster {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+  }
+  
+  .members-table {
+    width: 100%;
+    min-width: 800px;
+  }
+  
+  .members-header,
+  .member-row {
+    display: flex;
+    align-items: center;
+  }
+  
+  .members-header {
+    font-weight: bold;
+    padding: 15px 10px;
+    border-bottom: 2px solid #ddd;
+    background-color: #f5f5f5;
+    position: sticky;
+    top: 0;
+  }
+  
+  .member-row {
+    min-height: 70px;
+    padding: 5px 10px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+  }
+  
+  .member-row:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .members-header > div,
+  .member-row > div {
+    flex: 1;
+    min-width: 0;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .header-photo,
+  .member-photo-container {
+    flex: 0 0 60px;
+    justify-content: center;
+    height: 60px;
+  }
+  
+  .member-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #f0f0f0;
+    transition: transform 0.2s ease;
+  }
+  
+  .member-photo:hover {
+    transform: scale(1.05);
+  }
+  
+  .owner-badge {
+    margin-left: 8px;
+    background-color: #ffc107;
+    color: black;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+  }
+  
+  .empty-message {
+    text-align: center;
+    font-size: 18px;
+    color: #777;
+    margin-top: 50px;
+  }
+  
+  /* Action Button */
+  .ellipsis-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin: 0 auto;
+  }
+  
+  .ellipsis-button:hover {
+    color: #004aad;
+    background-color: rgba(0, 74, 173, 0.1);
+    transform: scale(1.1);
+  }
+  
+  .header-actions,
+  .member-actions {
+    flex: 0 0 40px;
+    text-align: center;
+  }
+  
+  /* Modal */
+  .member-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .member-modal {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    animation: modalFadeIn 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .member-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    background-color: #f7f7f7;
+  }
+  
+  .member-modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #333;
+  }
+  
+  .close-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+  }
+  
+  .close-modal:hover {
+    color: #004aad;
+  }
+  
+  .member-modal-content {
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .member-photo-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .member-details {
+    width: 100%;
+    margin-top: 15px;
+  }
+  
+  .member-details p {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f5f5f5;
+    display: flex;
+  }
+  
+  .member-details strong {
+    display: inline-block;
+    width: 80px;
+    color: #666;
+    font-weight: 500;
+  }
+  
+  /* Sticky Invite Form */
+  .invite-form-footer {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background-color: #fff;
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    z-index: 5;
+  }
+  
+  .invite-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .invite-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+  
+  .invite-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .invite-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Toast */
+  .toast.fade {
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  /* Animations */
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .member-modal {
+      width: 95%;
+      max-width: 350px;
+    }
+  
+    .member-photo-large {
+      width: 80px;
+      height: 80px;
+    }
+  
+    .member-details p {
+      font-size: 0.9rem;
+      flex-direction: column;
+    }
+  
+    .member-details strong {
+      width: auto;
+      margin-bottom: 3px;
+    }
+  
+    .header-photo,
+    .member-photo-container {
+      flex: 0 0 50px;
+      height: 50px;
+    }
+  
+    .member-photo {
+      width: 42px;
+      height: 42px;
+    }
+  
+    .member-row {
+      min-height: 60px;
+    }
+  }
+  

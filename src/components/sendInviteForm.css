@@ -1,0 +1,37 @@
+.send-invite-form {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+  }
+  
+  .send-invite-form h3 {
+    margin-bottom: 10px;
+  }
+  
+  .send-invite-form input {
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .send-invite-form button {
+    background-color: #004aad;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .send-invite-form button:disabled {
+    background-color: #9bb8dd;
+    cursor: not-allowed;
+  }
+  
+  .status-message {
+    margin-top: 10px;
+    font-size: 0.95rem;
+  }
+  

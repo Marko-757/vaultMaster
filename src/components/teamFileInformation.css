@@ -1,0 +1,55 @@
+.team-file-info {
+    padding: 20px 30px;
+    background-color: #f5f7fa;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    height: 35%;
+    max-height: 75%;
+    overflow-y: auto;
+    width: 95%;                
+    margin: 20px auto;         
+  }
+  
+  .team-file-info h4 {
+    margin-bottom: 12px;
+    color: #222;
+    font-size: 18px;
+    word-break: break-all;
+  }
+  
+  .team-file-info p {
+    margin: 10px 0;
+    color: #444;
+  }
+  
+  .file-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .file-action-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #004aad;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  
+  .file-action-button:hover {
+    background-color: #003b8a;
+  }
+  
+  .file-action-button.delete {
+    background-color: #dc3545;
+  }
+  
+  .file-action-button.delete:hover {
+    background-color: #bb2d3b;
+  }

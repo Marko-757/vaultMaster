@@ -1,0 +1,70 @@
+/* Form content container */
+
+.modal {
+  border: 2px dashed red;
+}
+
+.modal-content {
+  padding: 25px;
+  width: 100%;
+}
+
+/* Form title */
+.modal-content h2 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  color: #333;
+}
+
+/* Input container */
+.input-container {
+  margin-bottom: 20px;
+}
+
+/* Text input */
+.team-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Buttons container */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Confirm button */
+.confirm-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.confirm-button:hover {
+  background-color: #218838;
+}
+
+/* Cancel button */
+.cancel-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.cancel-button:hover {
+  background-color: #c82333;
+}
