@@ -83,7 +83,7 @@ public class PermissionController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+//
     @DeleteMapping("/item")
     public ResponseEntity<?> removeItemPermission(@RequestBody ItemPermissionRequest request, HttpServletRequest httpRequest) {
         UUID userId = jwtService.getAuthenticatedUserIdAsUUID(httpRequest);
