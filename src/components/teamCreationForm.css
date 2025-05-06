@@ -1,14 +1,3 @@
-/* Form content container */
-
-.modal {
-  border: 2px dashed red;
-}
-
-.modal-content {
-  padding: 25px;
-  width: 100%;
-}
-
 /* Form title */
 .modal-content h2 {
   margin: 0 0 20px 0;

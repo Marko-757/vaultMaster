@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./team_pw_manager.css";
+import "../components/modal.css"; // Global modal styles
 import profileIcon from "../Assets/defaultProfileImage.png";
 import MyMembers from "../components/myMembers";
 import ManageRoles from "../components/manageRoles";
@@ -41,7 +42,7 @@ const TeamPwManager = () => {
   };
 
   useEffect(() => {
-    const fetchTeamsAndMemberships = async () => {
+    const fetchData = async () => {
       try {
         const [fetchedTeams, fetchedMemberships] = await Promise.all([
           getAllTeamsForUser(),
@@ -53,7 +54,7 @@ const TeamPwManager = () => {
         console.error("Error loading teams or memberships:", error);
       }
     };
-    fetchTeamsAndMemberships();
+    fetchData();
   }, []);
 
   const openTeamCreationModal = () => setShowTeamCreationModal(true);
@@ -110,11 +111,11 @@ const TeamPwManager = () => {
   };
 
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
       }
-    }
+    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -343,9 +344,11 @@ const TeamPwManager = () => {
         </div>
       </div>
 
+      {/* --- Modals --- */}
+
       {showTeamCreationModal && (
-        <div className="overlay" onClick={closeTeamCreationModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="vm-modal-overlay" onClick={closeTeamCreationModal}>
+          <div className="vm-modal" onClick={(e) => e.stopPropagation()}>
             <TeamCreationForm
               onClose={closeTeamCreationModal}
               onCreateTeam={handleCreateTeam}
@@ -355,16 +358,11 @@ const TeamPwManager = () => {
       )}
 
       {isRenameModalOpen && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-content">
+        <div className="vm-modal-overlay">
+          <div className="vm-modal">
+            <div className="vm-modal-content">
               <h2>Rename Team</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleRenameTeam();
-                }}
-              >
+              <form onSubmit={(e) => { e.preventDefault(); handleRenameTeam(); }}>
                 <input
                   type="text"
                   value={newTeamName}
@@ -373,17 +371,9 @@ const TeamPwManager = () => {
                   className="team-input"
                   autoFocus
                 />
-                <div className="modal-buttons">
-                  <button type="submit" className="confirm-button">
-                    Rename
-                  </button>
-                  <button
-                    type="button"
-                    className="cancel-button"
-                    onClick={() => setIsRenameModalOpen(false)}
-                  >
-                    Cancel
-                  </button>
+                <div className="vm-modal-buttons">
+                  <button type="submit" className="confirm-button">Rename</button>
+                  <button type="button" className="cancel-button" onClick={() => setIsRenameModalOpen(false)}>Cancel</button>
                 </div>
               </form>
             </div>
@@ -392,25 +382,13 @@ const TeamPwManager = () => {
       )}
 
       {isDeleteModalOpen && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-content">
+        <div className="vm-modal-overlay">
+          <div className="vm-modal">
+            <div className="vm-modal-content">
               <h2>Are you sure you want to delete this team?</h2>
-              <div className="modal-buttons">
-                <button
-                  type="button"
-                  className="confirm-button"
-                  onClick={handleDeleteTeam}
-                >
-                  Yes, Delete
-                </button>
-                <button
-                  type="button"
-                  className="cancel-button"
-                  onClick={() => setIsDeleteModalOpen(false)}
-                >
-                  Cancel
-                </button>
+              <div className="vm-modal-buttons">
+                <button className="vm-confirm-button" onClick={handleDeleteTeam}>Yes, Delete</button>
+                <button className="vm-cancel-button" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
               </div>
             </div>
           </div>
@@ -418,16 +396,11 @@ const TeamPwManager = () => {
       )}
 
       {showJoinModal && (
-        <div className="overlay">
-          <div className="modal">
-            <div className="modal-content">
+        <div className="vm-modal-overlay">
+          <div className="vm-modal">
+            <div className="vm-modal-content">
               <h2>Join a Team</h2>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleJoinTeam();
-                }}
-              >
+              <form onSubmit={(e) => { e.preventDefault(); handleJoinTeam(); }}>
                 <input
                   type="text"
                   maxLength={6}
@@ -435,20 +408,12 @@ const TeamPwManager = () => {
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value)}
                   placeholder="Enter 6-digit invite code"
-                  className="team-input"
+                  className="invite-code-input"
                   required
                 />
-                <div className="modal-buttons">
-                  <button type="submit" className="confirm-button">
-                    Join
-                  </button>
-                  <button
-                    type="button"
-                    className="cancel-button"
-                    onClick={() => setShowJoinModal(false)}
-                  >
-                    Cancel
-                  </button>
+                <div className="vm-modal-buttons">
+                  <button type="submit" className="vm-confirm-button">Join</button>
+                  <button type="button" className="vm-cancel-button" onClick={() => setShowJoinModal(false)}>Cancel</button>
                 </div>
               </form>
             </div>

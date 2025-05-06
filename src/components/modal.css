@@ -1,0 +1,83 @@
+/* Overlay Background */
+.vm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+  }
+  
+  /* Modal Container */
+  .vm-modal {
+    display: flex !important;
+    background-color: white;
+    padding: 25px 20px;
+    border-radius: 12px;
+    width: 320px;             /* Slightly wider than tall */
+    height: auto;             /* Let content determine height */
+    max-width: 90vw;          /* Responsive fallback */
+    max-height: 90vh;         /* Prevent overflowing on smaller screens */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  /* Heading */
+  .vm-modal h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  /* Inputs */
+  .vm-modal input,
+  .vm-modal textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  /* Buttons */
+  .vm-modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .vm-confirm-button,
+  .vm-cancel-button {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .vm-confirm-button {
+    background-color: #004aad;
+    color: white;
+  }
+  
+  .vm-confirm-button:hover {
+    background-color: #00338d;
+  }
+  
+  .vm-cancel-button {
+    background-color: #ccc;
+    color: #333;
+  }
+  
+  .vm-cancel-button:hover {
+    background-color: #bbb;
+  }
+  
