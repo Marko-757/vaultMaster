@@ -161,6 +161,17 @@ export const uploadTeamFiles = (formData) => {
   });
 };
 
+export const getTeamFilesByTeam = (teamId) => {
+  const token = localStorage.getItem("jwtToken");
+  return axios.get(`${FILES}/team/${teamId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
+
+
 export const getTeamFileById = (fileId) => {
   const token = getAuthToken();
   return axios.get(`${FILES}/${fileId}`, {

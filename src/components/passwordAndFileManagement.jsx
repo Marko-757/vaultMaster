@@ -7,6 +7,8 @@ import {
   decryptTeamPassword,
   renameTeamPasswordFolder,
   renameTeamFileFolder,
+  getTeamPasswords,
+  getTeamFilesByTeam,
 } from "../api/teamPWFileService";
 import TeamPasswordInformation from "./teamPasswordInformation";
 import TeamPasswordPermissions from "./teamPasswordPermissions";
@@ -37,7 +39,6 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
   const [showFolderDetails, setShowFolderDetails] = useState(false);
   const [showAddPasswordForm, setShowAddPasswordForm] = useState(false);
   const [showAddTeamFileForm, setShowAddTeamFileForm] = useState(false);
-
 
   useEffect(() => {
     if (selectedTeamId) {
@@ -116,28 +117,49 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
     setDecryptedPassword(null);
     try {
       if (folderType === "password") {
-        const [pwRes, perms] = await Promise.all([
-          getPasswordsInFolder(folder.folderId),
-          checkFolderAndGlobalPermissions(folder.folderId, "password"),
-        ]);
-
-        const passwords = pwRes.data.map((p) => ({
-          id: p.teamPasswordId,
-          label: p.accountName,
-          type: "password",
-          ...p,
-        }));
-        setItems(passwords);
-        setPasswordPermissions(perms);
+        if (folder.folderId === "ALL") {
+          const pwRes = await getTeamPasswords(selectedTeamId);
+          const passwords = pwRes.data.map((p) => ({
+            id: p.teamPasswordId,
+            label: p.accountName,
+            type: "password",
+            ...p,
+          }));
+          setItems(passwords);
+        } else {
+          const [pwRes, perms] = await Promise.all([
+            getPasswordsInFolder(folder.folderId),
+            checkFolderAndGlobalPermissions(folder.folderId, "password"),
+          ]);
+          const passwords = pwRes.data.map((p) => ({
+            id: p.teamPasswordId,
+            label: p.accountName,
+            type: "password",
+            ...p,
+          }));
+          setItems(passwords);
+          setPasswordPermissions(perms);
+        }
       } else {
-        const res = await getTeamFilesByFolder(folder.folderId);
-        const files = res.data.map((f) => ({
-          id: f.fileId,
-          label: f.originalFilename,
-          type: "file",
-          ...f,
-        }));
-        setItems(files);
+        if (folder.folderId === "ALL") {
+          const res = await getTeamFilesByTeam(selectedTeamId);
+          const files = res.data.map((f) => ({
+            id: f.fileId,
+            label: f.originalFilename,
+            type: "file",
+            ...f,
+          }));
+          setItems(files);
+        } else {
+          const res = await getTeamFilesByFolder(folder.folderId);
+          const files = res.data.map((f) => ({
+            id: f.fileId,
+            label: f.originalFilename,
+            type: "file",
+            ...f,
+          }));
+          setItems(files);
+        }
       }
     } catch (err) {
       console.error("Error loading folder contents:", err);
@@ -155,7 +177,6 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
         const updated = await getTeamFileFolders(selectedTeamId);
         setFileFolders(updated.data);
       }
-
       setSelectedFolder((prev) =>
         prev?.folderId === folderId ? { ...prev, folderName: newName } : prev
       );
@@ -196,7 +217,10 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
   };
 
   const foldersToDisplay =
-    folderType === "password" ? passwordFolders : fileFolders;
+    folderType === "password"
+      ? [{ folderId: "ALL", folderName: "All Passwords" }, ...passwordFolders]
+      : [{ folderId: "ALL", folderName: "All Files" }, ...fileFolders];
+
   const showAddPasswordButton = folderType === "password";
 
   return (
@@ -204,13 +228,17 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
       {/* Folders Column */}
       <div className="team-manager-column folder-column">
         <div className="manager-header">
-          <button className="back-button" onClick={onBack}>←</button>
+          <button className="back-button" onClick={onBack}>
+            ←
+          </button>
           <h2>Folders</h2>
         </div>
-  
+
         <div className="folder-toggle-buttons">
           <button
-            className={`folder-toggle ${folderType === "password" ? "active" : ""}`}
+            className={`folder-toggle ${
+              folderType === "password" ? "active" : ""
+            }`}
             onClick={() => {
               setFolderType("password");
               setSelectedFolder(null);
@@ -234,7 +262,7 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
             Files
           </button>
         </div>
-  
+
         <div className="manager-scroll">
           {foldersToDisplay.length === 0 ? (
             <div className="manager-empty">No {folderType} folders found.</div>
@@ -242,7 +270,9 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
             foldersToDisplay.map((folder) => (
               <div
                 key={folder.folderId}
-                className={`manager-item ${selectedFolder?.folderId === folder.folderId ? "selected" : ""}`}
+                className={`manager-item ${
+                  selectedFolder?.folderId === folder.folderId ? "selected" : ""
+                }`}
                 onClick={() => {
                   setSelectedItem(null);
                   setShowFolderDetails(false);
@@ -255,12 +285,14 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
           )}
         </div>
       </div>
-  
+
       {/* Items Column */}
       <div className="team-manager-column item-column">
         <div className="item-column-header">
           <h4 style={{ textAlign: "center" }}>
-            {selectedFolder ? `${selectedFolder.folderName} Contents` : "Passwords / Files"}
+            {selectedFolder
+              ? `${selectedFolder.folderName} Contents`
+              : "Passwords / Files"}
           </h4>
           <div className="header-actions">
             {folderType === "password" && (
@@ -304,16 +336,20 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
             )}
           </div>
         </div>
-  
+
         <div className="manager-scroll">
           {selectedFolder ? (
             items.length === 0 ? (
-              <div className="manager-empty">No items found in this folder.</div>
+              <div className="manager-empty">
+                No items found in this folder.
+              </div>
             ) : (
               items.map((item) => (
                 <div
                   key={item.id}
-                  className={`manager-item ${selectedItem?.id === item.id ? "selected" : ""}`}
+                  className={`manager-item ${
+                    selectedItem?.id === item.id ? "selected" : ""
+                  }`}
                   onClick={() => {
                     setShowFolderDetails(false);
                     handleSelectItem(item);
@@ -324,11 +360,13 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
               ))
             )
           ) : (
-            <div className="manager-empty">Select a folder or add a new item.</div>
+            <div className="manager-empty">
+              Select a folder or add a new item.
+            </div>
           )}
         </div>
       </div>
-  
+
       {/* Details Column */}
       <div className="team-manager-column details-column">
         {selectedItem ? (
@@ -388,12 +426,13 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
             onClose={() => setShowFolderDetails(false)}
           />
         ) : (
-          <div className="manager-empty">Select a password, file, or click an action.</div>
+          <div className="manager-empty">
+            Select a password, file, or click an action.
+          </div>
         )}
       </div>
     </div>
   );
-  
 };
 
 export default PasswordAndFileManagement;
