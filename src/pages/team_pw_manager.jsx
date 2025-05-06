@@ -7,11 +7,11 @@ import ManageRoles from "../components/manageRoles";
 import TeamPasswordFileManager from "../components/passwordAndFileManagement";
 import TeamCreationForm from "../components/teamCreationForm";
 import NavbarVaultMaster from "../components/navbarVaultMaster";
+import RolePasswordViewer from "../components/rolePasswordViewer";
 import { acceptInvitation } from "../api/teamInvitationService";
-import { getMembershipsForUser } from "../api/teamService";
-
 import {
   getAllTeamsForUser,
+  getMembershipsForUser,
   createTeam,
   updateTeamName,
   deleteTeam,
@@ -25,22 +25,18 @@ const TeamPwManager = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showTeamCreationModal, setShowTeamCreationModal] = useState(false);
-
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [teamToRename, setTeamToRename] = useState(null);
-
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState(null);
-
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [memberships, setMemberships] = useState([]);
 
+  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+
   const handleLogout = () => {
-    console.log("Logging out...");
     navigate("/auth/login");
   };
 
@@ -57,22 +53,16 @@ const TeamPwManager = () => {
         console.error("Error loading teams or memberships:", error);
       }
     };
-
     fetchTeamsAndMemberships();
   }, []);
 
-  const openTeamCreationModal = () => {
-    setShowTeamCreationModal(true);
-  };
-
-  const closeTeamCreationModal = () => {
-    setShowTeamCreationModal(false);
-  };
+  const openTeamCreationModal = () => setShowTeamCreationModal(true);
+  const closeTeamCreationModal = () => setShowTeamCreationModal(false);
 
   const handleCreateTeam = async (teamName) => {
     try {
       const newTeam = await createTeam(teamName);
-      setTeams((prevTeams) => [...prevTeams, newTeam]);
+      setTeams((prev) => [...prev, newTeam]);
       setSelectedTeam(newTeam);
     } catch (error) {
       console.error("Error creating team:", error);
@@ -90,22 +80,17 @@ const TeamPwManager = () => {
       alert("Please enter a new team name!");
       return;
     }
-
     try {
       const updatedTeam = await updateTeamName(
         teamToRename.teamId,
         newTeamName
       );
-      setTeams((prevTeams) =>
-        prevTeams.map((team) =>
-          team.teamId === updatedTeam.teamId ? updatedTeam : team
-        )
+      setTeams((prev) =>
+        prev.map((t) => (t.teamId === updatedTeam.teamId ? updatedTeam : t))
       );
       setIsRenameModalOpen(false);
-      setNewTeamName("");
     } catch (error) {
-      console.error("Error renaming team:", error);
-      alert("Failed to rename team.");
+      console.error("Rename failed:", error);
     }
   };
 
@@ -117,14 +102,10 @@ const TeamPwManager = () => {
   const handleDeleteTeam = async () => {
     try {
       await deleteTeam(teamToDelete.teamId);
-      setTeams((prevTeams) =>
-        prevTeams.filter((team) => team.teamId !== teamToDelete.teamId)
-      );
+      setTeams((prev) => prev.filter((t) => t.teamId !== teamToDelete.teamId));
       setIsDeleteModalOpen(false);
-      setTeamToDelete(null);
     } catch (error) {
-      console.error("Error deleting team:", error);
-      alert("Failed to delete team.");
+      console.error("Delete failed:", error);
     }
   };
 
@@ -145,9 +126,9 @@ const TeamPwManager = () => {
       alert("Successfully joined the team!");
       setInviteCode("");
       setShowJoinModal(false);
-      window.location.reload(); // Refresh to reflect new team
+      window.location.reload();
     } catch (error) {
-      console.error("Failed to accept invite:", error);
+      console.error("Join failed:", error);
       alert("Invalid or expired code.");
     }
   };
@@ -166,6 +147,7 @@ const TeamPwManager = () => {
           </div>
           <hr className="divider" />
 
+          {/* Teams Accordion */}
           <div className="accordion-wrapper">
             <div className="accordion" id="teamsAccordion">
               <div className="accordion-item">
@@ -203,16 +185,16 @@ const TeamPwManager = () => {
                                   ? "active-folder"
                                   : ""
                               }`}
-                              onClick={() => setSelectedTeam(team)}
+                              onClick={() => {
+                                setSelectedTeam(team);
+                                setSelectedOption(null);
+                              }}
                             >
                               {team.teamName}
                             </button>
-
                             <button
-                              type="button"
-                              className="btn btn-primary dropdown-toggle dropdown-toggle-split flex-shrink-0"
+                              className="btn btn-primary dropdown-toggle dropdown-toggle-split"
                               data-bs-toggle="dropdown"
-                              aria-expanded="false"
                             >
                               <span className="visually-hidden">
                                 Toggle Dropdown
@@ -242,10 +224,7 @@ const TeamPwManager = () => {
                     )}
                     <button
                       className="btn btn-success w-100"
-                      onClick={() => {
-                        console.log("Opening Add Team Modal");
-                        openTeamCreationModal();
-                      }}
+                      onClick={openTeamCreationModal}
                     >
                       + Add Team
                     </button>
@@ -255,6 +234,7 @@ const TeamPwManager = () => {
             </div>
           </div>
 
+          {/* Memberships Accordion */}
           <div className="accordion-wrapper">
             <div className="accordion" id="membershipsAccordion">
               <div className="accordion-item">
@@ -277,61 +257,67 @@ const TeamPwManager = () => {
                   data-bs-parent="#membershipsAccordion"
                 >
                   <div className="accordion-body scrollable-accordion">
-                    <div className="accordion-body scrollable-accordion">
-                      {memberships.length === 0 ? (
-                        <div>No memberships available.</div>
-                      ) : (
-                        memberships.map((team) => (
-                          <button
-                            key={team.teamId}
-                            className={`btn btn-outline-secondary w-100 mb-2 ${
-                              selectedTeam?.teamId === team.teamId
-                                ? "active-folder"
-                                : ""
-                            }`}
-                            onClick={() => setSelectedTeam(team)}
-                          >
-                            {team.teamName}
-                          </button>
-                        ))
-                      )}
-                      <button
-                        className="btn btn-primary w-100 mt-2"
-                        onClick={() => {
-                          console.log("Opening Join Team Modal");
-                          setShowJoinModal(true);
-                        }}
-                      >
-                        + Join Team
-                      </button>
-                    </div>
+                    {memberships.length === 0 ? (
+                      <div>No memberships available.</div>
+                    ) : (
+                      memberships.map((team) => (
+                        <button
+                          key={team.teamId}
+                          className={`btn btn-outline-secondary w-100 mb-2 ${
+                            selectedTeam?.teamId === team.teamId
+                              ? "active-folder"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            setSelectedTeam(team);
+                            setSelectedOption("viewRolePasswords");
+                          }}
+                        >
+                          {team.teamName} ({team.roleName})
+                        </button>
+                      ))
+                    )}
+                    <button
+                      className="btn btn-primary w-100 mt-2"
+                      onClick={() => setShowJoinModal(true)}
+                    >
+                      + Join Team
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         <div className="main-content">
-          {selectedOption === "members" ? (
+          {selectedOption === "members" && selectedTeam && (
             <MyMembers
               selectedTeam={selectedTeam}
               onBack={() => setSelectedOption(null)}
             />
-          ) : selectedOption === "roles" ? (
+          )}
+          {selectedOption === "roles" && selectedTeam && (
             <ManageRoles
-              selectedTeamId={selectedTeam?.teamId}
+              selectedTeamId={selectedTeam.teamId}
               onBack={() => setSelectedOption(null)}
             />
-          ) : selectedOption === "password" ? (
+          )}
+          {selectedOption === "password" && selectedTeam && (
             <TeamPasswordFileManager
-              selectedTeamId={selectedTeam?.teamId}
+              selectedTeamId={selectedTeam.teamId}
               onBack={() => setSelectedOption(null)}
             />
-          ) : (
-            <div className="main-content-default">
-              <h1 className="banner">
-                {selectedTeam ? selectedTeam.teamName : "No team selected"}
-              </h1>
+          )}
+          {selectedOption === "viewRolePasswords" && selectedTeam && (
+            <RolePasswordViewer
+              selectedTeam={selectedTeam}
+              onBack={() => setSelectedOption(null)}
+            />
+          )}
+          {!selectedOption && selectedTeam && (
+            <div>
+              <h1 className="banner">{selectedTeam.teamName}</h1>
               <div className="options-container">
                 <button
                   className="option-button"
@@ -379,16 +365,14 @@ const TeamPwManager = () => {
                   handleRenameTeam();
                 }}
               >
-                <div className="input-container">
-                  <input
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    placeholder="Enter new team name"
-                    className="team-input"
-                    autoFocus
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  placeholder="Enter new team name"
+                  className="team-input"
+                  autoFocus
+                />
                 <div className="modal-buttons">
                   <button type="submit" className="confirm-button">
                     Rename
@@ -432,6 +416,7 @@ const TeamPwManager = () => {
           </div>
         </div>
       )}
+
       {showJoinModal && (
         <div className="overlay">
           <div className="modal">
@@ -443,18 +428,16 @@ const TeamPwManager = () => {
                   handleJoinTeam();
                 }}
               >
-                <div className="input-container">
-                  <input
-                    type="text"
-                    maxLength={6}
-                    pattern="\d{6}"
-                    value={inviteCode}
-                    onChange={(e) => setInviteCode(e.target.value)}
-                    placeholder="Enter 6-digit invite code"
-                    className="team-input"
-                    required
-                  />
-                </div>
+                <input
+                  type="text"
+                  maxLength={6}
+                  pattern="\d{6}"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  placeholder="Enter 6-digit invite code"
+                  className="team-input"
+                  required
+                />
                 <div className="modal-buttons">
                   <button type="submit" className="confirm-button">
                     Join

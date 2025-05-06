@@ -14,7 +14,7 @@ const getAuthToken = () => {
 // Team Passwords
 export const createTeamPassword = (data) => {
   const token = localStorage.getItem("jwtToken");
-  return axios.post("http://localhost:8080/api/team/passwords", data, {
+  return axios.post(`${PASSWORDS}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -22,17 +22,45 @@ export const createTeamPassword = (data) => {
   });
 };
 
-export const updateTeamPassword = (passwordId, data) =>
-  axios.put(`${PASSWORDS}/${passwordId}`, data);
+export const updateTeamPassword = (passwordId, data) => {
+  const token = localStorage.getItem("jwtToken");
+  return axios.put(`${PASSWORDS}/${passwordId}`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const deleteTeamPassword = (passwordId) =>
-  axios.delete(`${PASSWORDS}/${passwordId}`);
+export const deleteTeamPassword = (passwordId) => {
+  const token = localStorage.getItem("jwtToken");
+  return axios.delete(`${PASSWORDS}/${passwordId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const getTeamPasswords = (teamId) =>
-  axios.get(`${PASSWORDS}/team/${teamId}`);
+export const getTeamPasswords = (teamId) => {
+  const token = localStorage.getItem("jwtToken");
+  return axios.get(`${PASSWORDS}/team/${teamId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const moveTeamPasswordToFolder = (teamPasswordId, folderId) =>
-  axios.put(`${PASSWORDS}/${teamPasswordId}/move`, { folderId });
+export const moveTeamPasswordToFolder = (teamPasswordId, folderId) => {
+  const token = localStorage.getItem("jwtToken");
+  return axios.put(`${PASSWORDS}/${teamPasswordId}/move`, { folderId }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
 export const decryptTeamPassword = (teamPasswordId) => {
   const token = localStorage.getItem("jwtToken");
@@ -54,13 +82,31 @@ export const getPasswordsInFolder = (folderId) => {
   });
 };
 
+// ✅ NEW: Get passwords by role
+export const getPasswordsForRole = (roleId) => {
+  const token = getAuthToken();
+  return axios.get(`${PASSWORDS}/role/${roleId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
+
 // Team Password Folders
-export const createTeamPasswordFolder = (teamId, folderName) =>
-  axios.post(PASSWORD_FOLDERS, { teamId, folderName });
+export const createTeamPasswordFolder = (teamId, folderName) => {
+  const token = localStorage.getItem("jwtToken");
+  return axios.post(PASSWORD_FOLDERS, { teamId, folderName }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
 export const getTeamPasswordFolders = (teamId) => {
   const token = getAuthToken();
-  return axios.get(`http://localhost:8080/api/team/folders/${teamId}`, {
+  return axios.get(`${PASSWORD_FOLDERS}/${teamId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -82,29 +128,80 @@ export const renameTeamPasswordFolder = (folderId, newName) => {
   );
 };
 
-export const deleteTeamPasswordFolder = (folderId, deleteItems = false) =>
-  axios.delete(`${PASSWORD_FOLDERS}/${folderId}`, { params: { deleteItems } });
+export const deleteTeamPasswordFolder = (folderId, deleteItems = false) => {
+  const token = getAuthToken();
+  return axios.delete(`${PASSWORD_FOLDERS}/${folderId}`, {
+    params: { deleteItems },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const assignPasswordFolderPermissions = (folderId, request) =>
-  axios.post(`${PASSWORD_FOLDERS}/${folderId}/permissions`, request);
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+export const assignPasswordFolderPermissions = (folderId, request) => {
+  const token = getAuthToken();
+  return axios.post(`${PASSWORD_FOLDERS}/${folderId}/permissions`, request, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
 // Team Files
-export const uploadTeamFiles = (formData) =>
-  axios.post(`${FILES}/upload`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
+export const uploadTeamFiles = (formData) => {
+  const token = getAuthToken();
+  return axios.post(`${FILES}/upload`, formData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "multipart/form-data",
+    },
+    withCredentials: true,
   });
+};
 
-export const getTeamFileById = (fileId) => axios.get(`${FILES}/${fileId}`);
+export const getTeamFileById = (fileId) => {
+  const token = getAuthToken();
+  return axios.get(`${FILES}/${fileId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const downloadTeamFile = (fileId) =>
-  axios.get(`${FILES}/${fileId}/download`, { responseType: "blob" });
+export const downloadTeamFile = (fileId) => {
+  const token = getAuthToken();
+  return axios.get(`${FILES}/${fileId}/download`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+    responseType: "blob",
+  });
+};
 
-export const deleteTeamFile = (fileId) => axios.delete(`${FILES}/${fileId}`);
+export const deleteTeamFile = (fileId) => {
+  const token = getAuthToken();
+  return axios.delete(`${FILES}/${fileId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const moveTeamFileToFolder = (fileId, folderId) =>
-  axios.put(`${FILES}/${fileId}/move-folder`, null, { params: { folderId } });
+export const moveTeamFileToFolder = (fileId, folderId) => {
+  const token = getAuthToken();
+  return axios.put(`${FILES}/${fileId}/move-folder`, null, {
+    params: { folderId },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
 export const getTeamFilesByFolder = (folderId) => {
   const token = getAuthToken();
@@ -117,20 +214,24 @@ export const getTeamFilesByFolder = (folderId) => {
 };
 
 // Team File Folders
-export const createTeamFileFolder = (folder) =>
-  axios.post(FILE_FOLDERS, folder);
+export const createTeamFileFolder = (folder) => {
+  const token = getAuthToken();
+  return axios.post(FILE_FOLDERS, folder, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
 export const getTeamFileFolders = (teamId) => {
   const token = getAuthToken();
-  return axios.get(
-    `http://localhost:8080/api/team-file-folders/team/${teamId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-    }
-  );
+  return axios.get(`${FILE_FOLDERS}/team/${teamId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
 };
 
 export const renameTeamFileFolder = (folderId, newName) => {
@@ -147,17 +248,31 @@ export const renameTeamFileFolder = (folderId, newName) => {
   );
 };
 
-export const deleteTeamFileFolder = (folderId, deleteItems = false) =>
-  axios.delete(`${FILE_FOLDERS}/${folderId}`, { params: { deleteItems } });
+export const deleteTeamFileFolder = (folderId, deleteItems = false) => {
+  const token = getAuthToken();
+  return axios.delete(`${FILE_FOLDERS}/${folderId}`, {
+    params: { deleteItems },
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-export const assignFileFolderPermissions = (folderId, request) =>
-  axios.post(`${FILE_FOLDERS}/${folderId}/permissions`, request);
+export const assignFileFolderPermissions = (folderId, request) => {
+  const token = getAuthToken();
+  return axios.post(`${FILE_FOLDERS}/${folderId}/permissions`, request, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+  });
+};
 
-///////////////////////////////////////////////////////////////////////////////////////
-
+// Permissions
 export const getItemPermissionsForRole = ({ roleId, itemId, itemType }) => {
-  const token = localStorage.getItem("jwtToken");
-  return axios.get("http://localhost:8080/api/permissions/item", {
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/permissions/item`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -171,30 +286,28 @@ export const getItemPermissionsForRole = ({ roleId, itemId, itemType }) => {
 };
 
 export const getFolderPermissionsForRole = ({ roleId, folderId, folderType }) => {
-    if (!roleId) {
-      console.error("getFolderPermissionsForRole called with missing roleId");
-      return Promise.reject("Missing roleId");
-    }
-  
-    const token = localStorage.getItem("jwtToken");
-  
-    return axios.get("http://localhost:8080/api/permissions/folder", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      withCredentials: true,
-      params: {
-        roleId,
-        folderId,
-        folderType,
-      },
-    });
-  };
-  
+  if (!roleId) {
+    console.error("getFolderPermissionsForRole called with missing roleId");
+    return Promise.reject("Missing roleId");
+  }
+
+  const token = getAuthToken();
+  return axios.get(`${BASE_URL}/permissions/folder`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    withCredentials: true,
+    params: {
+      roleId,
+      folderId,
+      folderType,
+    },
+  });
+};
 
 export const assignItemPermissions = (payload) => {
-  const token = localStorage.getItem("jwtToken");
-  return axios.post("http://localhost:8080/api/permissions/item", payload, {
+  const token = getAuthToken();
+  return axios.post(`${BASE_URL}/permissions/item`, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -203,8 +316,8 @@ export const assignItemPermissions = (payload) => {
 };
 
 export const removeItemPermissions = (payload) => {
-  const token = localStorage.getItem("jwtToken");
-  return axios.delete("http://localhost:8080/api/permissions/item", {
+  const token = getAuthToken();
+  return axios.delete(`${BASE_URL}/permissions/item`, {
     data: payload,
     headers: {
       Authorization: `Bearer ${token}`,

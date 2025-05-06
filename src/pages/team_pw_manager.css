@@ -121,7 +121,6 @@
   transform: translateY(-2px);
 }
 
-/* Modal Styling */
 /* Overlay Background */
 .overlay {
   position: fixed;
@@ -130,26 +129,81 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1050;
 }
 
 /* Modal Box */
 .modal {
+  display: flex !important; 
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   background-color: white;
-  padding: 25px;
-  border-radius: 10px;
-  width: 400px;
-  max-width: 90%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  z-index: 1001;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  z-index: 1060;
+  text-align: center;
 }
 
+.modal-content {
+  width: 100%;
+}
 
-/*@keyframes modal-fadein {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}*/
+.modal h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
 
+/* Input & Buttons */
+.input-container {
+  margin-bottom: 20px;
+}
+
+.team-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.confirm-button, .cancel-button {
+  flex: 1;
+  padding: 12px 20px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.confirm-button {
+  background-color: #004aad;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #00338d;
+}
+
+.cancel-button {
+  background-color: #ccc;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background-color: #bbb;
+}
 
 /* Home Button */
 .home-button {
