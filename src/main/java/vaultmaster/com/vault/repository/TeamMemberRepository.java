@@ -124,20 +124,22 @@ public class TeamMemberRepository {
 
     public List<TeamMemberProfile> findTeamMemberProfilesByTeamId(UUID teamId) {
         String sql = """
-            SELECT u.full_name, u.email, u.phone_number, r.role_name
-            FROM team_members tm
-            JOIN users u ON tm.user_id = u.user_id
-            LEFT JOIN roles r ON tm.role_id = r.role_id
-            WHERE tm.team_id = ?
-        """;
+        SELECT u.user_id, u.full_name, u.email, u.phone_number, r.role_name
+        FROM team_members tm
+        JOIN users u ON tm.user_id = u.user_id
+        LEFT JOIN roles r ON tm.role_id = r.role_id
+        WHERE tm.team_id = ?
+    """;
 
         return jdbc.query(sql, (rs, rowNum) -> new TeamMemberProfile(
+                UUID.fromString(rs.getString("user_id")),       // ✅ include userId
                 rs.getString("full_name"),
                 rs.getString("email"),
                 rs.getString("phone_number"),
                 rs.getString("role_name") != null ? rs.getString("role_name") : "Member"
         ), teamId);
     }
+
 
     // 🔹 New logic for invite section: Get memberships that user is in but doesn't own
     public List<Map<String, Object>> findMembershipsExcludingOwned(UUID userId) {
