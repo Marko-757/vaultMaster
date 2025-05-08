@@ -93,21 +93,10 @@ public class TeamPasswordService {
     }
 
     public TeamPassword getPasswordById(UUID id) {
-        return repo.findById(id).map(password -> {
-            try {
-                String encrypted = password.getEncryptedPassword();
-                if (!AESUtil.isValidEncryptedFormat(encrypted)) {
-                    throw new IllegalArgumentException("Invalid encrypted password format.");
-                }
-
-                String decrypted = AESUtil.decrypt(encrypted);
-                password.setEncryptedPassword(decrypted); // Overwrite for response use
-                return password;
-            } catch (Exception e) {
-                throw new RuntimeException("Decryption failed", e);
-            }
-        }).orElseThrow(() -> new RuntimeException("Password not found"));
+        return repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Password not found"));
     }
+
 
     public List<TeamPassword> getPasswordsByTeam(UUID teamId) {
         return repo.findByTeamId(teamId);
@@ -132,7 +121,9 @@ public class TeamPasswordService {
         try {
             System.out.println("[DEBUG] Decrypting password for teamPasswordId: " + teamPasswordId);
 
-            TeamPassword password = getPasswordById(teamPasswordId);
+            TeamPassword password = repo.findById(teamPasswordId)
+                    .orElseThrow(() -> new RuntimeException("Password not found"));
+
             String encrypted = password.getEncryptedPassword();
 
             if (encrypted == null || encrypted.isBlank()) {
@@ -154,6 +145,7 @@ public class TeamPasswordService {
             throw new RuntimeException("Failed to decrypt password for teamPasswordId: " + teamPasswordId, e);
         }
     }
+
 
 
 
