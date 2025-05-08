@@ -233,9 +233,11 @@ export const Signup = () => {
 
         <div className="login">
           Already signed up?{" "}
-          <span className="nav-link" onClick={() => navigate("/auth/login")}>
+          <div>
+          <span className="signup-nav-link" onClick={() => navigate("/auth/login")}>
             Login here
           </span>
+          </div>
         </div>
       </div>
     </div>

@@ -72,6 +72,8 @@ input {
   margin-bottom: 15px;
   text-align: left;
   position: relative; /* Needed for error messages to align */
+  border-radius: 5px;
+  border: 1px solid #ccc;
 }
 
 /* Password Strength Criteria */
@@ -135,13 +137,13 @@ input {
 }
 
 /* Forgot Password & Navigation Links */
-.forgot-password, .nav-link {
+.forgot-password, .signup-nav-link {
   color: #007bff;
   cursor: pointer;
   text-decoration: underline;
 }
 
-.forgot-password:hover, .nav-link:hover {
+.forgot-password:hover, .signup-nav-link:hover {
   color: #0056b3;
 }
 

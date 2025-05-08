@@ -1,10 +1,10 @@
-// TeamPasswordPermissions.js
 import React, { useEffect, useState } from "react";
 import {
   getRolesForTeam,
   assignItemPermissions,
   getGlobalPermissions,
   getItemPermissionsForRole,
+  getFolderPermissionsForRole,
   removeItemPermission,
 } from "../api/teamRoleService";
 import "./teamPasswordPermissions.css";
@@ -23,36 +23,21 @@ const itemPermissionLabels = {
   MOVE_TEAM_PASSWORD: "Move Password",
 };
 
-const TeamPasswordPermissions = ({ selectedTeamId, passwordId }) => {
+const TeamPasswordPermissions = ({ selectedTeamId, passwordId, folderId }) => {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [assignedPermissions, setAssignedPermissions] = useState([]);
 
   useEffect(() => {
-    console.log("🔍 selectedTeamId", selectedTeamId);
-
     if (selectedTeamId) {
       getRolesForTeam(selectedTeamId)
-        .then((res) => {
-          console.log("Loaded roles:", res.data);
-          setRoles(res.data);
-        })
+        .then((res) => setRoles(res.data))
         .catch((err) => console.error("Failed to load roles", err));
 
       loadPermissions();
     }
   }, [selectedTeamId]);
-
-  const loadRoles = async () => {
-    try {
-      const response = await getRolesForTeam(selectedTeamId);
-      console.log("Roles fetched:", response.data);
-      setRoles(response.data);
-    } catch (err) {
-      console.error("Failed to load roles", err);
-    }
-  };
 
   const loadPermissions = async () => {
     try {
@@ -60,10 +45,9 @@ const TeamPasswordPermissions = ({ selectedTeamId, passwordId }) => {
       const filtered = response.data.filter((p) =>
         itemPermissionNames.includes(p.name)
       );
-      console.log("Loaded filtered permissions:", filtered);
       setPermissions(filtered);
     } catch (err) {
-      console.error("Failed to load permissions", err);
+      console.error("Failed to load global permissions", err);
     }
   };
 
@@ -81,9 +65,7 @@ const TeamPasswordPermissions = ({ selectedTeamId, passwordId }) => {
     try {
       if (enabled) {
         await assignItemPermissions(payload);
-        setAssignedPermissions((prev) => [
-          ...new Set([...prev, permissionName]),
-        ]);
+        setAssignedPermissions((prev) => [...new Set([...prev, permissionName])]);
       } else {
         await removeItemPermission(payload);
         setAssignedPermissions((prev) =>
@@ -100,15 +82,31 @@ const TeamPasswordPermissions = ({ selectedTeamId, passwordId }) => {
     setSelectedRoleId(roleId);
 
     try {
-      const res = await getItemPermissionsForRole({
-        roleId,
-        itemId: passwordId,
-        itemType: "password",
-      });
-      const permissionNames = res.data.map((p) => p.name);
-      setAssignedPermissions(permissionNames);
+      const [itemRes, folderRes, globalRes] = await Promise.all([
+        getItemPermissionsForRole({ roleId, itemId: passwordId, itemType: "password" }),
+        folderId
+          ? getFolderPermissionsForRole({ roleId, folderId, folderType: "password" })
+          : Promise.resolve({ data: [] }),
+        getGlobalPermissions(),
+      ]);
+
+      const itemPerms = itemRes.data.map((p) => p.permissionName || p.name);
+      const folderPerms = folderRes.data.map((p) => p.permissionName || p.name);
+      const globalPerms = globalRes.data.map((p) => p.name);
+
+      const combined = new Set(itemPerms);
+
+      if (globalPerms.includes("MANAGE_TEAM_PASSWORDS")) {
+        combined.add("PASSWORD_VIEW");
+        combined.add("PASSWORD_EDIT");
+        combined.add("PASSWORD_DELETE");
+        combined.add("MOVE_TEAM_PASSWORD");
+      }
+
+      folderPerms.forEach((perm) => combined.add(perm));
+      setAssignedPermissions([...combined]);
     } catch (err) {
-      console.error("Failed to load item permissions:", err);
+      console.error("Failed to load permissions", err);
       setAssignedPermissions([]);
     }
   };
@@ -118,7 +116,7 @@ const TeamPasswordPermissions = ({ selectedTeamId, passwordId }) => {
       <h4>Assign Password Permissions to Role</h4>
       <p className="permissions-note">
         *Individual Password Permissions Override Folder Permissions
-      </p>{" "}
+      </p>
       <select
         value={selectedRoleId}
         onChange={handleRoleChange}
@@ -136,18 +134,17 @@ const TeamPasswordPermissions = ({ selectedTeamId, passwordId }) => {
           {permissions.map((perm) => {
             const isEnabled = assignedPermissions.includes(perm.name);
             return (
-              <div key={perm.id} className="permission-toggle">
+              <div key={perm.id || perm.name} className="permission-toggle">
                 <span className="perm-label">
-                  {itemPermissionLabels[perm.name] ||
-                    perm.displayName ||
-                    perm.name}
+                  {itemPermissionLabels[perm.name] || perm.displayName || perm.name}
                 </span>
-
                 <label className="toggle-switch">
                   <input
                     type="checkbox"
                     checked={isEnabled}
-                    onChange={(e) => handleToggle(perm.name, e.target.checked)}
+                    onChange={(e) =>
+                      handleToggle(perm.name, e.target.checked)
+                    }
                   />
                   <span className="slider"></span>
                 </label>

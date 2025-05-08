@@ -9,6 +9,7 @@ import {
   renameTeamFileFolder,
   getTeamPasswords,
   getTeamFilesByTeam,
+  updateTeamPassword,
 } from "../api/teamPWFileService";
 import TeamPasswordInformation from "./teamPasswordInformation";
 import TeamPasswordPermissions from "./teamPasswordPermissions";
@@ -39,6 +40,8 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
   const [showFolderDetails, setShowFolderDetails] = useState(false);
   const [showAddPasswordForm, setShowAddPasswordForm] = useState(false);
   const [showAddTeamFileForm, setShowAddTeamFileForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(null);
 
   useEffect(() => {
     if (selectedTeamId) {
@@ -93,14 +96,14 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
         globalPerms.includes("MANAGE_TEAM_PASSWORDS")
       ) {
         effectivePerms.add("CREATE_PASSWORD");
-        effectivePerms.add("EDIT_PASSWORD");
-        effectivePerms.add("DELETE_PASSWORD");
+        effectivePerms.add("PASSWORD_EDIT");
+        effectivePerms.add("PASSWORD_DELETE");
       } else if (
         folderType === "file" &&
         globalPerms.includes("MANAGE_TEAM_FILES")
       ) {
-        effectivePerms.add("UPLOAD_FILE");
-        effectivePerms.add("DELETE_FILE");
+        effectivePerms.add("FILE_VIEW");
+        effectivePerms.add("FILE_DELETE");
       }
 
       return [...effectivePerms];
@@ -191,28 +194,94 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
     setShowPassword(false);
     setShowFolderDetails(false);
     setShowAddPasswordForm(false);
-
+  
     if (item.type === "password") {
       try {
-        const res = await decryptTeamPassword(item.id);
-        setDecryptedPassword(res.data.decryptedPassword);
-      } catch (e) {
-        setDecryptedPassword(null);
-      }
-
-      try {
-        const res = await getItemPermissionsForRole({
-          roleId: selectedRoleId,
-          itemId: item.type === "password" ? item.teamPasswordId : item.fileId,
-          itemType: item.type,
-        });
-        setPasswordPermissions(res.data.map((p) => p.permissionName));
-      } catch (e) {
-        console.error("Failed to fetch item permissions:", e);
+        const [itemPermsRes, folderPermsRes, globalPermsRes] = await Promise.all([
+          getItemPermissionsForRole({
+            roleId: selectedRoleId,
+            itemId: item.teamPasswordId,
+            itemType: "password",
+          }),
+          selectedFolder?.folderId !== "ALL"
+            ? getFolderPermissionsForRole({
+                roleId: selectedRoleId,
+                folderId: selectedFolder.folderId,
+                folderType: "password",
+              })
+            : Promise.resolve({ data: [] }),
+          getPermissionsForRole(selectedRoleId),
+        ]);
+  
+        const itemPerms = itemPermsRes.data.map((p) => p.permissionName || p.name);
+        const folderPerms = folderPermsRes.data.map((p) => p.permissionName || p.name);
+        const globalPerms = globalPermsRes.data.map((p) => p.permissionName || p.name);
+  
+        const effectivePerms = new Set([...itemPerms, ...folderPerms]);
+  
+        if (globalPerms.includes("MANAGE_TEAM_PASSWORDS")) {
+          effectivePerms.add("PASSWORD_EDIT");
+          effectivePerms.add("PASSWORD_DELETE");
+        }
+  
+        setPasswordPermissions([...effectivePerms]);
+  
+        try {
+          const decryptRes = await decryptTeamPassword(item.teamPasswordId);
+          setDecryptedPassword(decryptRes.data.decryptedPassword);
+        } catch (decryptErr) {
+          console.warn("Decryption failed:", decryptErr);
+          setDecryptedPassword(null); // Still allow metadata view
+        }
+  
+        console.log("Item:", item);
+        console.log("Item perms:", itemPerms);
+        console.log("Folder perms:", folderPerms);
+        console.log("Global perms:", globalPerms);
+        console.log("Effective perms:", [...effectivePerms]);
+      } catch (err) {
+        console.error("Permission loading failed:", err);
         setPasswordPermissions([]);
+        setDecryptedPassword(null);
       }
     } else {
       setPasswordPermissions([]);
+    }
+  };
+  
+  
+
+  const startEditing = () => {
+    console.log("Editing started"); 
+    setEditData({
+      teamPasswordId: selectedItem.teamPasswordId,
+      accountName: selectedItem.accountName,
+      username: selectedItem.username,
+      website: selectedItem.website,
+      plaintextPassword: decryptedPassword,
+    });
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditData(null);
+    setIsEditing(false);
+  };
+
+  const saveEdit = async () => {
+    try {
+      await updateTeamPassword(editData.teamPasswordId, editData);
+      const updated = {
+        ...selectedItem,
+        ...editData,
+      };
+      setSelectedItem(updated);
+      setIsEditing(false);
+      setDecryptedPassword(editData.plaintextPassword);
+      alert("Password updated!");
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Failed to update password.");
     }
   };
 
@@ -372,28 +441,91 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
         {selectedItem ? (
           selectedItem.type === "password" ? (
             <>
+              {isEditing ? (
+                <div className="team-password-info">
+                  <input
+                    name="accountName"
+                    value={editData.accountName}
+                    onChange={(e) =>
+                      setEditData({ ...editData, accountName: e.target.value })
+                    }
+                    placeholder="Account Name"
+                  />
+                  <input
+                    name="username"
+                    value={editData.username}
+                    onChange={(e) =>
+                      setEditData({ ...editData, username: e.target.value })
+                    }
+                    placeholder="Username"
+                  />
+                  <input
+                    name="plaintextPassword"
+                    value={editData.plaintextPassword}
+                    onChange={(e) =>
+                      setEditData({
+                        ...editData,
+                        plaintextPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Password"
+                  />
+                  <input
+                    name="website"
+                    value={editData.website}
+                    onChange={(e) =>
+                      setEditData({ ...editData, website: e.target.value })
+                    }
+                    placeholder="Website (optional)"
+                  />
+                  <div className="team-edit-buttons">
+                    <button className="rename-save-button" onClick={saveEdit}>
+                      Save
+                    </button>
+                    <button
+                      className="rename-cancel-button"
+                      onClick={cancelEditing}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <TeamPasswordInformation
+                    password={selectedItem}
+                    decryptedPassword={decryptedPassword}
+                    showPassword={showPassword}
+                    setShowPassword={setShowPassword}
+                    canEdit={
+                      passwordPermissions.includes("PASSWORD_EDIT") ||
+                      passwordPermissions.includes("MANAGE_TEAM_PASSWORDS")
+                    }
+                    onEditClick={startEditing}
+                  />
+
+                  <TeamPasswordPermissions
+                    selectedTeamId={selectedTeamId}
+                    passwordId={selectedItem.teamPasswordId}
+                  />
+                </>
+              )}
+            </>
+          ) : (
+            <>
               <TeamPasswordInformation
                 password={selectedItem}
                 decryptedPassword={decryptedPassword}
                 showPassword={showPassword}
                 setShowPassword={setShowPassword}
-                canEdit={passwordPermissions.includes("EDIT_PASSWORD")}
-              />
-              <TeamPasswordPermissions
-                selectedTeamId={selectedTeamId}
-                passwordId={selectedItem.teamPasswordId}
-              />
-            </>
-          ) : (
-            <>
-              <TeamFileInformation
-                file={selectedItem}
-                onClose={() => setSelectedItem(null)}
-                onDelete={(fileId) =>
-                  setItems((prev) => prev.filter((f) => f.fileId !== fileId))
+                canEdit={
+                  passwordPermissions.includes("PASSWORD_EDIT") ||
+                  passwordPermissions.includes("MANAGE_TEAM_PASSWORDS")
                 }
+                onEditClick={startEditing}
               />
-              <TeamFilePermissions
+
+              <TeamPasswordPermissions
                 selectedTeamId={selectedTeamId}
                 fileId={selectedItem.fileId}
               />

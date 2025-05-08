@@ -405,3 +405,9 @@
 input:invalid {
   border: none; /* or custom styling */
 }
+
+.default-content-wrapper {
+  padding: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}

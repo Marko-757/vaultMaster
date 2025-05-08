@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import "./login.css";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api/authService"; 
+import { login } from "../api/authService";
+import { FaEye, FaEyeSlash, FaCheckCircle } from "react-icons/fa";
+
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +14,8 @@ export const Login = () => {
     password: "",
   });
 
+    const [showPassword, setShowPassword] = useState(false);
+  
   // Success & error messages
   const [successMessage, setSuccessMessage] = useState("");
   const [generalError, setGeneralError] = useState("");
@@ -39,7 +43,7 @@ export const Login = () => {
     }
 
     try {
-      const response = await login(formData.email, formData.password); 
+      const response = await login(formData.email, formData.password);
 
       if (response) {
         setSuccessMessage("Login successful!");
@@ -63,7 +67,6 @@ export const Login = () => {
     <div className="login-left">
       <div className="login-form">
         <h1>Login</h1>
-
         {/* Success & Error Messages */}
         {successMessage && <p className="success-message">{successMessage}</p>}
         {generalError && <p className="error-message">{generalError}</p>}
@@ -84,17 +87,26 @@ export const Login = () => {
 
           <div className="password-input">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Enter password"
               value={formData.password}
               onChange={handleChange}
               required
             />
+            <span
+              className="toggle-password"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
           </div>
 
           <p>
-            <span className="forgot-password" onClick={() => navigate("/forgotPassword")}>
+            <span
+              className="forgot-password"
+              onClick={() => navigate("/forgotPassword")}
+            >
               Forgot Password?
             </span>
           </p>
@@ -107,9 +119,14 @@ export const Login = () => {
         {/* "Sign up" link remains under the login button */}
         <div className="signup">
           Don't have an account?{" "}
-          <span className="nav-link" onClick={() => navigate("/auth/signup")}>
-            Sign up here
-          </span>
+          <div>
+            <span
+              className="signup-nav-link"
+              onClick={() => navigate("/auth/signup")}
+            >
+              Sign up here
+            </span>
+          </div>
         </div>
       </div>
     </div>

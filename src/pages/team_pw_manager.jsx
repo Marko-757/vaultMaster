@@ -317,7 +317,7 @@ const TeamPwManager = () => {
             />
           )}
           {!selectedOption && selectedTeam && (
-            <div>
+            <div className="default-content-wrapper">
               <h1 className="banner">{selectedTeam.teamName}</h1>
               <div className="options-container">
                 <button
@@ -362,7 +362,12 @@ const TeamPwManager = () => {
           <div className="vm-modal">
             <div className="vm-modal-content">
               <h2>Rename Team</h2>
-              <form onSubmit={(e) => { e.preventDefault(); handleRenameTeam(); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleRenameTeam();
+                }}
+              >
                 <input
                   type="text"
                   value={newTeamName}
@@ -372,8 +377,16 @@ const TeamPwManager = () => {
                   autoFocus
                 />
                 <div className="vm-modal-buttons">
-                  <button type="submit" className="confirm-button">Rename</button>
-                  <button type="button" className="cancel-button" onClick={() => setIsRenameModalOpen(false)}>Cancel</button>
+                  <button type="submit" className="confirm-button">
+                    Rename
+                  </button>
+                  <button
+                    type="button"
+                    className="cancel-button"
+                    onClick={() => setIsRenameModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </form>
             </div>
@@ -387,8 +400,18 @@ const TeamPwManager = () => {
             <div className="vm-modal-content">
               <h2>Are you sure you want to delete this team?</h2>
               <div className="vm-modal-buttons">
-                <button className="vm-confirm-button" onClick={handleDeleteTeam}>Yes, Delete</button>
-                <button className="vm-cancel-button" onClick={() => setIsDeleteModalOpen(false)}>Cancel</button>
+                <button
+                  className="vm-confirm-button"
+                  onClick={handleDeleteTeam}
+                >
+                  Yes, Delete
+                </button>
+                <button
+                  className="vm-cancel-button"
+                  onClick={() => setIsDeleteModalOpen(false)}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -400,7 +423,12 @@ const TeamPwManager = () => {
           <div className="vm-modal">
             <div className="vm-modal-content">
               <h2>Join a Team</h2>
-              <form onSubmit={(e) => { e.preventDefault(); handleJoinTeam(); }}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleJoinTeam();
+                }}
+              >
                 <input
                   type="text"
                   maxLength={6}
@@ -412,8 +440,16 @@ const TeamPwManager = () => {
                   required
                 />
                 <div className="vm-modal-buttons">
-                  <button type="submit" className="vm-confirm-button">Join</button>
-                  <button type="button" className="vm-cancel-button" onClick={() => setShowJoinModal(false)}>Cancel</button>
+                  <button type="submit" className="vm-confirm-button">
+                    Join
+                  </button>
+                  <button
+                    type="button"
+                    className="vm-cancel-button"
+                    onClick={() => setShowJoinModal(false)}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </form>
             </div>
