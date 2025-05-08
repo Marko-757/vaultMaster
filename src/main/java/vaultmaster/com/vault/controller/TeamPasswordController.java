@@ -59,16 +59,16 @@ public class TeamPasswordController {
         UUID userId = permissionChecker.getCurrentUserId();
         TeamPassword existing = passwordService.getPasswordById(id);
 
-        boolean allowed = permissionChecker.hasEffectivePermission(
+        boolean canEdit = permissionChecker.hasEffectivePermission(
                 userId,
                 existing.getTeamId(),
-                existing.getEntryId(), // ✅ Correct: entryId is int
+                existing.getTeamPasswordId(), // ✅ Use UUID now
                 existing.getFolderId(),
                 "password",
-                "MANAGE_TEAM_PASSWORDS"
+                "PASSWORD_EDIT"
         );
 
-        if (!allowed) {
+        if (!canEdit) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
         }
 
@@ -90,7 +90,7 @@ public class TeamPasswordController {
         boolean allowed = permissionChecker.hasEffectivePermission(
                 userId,
                 password.getTeamId(),
-                password.getEntryId(), // ✅ Fixed
+                password.getTeamPasswordId(), // ✅ Updated
                 password.getFolderId(),
                 "password",
                 "MANAGE_TEAM_PASSWORDS"
@@ -135,7 +135,7 @@ public class TeamPasswordController {
         boolean allowed = permissionChecker.hasEffectivePermission(
                 userId,
                 password.getTeamId(),
-                password.getEntryId(), // ✅ Fixed
+                password.getTeamPasswordId(), // ✅ Updated
                 password.getFolderId(),
                 "password",
                 "MANAGE_TEAM_PASSWORDS"
@@ -169,15 +169,14 @@ public class TeamPasswordController {
         }
 
         try {
-            String decrypted = passwordService.decryptPasswordByEntryId(password.getEntryId());
+            String decrypted = passwordService.decryptPasswordByTeamPasswordId(teamPasswordId);
             return ResponseEntity.ok(Map.of("decryptedPassword", decrypted));
         } catch (Exception e) {
-            e.printStackTrace(); // 🔍 Helps during local debugging
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Decryption error: " + e.getMessage());
         }
     }
-
 
     @GetMapping("/folder/{folderId}")
     public ResponseEntity<?> getPasswordsInFolder(@PathVariable UUID folderId) {

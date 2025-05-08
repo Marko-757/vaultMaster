@@ -30,7 +30,7 @@ public class JwtService {
     public String generateTokenWithOtpFlag(UUID userId, String email, boolean otpVerified) {
         return Jwts.builder()
                 .setSubject(userId.toString())
-                .claim("email", email)  // ✅ include email for post-OTP flow
+                .claim("email", email)
                 .claim("otpVerified", otpVerified)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24))

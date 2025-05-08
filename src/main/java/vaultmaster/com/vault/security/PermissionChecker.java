@@ -45,7 +45,7 @@ public class PermissionChecker {
     public boolean hasEffectivePermission(
             UUID userId,
             UUID teamId,
-            Object itemId,
+            UUID itemId,
             UUID folderId,
             String itemType,
             String permission
@@ -62,37 +62,35 @@ public class PermissionChecker {
             return false;
         }
 
-        // Item-level override
+        // Item-level check (UUID only now)
         if (itemId != null && itemType != null) {
-            if (itemId instanceof UUID uuidId) {
-                if (permissionCheckerRepository.roleHasItemPermission(roleId, uuidId, itemType, permission)) {
-                    logger.debug("UUID item match for {} {}", itemType, itemId);
-                    return true;
-                }
-            }
-        }
-
-        // Folder-level
-        if (folderId != null && itemType != null) {
-            String folderType = itemType.equalsIgnoreCase("file") ? "file" : "password";
-            if (permissionCheckerRepository.roleHasFolderPermission(roleId, folderId, permission, folderType)) {
+            if (permissionCheckerRepository.roleHasItemPermission(roleId, itemId, itemType, permission)) {
+                logger.debug("✅ Item-level match for {} {}", itemType, itemId);
                 return true;
             }
         }
 
-        // Global
-        return rolePermissionRepository.roleHasPermission(roleId, permission);
+        // Folder-level fallback
+        if (folderId != null && itemType != null) {
+            String folderType = itemType.equalsIgnoreCase("file") ? "file" : "password";
+            if (permissionCheckerRepository.roleHasFolderPermission(roleId, folderId, permission, folderType)) {
+                logger.debug("✅ Folder-level match for {} permission {}", folderType, permission);
+                return true;
+            }
+        }
+
+        // Global fallback
+        boolean global = rolePermissionRepository.roleHasPermission(roleId, permission);
+        if (global) {
+            logger.debug("✅ Global-level match for permission {}", permission);
+        }
+
+        return global;
     }
 
-    public boolean userHasItemPermission(UUID userId, UUID teamId, int itemId, String itemType, String permission) {
-        return hasEffectivePermission(userId, teamId, itemId, null, itemType, permission);
-    }
-
-    // For item_id stored as UUID (e.g., files)
     public boolean userHasItemPermission(UUID userId, UUID teamId, UUID itemId, String itemType, String permission) {
         return hasEffectivePermission(userId, teamId, itemId, null, itemType, permission);
     }
-
 
     public boolean userHasFolderPermission(UUID userId, UUID teamId, UUID folderId, String permission, boolean isFileFolder) {
         String folderType = isFileFolder ? "file" : "password";

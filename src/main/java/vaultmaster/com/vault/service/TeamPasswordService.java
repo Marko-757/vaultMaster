@@ -128,30 +128,34 @@ public class TeamPasswordService {
         return repo.findByFolderId(folderId);
     }
 
-    public String decryptPasswordByEntryId(int entryId) throws Exception {
-        System.out.println("[DEBUG] Decrypting password for entryId: " + entryId);
+    public String decryptPasswordByTeamPasswordId(UUID teamPasswordId) {
+        try {
+            System.out.println("[DEBUG] Decrypting password for teamPasswordId: " + teamPasswordId);
 
-        PasswordEntry entry = passwordEntryRepository.findById(entryId)
-                .orElseThrow(() -> new RuntimeException("Entry not found for ID: " + entryId));
+            TeamPassword password = getPasswordById(teamPasswordId);
+            String encrypted = password.getEncryptedPassword();
 
-        String encrypted = entry.getPasswordHash();
+            if (encrypted == null || encrypted.isBlank()) {
+                throw new RuntimeException("Encrypted password is null or blank for teamPasswordId: " + teamPasswordId);
+            }
 
-        if (encrypted == null || encrypted.isBlank()) {
-            throw new RuntimeException("Encrypted password is null or blank for entryId: " + entryId);
+            if (!AESUtil.isValidEncryptedFormat(encrypted)) {
+                throw new RuntimeException("Invalid encrypted format for teamPasswordId: " + teamPasswordId);
+            }
+
+            System.out.println("[DEBUG] Encrypted value: " + encrypted);
+
+            String decrypted = AESUtil.decrypt(encrypted);
+
+            System.out.println("[DEBUG] Decrypted value (masked): " + (decrypted.length() > 4 ? decrypted.substring(0, 2) + "••••" : "••••"));
+
+            return decrypted;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt password for teamPasswordId: " + teamPasswordId, e);
         }
-
-        if (!AESUtil.isValidEncryptedFormat(encrypted)) {
-            throw new RuntimeException("Invalid encrypted format for entryId: " + entryId);
-        }
-
-        System.out.println("[DEBUG] Encrypted value: " + encrypted);
-
-        String decrypted = AESUtil.decrypt(encrypted);
-
-        System.out.println("[DEBUG] Decrypted value (masked): " + (decrypted.length() > 4 ? decrypted.substring(0, 2) + "••••" : "••••"));
-
-        return decrypted;
     }
+
+
 
 
     public UUID getTeamIdByEntryId(int entryId) {

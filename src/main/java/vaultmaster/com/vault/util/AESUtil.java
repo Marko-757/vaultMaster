@@ -3,9 +3,7 @@ package vaultmaster.com.vault.util;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
 import java.util.Base64;
-
 
 public class AESUtil {
     private static final String ALGORITHM = "AES";
@@ -32,20 +30,10 @@ public class AESUtil {
 
     public static boolean isValidEncryptedFormat(String encryptedData) {
         try {
-            // Decode the base64 string to get the byte array
-            byte[] decodedData = Base64.getDecoder().decode(encryptedData);
-
-            // Check if the byte array length is a multiple of AES block size (16 bytes)
-            if (decodedData.length % 16 != 0) {
-                return false;  // Invalid format, as AES requires data in block sizes of 16 bytes
-            }
-
-            return true;  // The data is in a valid format
+            Base64.getDecoder().decode(encryptedData);
+            return true; // Only checks Base64 validity now
         } catch (IllegalArgumentException e) {
-            // If the base64 decoding fails, the format is invalid
             return false;
         }
     }
 }
-
-

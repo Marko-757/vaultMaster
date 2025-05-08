@@ -29,16 +29,16 @@ public class PermissionCheckerRepository {
         return count != null && count > 0;
     }
 
+    // ✅ Single UUID-only method for item-level permission check
     public boolean roleHasItemPermission(UUID roleId, UUID itemId, String itemType, String permissionName) {
         String sql = """
-        SELECT COUNT(*) FROM item_permissions
-        WHERE role_id = ? AND item_id = ? AND item_type = ? AND permission_name = ?
-    """;
+            SELECT COUNT(*) FROM item_permissions
+            WHERE role_id = ? AND item_id = ? AND item_type = ? AND permission_name = ?
+        """;
 
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, roleId, itemId, itemType, permissionName);
         return count != null && count > 0;
     }
-
 
     public List<String> getFolderPermissions(UUID roleId, UUID folderId, String folderType) {
         String tableName = folderType.equalsIgnoreCase("file")
@@ -66,11 +66,11 @@ public class PermissionCheckerRepository {
         String table = folderType.equalsIgnoreCase("file") ? "file_folder_permissions" : "password_folder_permissions";
 
         String sql = String.format("""
-        SELECT role_id
-        FROM %s ffp
-        JOIN permissions p ON ffp.permission_id = p.permission_id
-        WHERE ffp.folder_id = ? AND p.permission_name = ?
-    """, table);
+            SELECT role_id
+            FROM %s ffp
+            JOIN permissions p ON ffp.permission_id = p.permission_id
+            WHERE ffp.folder_id = ? AND p.permission_name = ?
+        """, table);
 
         return jdbcTemplate.query(sql, (rs, rowNum) ->
                 UUID.fromString(rs.getString("role_id")), folderId, permissionName);
@@ -80,14 +80,12 @@ public class PermissionCheckerRepository {
         String table = folderType.equalsIgnoreCase("file") ? "file_folder_permissions" : "password_folder_permissions";
 
         String sql = String.format("""
-        SELECT p.permission_name
-        FROM %s ffp
-        JOIN permissions p ON ffp.permission_id = p.permission_id
-        WHERE ffp.folder_id = ? AND ffp.role_id = ?
-    """, table);
+            SELECT p.permission_name
+            FROM %s ffp
+            JOIN permissions p ON ffp.permission_id = p.permission_id
+            WHERE ffp.folder_id = ? AND ffp.role_id = ?
+        """, table);
 
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("permission_name"), folderId, roleId);
     }
-
-
 }

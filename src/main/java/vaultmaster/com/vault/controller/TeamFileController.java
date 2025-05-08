@@ -92,6 +92,22 @@ public class TeamFileController {
         ));
     }
 
+    @GetMapping("/team/{teamId}")
+    public ResponseEntity<?> getFilesByTeam(@PathVariable UUID teamId) {
+        UUID userId = permissionChecker.getCurrentUserId();
+
+        if (!permissionChecker.userHasPermission(userId, teamId, "FILE_VIEW")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
+        }
+
+        try {
+            List<TeamFile> files = teamFileService.getFilesByTeamId(teamId);
+            return ResponseEntity.ok(files);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to fetch team files.");
+        }
+    }
+
     @GetMapping("/{fileId}")
     public ResponseEntity<?> getTeamFileById(@PathVariable UUID fileId) {
         try {
