@@ -25,6 +25,7 @@ import {
   getCurrentUserRoleForTeam,
 } from "../api/teamRoleService";
 import AddTeamFileForm from "./addTeamFileForm";
+import AddTeamFolderForm from "./addTeamFolderForm";
 
 const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
   const [folderType, setFolderType] = useState("password");
@@ -42,6 +43,7 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
   const [showAddTeamFileForm, setShowAddTeamFileForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [showAddFolderForm, setShowAddFolderForm] = useState(false);
 
   useEffect(() => {
     if (selectedTeamId) {
@@ -194,38 +196,45 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
     setShowPassword(false);
     setShowFolderDetails(false);
     setShowAddPasswordForm(false);
-  
+
     if (item.type === "password") {
       try {
-        const [itemPermsRes, folderPermsRes, globalPermsRes] = await Promise.all([
-          getItemPermissionsForRole({
-            roleId: selectedRoleId,
-            itemId: item.teamPasswordId,
-            itemType: "password",
-          }),
-          selectedFolder?.folderId !== "ALL"
-            ? getFolderPermissionsForRole({
-                roleId: selectedRoleId,
-                folderId: selectedFolder.folderId,
-                folderType: "password",
-              })
-            : Promise.resolve({ data: [] }),
-          getPermissionsForRole(selectedRoleId),
-        ]);
-  
-        const itemPerms = itemPermsRes.data.map((p) => p.permissionName || p.name);
-        const folderPerms = folderPermsRes.data.map((p) => p.permissionName || p.name);
-        const globalPerms = globalPermsRes.data.map((p) => p.permissionName || p.name);
-  
+        const [itemPermsRes, folderPermsRes, globalPermsRes] =
+          await Promise.all([
+            getItemPermissionsForRole({
+              roleId: selectedRoleId,
+              itemId: item.teamPasswordId,
+              itemType: "password",
+            }),
+            selectedFolder?.folderId !== "ALL"
+              ? getFolderPermissionsForRole({
+                  roleId: selectedRoleId,
+                  folderId: selectedFolder.folderId,
+                  folderType: "password",
+                })
+              : Promise.resolve({ data: [] }),
+            getPermissionsForRole(selectedRoleId),
+          ]);
+
+        const itemPerms = itemPermsRes.data.map(
+          (p) => p.permissionName || p.name
+        );
+        const folderPerms = folderPermsRes.data.map(
+          (p) => p.permissionName || p.name
+        );
+        const globalPerms = globalPermsRes.data.map(
+          (p) => p.permissionName || p.name
+        );
+
         const effectivePerms = new Set([...itemPerms, ...folderPerms]);
-  
+
         if (globalPerms.includes("MANAGE_TEAM_PASSWORDS")) {
           effectivePerms.add("PASSWORD_EDIT");
           effectivePerms.add("PASSWORD_DELETE");
         }
-  
+
         setPasswordPermissions([...effectivePerms]);
-  
+
         try {
           const decryptRes = await decryptTeamPassword(item.teamPasswordId);
           setDecryptedPassword(decryptRes.data.decryptedPassword);
@@ -233,7 +242,7 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
           console.warn("Decryption failed:", decryptErr);
           setDecryptedPassword(null); // Still allow metadata view
         }
-  
+
         console.log("Item:", item);
         console.log("Item perms:", itemPerms);
         console.log("Folder perms:", folderPerms);
@@ -248,11 +257,9 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
       setPasswordPermissions([]);
     }
   };
-  
-  
 
   const startEditing = () => {
-    console.log("Editing started"); 
+    console.log("Editing started");
     setEditData({
       teamPasswordId: selectedItem.teamPasswordId,
       accountName: selectedItem.accountName,
@@ -303,32 +310,49 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
           <h2>Folders</h2>
         </div>
 
-        <div className="folder-toggle-buttons">
+        <div className="folder-toggle-section">
+          <div className="folder-toggle-buttons">
+            <button
+              className={`folder-toggle ${
+                folderType === "password" ? "active" : ""
+              }`}
+              onClick={() => {
+                setFolderType("password");
+                setSelectedFolder(null);
+                setSelectedItem(null);
+                setShowFolderDetails(false);
+                setShowAddTeamFileForm(false);
+              }}
+            >
+              Passwords
+            </button>
+            <button
+              className={`folder-toggle ${
+                folderType === "file" ? "active" : ""
+              }`}
+              onClick={() => {
+                setFolderType("file");
+                setSelectedFolder(null);
+                setSelectedItem(null);
+                setShowFolderDetails(false);
+                setShowAddPasswordForm(false);
+              }}
+            >
+              Files
+            </button>
+          </div>
+
           <button
-            className={`folder-toggle ${
-              folderType === "password" ? "active" : ""
-            }`}
+            className="add-folder-button"
             onClick={() => {
-              setFolderType("password");
-              setSelectedFolder(null);
-              setSelectedItem(null);
-              setShowFolderDetails(false);
-              setShowAddTeamFileForm(false);
-            }}
-          >
-            Passwords
-          </button>
-          <button
-            className={`folder-toggle ${folderType === "file" ? "active" : ""}`}
-            onClick={() => {
-              setFolderType("file");
-              setSelectedFolder(null);
               setSelectedItem(null);
               setShowFolderDetails(false);
               setShowAddPasswordForm(false);
+              setShowAddTeamFileForm(false);
+              setShowAddFolderForm(true);
             }}
           >
-            Files
+            + Add Folder
           </button>
         </div>
 
@@ -556,6 +580,20 @@ const PasswordAndFileManagement = ({ selectedTeamId, onBack }) => {
             teamId={selectedTeamId}
             onRename={handleRenameFolder}
             onClose={() => setShowFolderDetails(false)}
+          />
+        ) : showAddFolderForm ? (
+          <AddTeamFolderForm
+            teamId={selectedTeamId}
+            folderType={folderType}
+            onCreate={async () => {
+              try {
+                await loadFolders(selectedTeamId);
+                setShowAddFolderForm(false);
+              } catch (err) {
+                console.warn("Post-create UI update failed:", err);
+              }
+            }}
+            onCancel={() => setShowAddFolderForm(false)}
           />
         ) : (
           <div className="manager-empty">
