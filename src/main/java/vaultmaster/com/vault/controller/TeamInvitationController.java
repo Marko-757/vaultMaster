@@ -29,6 +29,7 @@ public class TeamInvitationController {
     private final PermissionChecker permissionChecker;
     private final TeamRepository teamRepository;
     private final EmailService emailService;
+    private final RoleService roleService;
 
     @PostMapping("/send")
     public ResponseEntity<?> sendInvitation(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
@@ -90,10 +91,16 @@ public class TeamInvitationController {
                 return ResponseEntity.badRequest().body("Account not found for email: " + email);
             }
 
+            // Add member first
             TeamMember newMember = new TeamMember();
             newMember.setTeamId(teamId);
             newMember.setUserId(userId);
             teamMemberService.addTeamMember(newMember);
+
+            // Assign the "Pending" role
+            Role pendingRole = roleService.findByNameAndTeamId("Pending", teamId)
+                    .orElseThrow(() -> new RuntimeException("Pending role not found"));
+            roleService.assignRoleToUser(teamId, userId, pendingRole.getRoleId());
 
             invitationService.markAsUsed(invitation.getInvitationId());
 
@@ -107,6 +114,7 @@ public class TeamInvitationController {
             return ResponseEntity.status(500).body("Failed to accept invitation.");
         }
     }
+
 
     @PostMapping("/verify")
     public ResponseEntity<?> verifyInvitation(@RequestBody Map<String, String> body, HttpServletRequest request) {
