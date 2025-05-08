@@ -274,7 +274,7 @@ const TeamPwManager = () => {
                             setSelectedOption("viewRolePasswords");
                           }}
                         >
-                          {team.teamName} ({team.roleName})
+                          {team.teamName}
                         </button>
                       ))
                     )}

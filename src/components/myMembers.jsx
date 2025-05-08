@@ -8,7 +8,9 @@ import Toast from "bootstrap/js/dist/toast";
 const MyMembers = ({ selectedTeam, onBack }) => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedRoleId, setSelectedRoleId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
 
@@ -17,7 +19,7 @@ const MyMembers = ({ selectedTeam, onBack }) => {
       if (!selectedTeam?.teamId) return;
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/teams/members/team/${selectedTeam.teamId}/profiles`,
+          `/api/teams/members/team/${selectedTeam.teamId}/profiles`,
           { withCredentials: true }
         );
         setMembers(response.data);
@@ -28,12 +30,27 @@ const MyMembers = ({ selectedTeam, onBack }) => {
     fetchMembers();
   }, [selectedTeam]);
 
-  const openMemberModal = (member) => {
+  const openMemberModal = async (member) => {
     setSelectedMember(member);
+    setSelectedRoleId(member.roleId || ""); // fallback to blank if null
+
+    try {
+      const res = await axios.get(`/api/roles/team/${selectedTeam.teamId}`, {
+        withCredentials: true,
+      });
+      setRoles(res.data);
+    } catch (error) {
+      console.error("Failed to load roles:", error);
+    }
+
     setIsModalOpen(true);
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMember(null);
+    setSelectedRoleId(null);
+  };
 
   const showToast = (message, delay = 2500) => {
     const toastId = `toast-${Date.now()}`;
@@ -54,11 +71,38 @@ const MyMembers = ({ selectedTeam, onBack }) => {
     toastEl.addEventListener("hidden.bs.toast", () => toastEl.remove());
   };
 
+  const handleRoleChange = async () => {
+    if (!selectedRoleId || !selectedMember) return;
+    console.log("Selected member for role change:", selectedMember);
+    try {
+      await axios.put(
+        `/api/roles/assign?teamId=${selectedTeam.teamId}&userId=${selectedMember.userId}&roleId=${selectedRoleId}`,
+        {},
+        { withCredentials: true }
+      );
+      
+      showToast("Role updated successfully!");
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.userId === selectedMember.userId
+            ? { ...m, roleId: selectedRoleId, roleName: getRoleName(selectedRoleId) }
+            : m
+        )
+      );
+      closeModal();
+    } catch (error) {
+      console.error("Failed to assign role:", error);
+      showToast("Failed to update role", 3000);
+    }
+  };
+
+  const getRoleName = (roleId) => roles.find((r) => r.roleId === roleId)?.roleName || "Unknown";
+
   const handleSendInvite = async () => {
     if (!inviteEmail.trim()) return;
     try {
       await axios.post(
-        "http://localhost:8080/api/team-invitations/send",
+        "/api/team-invitations/send",
         { teamId: selectedTeam.teamId, email: inviteEmail },
         { withCredentials: true }
       );
@@ -96,9 +140,7 @@ const MyMembers = ({ selectedTeam, onBack }) => {
               <div className="member-row" key={index}>
                 <div className="member-photo-container">
                   <img
-                    src={
-                      member.profilePicture || "https://via.placeholder.com/50"
-                    }
+                    src={member.profilePicture || "https://via.placeholder.com/50"}
                     alt={member.fullName}
                     className="member-photo"
                   />
@@ -128,54 +170,50 @@ const MyMembers = ({ selectedTeam, onBack }) => {
         )}
       </div>
 
+      {/* Modal */}
       {isModalOpen && selectedMember && (
         <div className="member-modal-overlay">
           <div className="member-modal">
             <div className="member-modal-header">
-              <h3>Member Details</h3>
+              <h3>Change Role</h3>
               <button className="close-modal" onClick={closeModal}>
                 ×
               </button>
             </div>
             <div className="member-modal-content">
-              <div className="member-photo-container">
-                <img
-                  src={
-                    selectedMember.profilePicture ||
-                    "https://via.placeholder.com/100"
-                  }
-                  alt={selectedMember.fullName}
-                  className="member-photo-large"
-                />
-              </div>
               <div className="member-details">
-                <p>
-                  <strong>Name:</strong> {selectedMember.fullName}
-                </p>
-                <p>
-                  <strong>Email:</strong> {selectedMember.email}
-                </p>
-                {selectedMember.phoneNumber && (
-                  <p>
-                    <strong>Phone:</strong> {selectedMember.phoneNumber}
-                  </p>
-                )}
-                <p>
-                  <strong>Role:</strong> {selectedMember.roleName || "Member"}
-                </p>
-                {selectedMember.isOwner && (
-                  <p>
-                    <strong>Status:</strong>{" "}
-                    <span className="owner-badge">Team Owner</span>
-                  </p>
-                )}
+                <p><strong>Name:</strong> {selectedMember.fullName}</p>
+                <p><strong>Email:</strong> {selectedMember.email}</p>
+                <p><strong>Current Role:</strong> {selectedMember.roleName || "None"}</p>
+                <label htmlFor="roleSelect"><strong>New Role:</strong></label>
+                <select
+                  id="roleSelect"
+                  className="form-select mt-1 mb-3"
+                  value={selectedRoleId}
+                  onChange={(e) => setSelectedRoleId(e.target.value)}
+                >
+                  <option value="">-- Select Role --</option>
+                  {roles.map((role) => (
+                    <option key={role.roleId} value={role.roleId}>
+                      {role.roleName}
+                    </option>
+                  ))}
+                </select>
+                <div className="modal-buttons">
+                  <button className="btn btn-primary me-2" onClick={handleRoleChange}>
+                    Save
+                  </button>
+                  <button className="btn btn-secondary" onClick={closeModal}>
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* 🔹 Sticky Invite Form Footer */}
+      {/* Invite Form */}
       <div className="invite-form-footer">
         <form
           className="invite-form"
@@ -198,7 +236,6 @@ const MyMembers = ({ selectedTeam, onBack }) => {
         </form>
       </div>
 
-      {/* 🔹 Bootstrap Toast Container */}
       <div
         id="toast-container"
         className="position-fixed bottom-0 end-0 p-3"
